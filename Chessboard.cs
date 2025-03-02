@@ -55,6 +55,7 @@ namespace Chess
             int piece = pieceValue & 7;
 
             if (rowDiff == 0 && colDiff == 0) return false;
+            if ((pieces[endRow, endCol].number & (Piece.White | Piece.Black)) == color) return false;
 
             switch (piece)
             {
@@ -62,13 +63,13 @@ namespace Chess
                     if (color == Piece.White)
                     {
                         if (rowDiff == 1 && startCol == endCol && endRow < startRow) return true;
-                        if (rowDiff == 2 && startCol == endCol && startRow == 6 && endRow == 4) return true;
+                        if ((rowDiff == 2 && startCol == endCol && startRow == 6 && endRow == 4) && CheckPathValidity(startRow, startCol, endRow, endCol)) return true; // Pion może wykonać ruch o dwa pola do przodu, jeśli jest w pozycji startowej
                         if (colDiff == 1 && rowDiff == 1 && endRow < startRow && pieces[endRow, endCol].number != 0) return true;
                     }
                     else
                     {
                         if (rowDiff == 1 && startCol == endCol && endRow > startRow) return true;
-                        if (rowDiff == 2 && startCol == endCol && startRow == 1 && endRow == 3) return true;
+                        if ((rowDiff == 2 && startCol == endCol && startRow == 1 && endRow == 3) && CheckPathValidity(startRow, startCol, endRow, endCol)) return true;
                         if (colDiff == 1 && rowDiff == 1 && endRow > startRow && pieces[endRow, endCol].number != 0) return true;
                     }
                     break;
@@ -77,7 +78,7 @@ namespace Chess
                     if (rowDiff == 1 && colDiff == 2) return true;
                     break;
                 case Piece.Bishop:
-                    if (rowDiff == colDiff && CheckPathValidity(startRow, startCol, endRow, endCol)) return true; //Add path check
+                    if (rowDiff == colDiff && CheckPathValidity(startRow, startCol, endRow, endCol)) return true;
                     break;
                 case Piece.Rook:
                     if ((startRow == endRow || startCol == endCol) && CheckPathValidity(startRow, startCol, endRow, endCol)) return true;

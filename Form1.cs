@@ -77,7 +77,7 @@ namespace Chess
         private void Piece_MouseDown(object sender, MouseEventArgs e)
         {
             Board.SetBackColor();
-            if (sender is Panel panel && Board.selectedPiece == null)
+            if (sender is Panel panel)
             {
                 Board.selectedPiece = panel;
                 Board.originalLocation = panel.Location;
