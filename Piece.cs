@@ -62,6 +62,7 @@ namespace Chess
         {
             public int number;
             public Panel panel;
+            public bool hasMoved;
         }
     }
 }

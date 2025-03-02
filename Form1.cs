@@ -13,7 +13,7 @@ namespace Chess
     public partial class Form1 : Form
     {
         private Chessboard Board = new Chessboard(Tools.BoardSize, Tools.SquareSize);
-
+        private bool isWhiteTurn = true;
         public Form1()
         {
             InitializeComponent();
@@ -39,6 +39,7 @@ namespace Chess
                     piece.panel.MouseDown += Piece_MouseDown;
                     piece.panel.MouseMove += Piece_MouseMove;
                     piece.panel.MouseUp += Piece_MouseUp;
+                    piece.panel.Click += MoveClick;
                     piece.panel.BringToFront();
                 }
             }
@@ -56,6 +57,16 @@ namespace Chess
                 {
                     for (int col = 0; col < Tools.BoardSize; col++)
                     {
+                        if (Board.pieces[row, col].panel == square)
+                        {
+                            if (Board.selectedRow != row && Board.selectedCol != col)
+                            {
+                                targetRow = row;
+                                targetCol = col;
+                                break;
+                            }
+                            break;
+                        }
                         if (Board.squares[row, col] == square)
                         {
                             targetRow = row;
@@ -79,14 +90,23 @@ namespace Chess
             Board.SetBackColor();
             if (sender is Panel panel)
             {
-                Board.selectedPiece = panel;
-                Board.originalLocation = panel.Location;
+                Panel tempPiece = panel;
+                Point tempLocation = panel.Location;
+                
                 for (int row = 0; row < Tools.BoardSize; row++)
                 {
                     for (int col = 0; col < Tools.BoardSize; col++)
                     {
-                        if (Board.pieces[row, col].panel == Board.selectedPiece)
+                        if (Board.pieces[row, col].panel == tempPiece)
                         {
+                            if (((Board.pieces[row, col].number & Piece.White) != 0 && !isWhiteTurn) || (Board.pieces[row, col].number & Piece.Black) != 0 && isWhiteTurn)
+                            {
+                                //Board.selectedPiece = null;
+                                return;
+                            }
+                            Board.selectedPiece = panel;
+                            Board.originalLocation = panel.Location;
+
                             Board.selectedRow = row;
                             Board.selectedCol = col;
 
@@ -125,16 +145,94 @@ namespace Chess
         {
             if (Board.CheckValidity(piece, Board.selectedRow, Board.selectedCol, newRow, newCol))
             {
-                if (Board.pieces[newRow, newCol].number != 0)
+
+                int startRow = Board.selectedRow;
+                int startCol = Board.selectedCol;
+                int rowDiff = Math.Abs(newRow - startRow);
+                int colDiff = Math.Abs(newCol - startCol);
+                bool capture = false;
+
+                // Handle castling: king moving two squares horizontally.
+                if ((piece & 7) == Piece.King && colDiff == 2)
                 {
-                    Controls.Remove(Board.pieces[newRow, newCol].panel);
-                    //handle capture
+                    if (newCol == 6) // kingside castling
+                    {
+                        var rookPair = Board.pieces[startRow, 7];
+                        if (rookPair.panel != null)
+                        {
+                            rookPair.panel.Location = new Point(5 * Tools.SquareSize + (Tools.Margin / 2), startRow * Tools.SquareSize + (Tools.Margin / 2));
+                            Board.pieces[startRow, 5] = rookPair;
+                            Board.pieces[startRow, 7] = new Piece.PiecePanelPair();
+                            Board.pieces[startRow, 5].hasMoved = true;
+                        }
+                    }
+                    else if (newCol == 2) // queenside castling
+                    {
+                        var rookPair = Board.pieces[startRow, 0];
+                        if (rookPair.panel != null)
+                        {
+                            rookPair.panel.Location = new Point(3 * Tools.SquareSize + (Tools.Margin / 2), startRow * Tools.SquareSize + (Tools.Margin / 2));
+                            Board.pieces[startRow, 3] = rookPair;
+                            Board.pieces[startRow, 0] = new Piece.PiecePanelPair();
+                            Board.pieces[startRow, 3].hasMoved = true;
+                        }
+                    }
                 }
+                // Handle en passant capture:
+                if ((piece & 7) == Piece.Pawn && colDiff == 1 && rowDiff == 1 && Board.pieces[newRow, newCol].number == 0)
+                {
+                    int capturedPawnRow = ((piece & Piece.White) != 0) ? newRow + 1 : newRow - 1;
+                    var capturedPair = Board.pieces[capturedPawnRow, newCol];
+                    if (capturedPair.panel != null)
+                    {
+                        Controls.Remove(capturedPair.panel);
+                        capturedPair.panel.Dispose();
+                    }
+                    Board.pieces[capturedPawnRow, newCol] = new Piece.PiecePanelPair();
+                    capture = true;
+                }
+                else if (Board.pieces[newRow, newCol].number != 0)
+                {
+                    capture = true;
+                    Controls.Remove(Board.pieces[newRow, newCol].panel);
+                    Board.pieces[newRow, newCol] = new Piece.PiecePanelPair();
+                    //Panel capturedPanel = Board.pieces[newRow, newCol].panel;
+                    //if (capturedPanel != null)
+                    //{
+                    //    Controls.Remove(capturedPanel);
+                    //    capturedPanel.Dispose();
+                    //}                    
+                }
+
+                Board.enPassantTargetRow = null;
+                Board.enPassantTargetCol = null;
+                if ((piece & 7) == Piece.Pawn)
+                {
+                    // White pawn double move from row 6 to 4
+                    if ((piece & Piece.White) != 0 && startRow == 6 && newRow == 4)
+                    {
+                        Board.enPassantTargetRow = 5;
+                        Board.enPassantTargetCol = startCol;
+                    }
+                    // Black pawn double move from row 1 to 3
+                    if ((piece & Piece.Black) != 0 && startRow == 1 && newRow == 3)
+                    {
+                        Board.enPassantTargetRow = 2;
+                        Board.enPassantTargetCol = startCol;
+                    }
+                }
+
                 Board.selectedPiece.Location = new Point(newCol * Tools.SquareSize + (Tools.Margin / 2), newRow * Tools.SquareSize + (Tools.Margin / 2));
                 Board.pieces[newRow, newCol] = Board.pieces[Board.selectedRow, Board.selectedCol];
                 Board.pieces[Board.selectedRow, Board.selectedCol] = new Piece.PiecePanelPair();
+                Board.pieces[newRow, newCol].hasMoved = true;
 
                 Board.SetBackColor();
+                Board.currentMoves += Tools.GetMoveNotation(piece, Board.selectedRow, Board.selectedCol, newRow, newCol, capture);
+                isWhiteTurn = !isWhiteTurn;
+                MessageBox.Show(Board.currentMoves);
+                Board.selectedPiece = null;
+                return;
             }
             else
             {
