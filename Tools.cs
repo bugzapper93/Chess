@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Chess
     internal class Tools
     {
         public const int BoardSize = 8;
-        public const int SquareSize = 50;
+        public const int SquareSize = 80;
         public const int Margin = 10;
         public static Piece.PiecePanelPair[,] ParseFEN(string layout)
         {

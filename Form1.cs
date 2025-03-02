@@ -24,6 +24,7 @@ namespace Chess
         {
             foreach (Panel square in Board.squares)
             {
+                square.Click += MoveClick;
                 Controls.Add(square);
             }
         }
@@ -42,9 +43,41 @@ namespace Chess
                 }
             }
         }
+        private void MoveClick(object sender, EventArgs e)
+        {
+            if (Board.selectedPiece == null) return;
+
+            if (sender is Panel square)
+            {
+                int targetRow = -1;
+                int targetCol = -1;
+
+                for (int row = 0; row < Tools.BoardSize; row++)
+                {
+                    for (int col = 0; col < Tools.BoardSize; col++)
+                    {
+                        if (Board.squares[row, col] == square)
+                        {
+                            targetRow = row;
+                            targetCol = col;
+                            break;
+                        }
+                    }
+                }
+                if (targetRow == -1 || targetCol == -1) return;
+
+                int pieceValue = Board.pieces[Board.selectedRow, Board.selectedCol].number;
+
+                if (Board.CheckValidity(pieceValue, Board.selectedRow, Board.selectedCol, targetRow, targetCol))
+                {
+                    MovePiece(pieceValue, targetRow, targetCol);
+                }
+            }
+        }
         private void Piece_MouseDown(object sender, MouseEventArgs e)
         {
-            if (sender is Panel panel)
+            Board.SetBackColor();
+            if (sender is Panel panel && Board.selectedPiece == null)
             {
                 Board.selectedPiece = panel;
                 Board.originalLocation = panel.Location;
@@ -56,6 +89,8 @@ namespace Chess
                         {
                             Board.selectedRow = row;
                             Board.selectedCol = col;
+
+                            Board.HighlightLegalMoves(Board.pieces[row, col].number, row, col);
                             return;
                         }
                     }
@@ -78,15 +113,32 @@ namespace Chess
                 int newCol = (int)Math.Round((float)Board.selectedPiece.Location.X / (float)Tools.SquareSize, 0, MidpointRounding.AwayFromZero);
                 int newRow = (int)Math.Round((float)Board.selectedPiece.Location.Y / (float)Tools.SquareSize, 0, MidpointRounding.AwayFromZero);
 
+                int piece = Board.pieces[Board.selectedRow, Board.selectedCol].number;
+
                 if (newRow >= 0 && newRow < Tools.BoardSize && newCol >= 0 && newCol < Tools.BoardSize)
                 {
-                    Board.selectedPiece.Location = new Point(newCol * Tools.SquareSize + (Tools.Margin / 2), newRow * Tools.SquareSize + (Tools.Margin / 2));
-                    if (!(newRow == Board.selectedRow && newCol == Board.selectedCol))
-                    {
-                        Board.pieces[newRow, newCol] = Board.pieces[Board.selectedRow, Board.selectedCol];
-                        Board.pieces[Board.selectedRow, Board.selectedCol] = new Piece.PiecePanelPair();
-                    }
+                    MovePiece(piece, newRow, newCol);
                 }
+            }
+        }
+        public void MovePiece(int piece, int newRow, int newCol)
+        {
+            if (Board.CheckValidity(piece, Board.selectedRow, Board.selectedCol, newRow, newCol))
+            {
+                if (Board.pieces[newRow, newCol].number != 0)
+                {
+                    Controls.Remove(Board.pieces[newRow, newCol].panel);
+                    //handle capture
+                }
+                Board.selectedPiece.Location = new Point(newCol * Tools.SquareSize + (Tools.Margin / 2), newRow * Tools.SquareSize + (Tools.Margin / 2));
+                Board.pieces[newRow, newCol] = Board.pieces[Board.selectedRow, Board.selectedCol];
+                Board.pieces[Board.selectedRow, Board.selectedCol] = new Piece.PiecePanelPair();
+
+                Board.SetBackColor();
+            }
+            else
+            {
+                Board.selectedPiece.Location = Board.originalLocation;
             }
         }
     }

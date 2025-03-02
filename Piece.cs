@@ -58,12 +58,10 @@ namespace Chess
             };
             return piece;
         }
-
         public struct PiecePanelPair
         {
             public int number;
             public Panel panel;
         }
-
     }
 }
