@@ -152,10 +152,9 @@ namespace Chess
                 int colDiff = Math.Abs(newCol - startCol);
                 bool capture = false;
 
-                // Handle castling: king moving two squares horizontally.
                 if ((piece & 7) == Piece.King && colDiff == 2)
                 {
-                    if (newCol == 6) // kingside castling
+                    if (newCol == 6) 
                     {
                         var rookPair = Board.pieces[startRow, 7];
                         if (rookPair.panel != null)
@@ -166,7 +165,7 @@ namespace Chess
                             Board.pieces[startRow, 5].hasMoved = true;
                         }
                     }
-                    else if (newCol == 2) // queenside castling
+                    else if (newCol == 2) 
                     {
                         var rookPair = Board.pieces[startRow, 0];
                         if (rookPair.panel != null)
@@ -178,7 +177,7 @@ namespace Chess
                         }
                     }
                 }
-                // Handle en passant capture:
+
                 if ((piece & 7) == Piece.Pawn && colDiff == 1 && rowDiff == 1 && Board.pieces[newRow, newCol].number == 0)
                 {
                     int capturedPawnRow = ((piece & Piece.White) != 0) ? newRow + 1 : newRow - 1;
@@ -208,13 +207,13 @@ namespace Chess
                 Board.enPassantTargetCol = null;
                 if ((piece & 7) == Piece.Pawn)
                 {
-                    // White pawn double move from row 6 to 4
+
                     if ((piece & Piece.White) != 0 && startRow == 6 && newRow == 4)
                     {
                         Board.enPassantTargetRow = 5;
                         Board.enPassantTargetCol = startCol;
                     }
-                    // Black pawn double move from row 1 to 3
+
                     if ((piece & Piece.Black) != 0 && startRow == 1 && newRow == 3)
                     {
                         Board.enPassantTargetRow = 2;
