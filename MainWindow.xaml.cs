@@ -25,7 +25,7 @@ public partial class MainWindow : Window
     private bool isDragging = false;
     private UIElement? selectedPiece;
 
-    private ChessAI AI = new ChessAI(3);
+    private ChessAI AI = new ChessAI(2);
     Chessboard Board = new Chessboard();
 
     public MainWindow()
@@ -109,7 +109,7 @@ public partial class MainWindow : Window
         if (isDragging && e.LeftButton == MouseButtonState.Pressed)
         {
             var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
-            if (parentCanvas == null) 
+            if (parentCanvas == null)
                 return;
 
             Point mousePosition = e.GetPosition(parentCanvas);
