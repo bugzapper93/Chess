@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Documents;
 
 namespace Chess.Objects
@@ -11,20 +12,24 @@ namespace Chess.Objects
     {
         public Piece[,] pieces;
         private bool isWhiteTurn;
-        public Moveset moveset;
-        public List<Move> legalMoves;
+        public Moveset moveset = new Moveset
+        {
+            moves = new List<Move>(),
+            dangerSquares = new List<SquareDangerType>(),
+            pins = new List<Pin>()
+        }; 
         public Position? enPassantTarget;
         public Chessboard(string FENstring = Pieces.DefaultPosition, bool whiteStarts = true)
         {
             isWhiteTurn = whiteStarts;
             pieces = new Piece[8, 8];
-            moveset = new Moveset();
+
             Initialize(FENstring);
         }
         public void Initialize(string position)
         {
             pieces = Pieces.Parse_FEN(position);
-            GetMoves();
+            moveset = Moves.GetAllMoves(this, isWhiteTurn ? Pieces.White : Pieces.Black);
         }
         public void MakeMove(Move move)
         {
@@ -40,7 +45,7 @@ namespace Chess.Objects
                 enPassantTarget = new Position(move.startPosition.row + (move.targetPosition.row - move.startPosition.row) / 2, move.startPosition.column);
 
             // Handle en passant capture
-            if ((pieceValue & 7) == Pieces.Pawn && move.capture)
+            if (enPassantTarget != null && (pieceValue & 7) == Pieces.Pawn && move.targetPosition == enPassantTarget.Value)
             {
                 if (pieces[move.targetPosition.row, move.targetPosition.column].value == 0)
                 {
@@ -57,22 +62,32 @@ namespace Chess.Objects
                     pieces[move.targetPosition.row, 7] = new Piece { value = 0 };
                     pieces[move.targetPosition.row, move.targetPosition.column - 1].hasMoved = true;
                 }
-                if (move.targetPosition.column - move.startPosition.column == 2)
+                if (move.targetPosition.column - move.startPosition.column == -2)
                 {
                     pieces[move.targetPosition.row, move.targetPosition.column + 1] = pieces[move.targetPosition.row, 0];
                     pieces[move.targetPosition.row, 0] = new Piece { value = 0 };
                     pieces[move.targetPosition.row, move.targetPosition.column + 1].hasMoved = true;
                 }
             }
-
-            isWhiteTurn = !isWhiteTurn;
-            GetMoves();
-        }
-        public void GetMoves()
-        {
-            int currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
             moveset = Moves.GetAllMoves(this, currentColor);
-            legalMoves = moveset.moves;
+            UpdateDanger();
+            isWhiteTurn = !isWhiteTurn;
+            currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
+            moveset = Moves.GetAllMoves(this, currentColor);
+        }
+        private void UpdateDanger()
+        {
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    pieces[row, col].isPinned = false;
+                }
+            }
+            foreach (Pin pin in moveset.pins)
+            {
+                pieces[pin.pinned.row, pin.pinned.column].isPinned = true;
+            }
         }
     }
 }

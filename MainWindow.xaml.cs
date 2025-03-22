@@ -149,7 +149,7 @@ public partial class MainWindow : Window
         if (parentCanvas == null)
             return;
 
-        int index = Helpers.GetMoveIndex(Board.legalMoves, positionStart, positionEnd);
+        int index = Helpers.GetMoveIndex(Board.moveset.moves, positionStart, positionEnd);
         if (index == -1)
         {
             Canvas.SetLeft(selectedPiece, positionStart.column * SquareSize);
@@ -169,7 +169,7 @@ public partial class MainWindow : Window
         PiecesDisplay[positionEnd.row, positionEnd.column] = (Rectangle)selectedPiece;
         PiecesDisplay[positionStart.row, positionStart.column] = null;
 
-        Move move = Board.legalMoves[index];
+        Move move = Board.moveset.moves[index];
 
         // Handle special moves
         if ((pieceValue & 7) == Pieces.Pawn && move.capture)
@@ -201,7 +201,7 @@ public partial class MainWindow : Window
         ResetBoard();
         int row = selectedPosition.row;
         int col = selectedPosition.column;
-        List<Move> moves = Board.legalMoves;
+        List<Move> moves = Board.moveset.moves;
         foreach (Move move in moves)
         {
             if (move.startPosition == selectedPosition)
