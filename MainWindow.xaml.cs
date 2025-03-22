@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     private bool isDragging = false;
     private UIElement? selectedPiece;
 
+    private AIPlayer AI = new AIPlayer(3, Pieces.Black, 1000);
     Chessboard Board = new Chessboard();
 
     public MainWindow()
@@ -83,6 +84,8 @@ public partial class MainWindow : Window
     #region Mouse handlers
     private void PieceMouseDown(object sender, MouseEventArgs e)
     {
+        // if current color != player color
+        // return
         if (sender is Rectangle rect)
         {
             Rectangle piece = (Rectangle)sender;
@@ -131,6 +134,9 @@ public partial class MainWindow : Window
             else
             {
                 MovePiece(selectedPosition, new Position(row, col));
+
+                Move bestMove = AI.GetBestMove(Board);
+                MovePiece(bestMove.startPosition, bestMove.targetPosition);
             }
         }
     }

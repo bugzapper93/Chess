@@ -120,5 +120,18 @@ namespace Chess.Objects
             }
             return pieces;
         }
+        public static int GetPieceValue(int piece)
+        {
+            switch (piece & ~24)
+            {
+                case King: return 1000;
+                case Queen: return 9;
+                case Rook: return 5;
+                case Bishop: return 3;
+                case Knight: return 3;
+                case Pawn: return 1;
+                default: return 0;
+            }
+        }
     }
 }

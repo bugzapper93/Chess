@@ -96,14 +96,14 @@ namespace Chess.Objects
             moveset = Moves.GetAllMoves(this, currentColor);
             if (moveset.moves.Count == 0)
             {
-                if (checkCount > 0)
-                {
-                    MessageBox.Show("Checkmate");
-                }
-                else
-                {
-                    MessageBox.Show("Stalemate");
-                }
+                //if (checkCount > 0)
+                //{
+                //    MessageBox.Show("Checkmate");
+                //}
+                //else
+                //{
+                //    MessageBox.Show("Stalemate");
+                //}
             }
         }
         private void UpdateDanger()
@@ -130,6 +130,24 @@ namespace Chess.Objects
             {
                 pieces[pin.pinned.row, pin.pinned.column].isPinned = true;
             }
+        }
+        public Chessboard Clone()
+        {
+            Chessboard clone = new Chessboard
+            {
+                pieces = (Piece[,])this.pieces.Clone(),
+                squares = (Square[,])this.squares.Clone(),
+                enPassantTarget = this.enPassantTarget,
+                isWhiteTurn = this.isWhiteTurn,
+                moveset = new Moveset
+                {
+                    moves = new List<Move>(this.moveset.moves),
+                    dangerSquares = new List<SquareDangerType>(this.moveset.dangerSquares),
+                    pins = new List<Pin>(this.moveset.pins),
+                    checks = new List<Check>(this.moveset.checks)
+                }
+            };
+            return clone;
         }
     }
 }
