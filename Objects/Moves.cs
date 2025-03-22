@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Chess.Objects
 {
@@ -287,6 +288,30 @@ namespace Chess.Objects
                         capture = Helpers.OccupationType(consideredPosition, pieces) != 0
                     };
                     moves.Add(move);
+                }
+            }
+            // Handle castling
+            int[] possibleColumns = { 0, 7 };
+            int row = currentColor == Pieces.White ? 7 : 0;
+            if (!pieces[startRow, startColumn].hasMoved)
+            {
+                foreach (int column in possibleColumns)
+                {
+                    if (!pieces[row, column].hasMoved)
+                    {
+                        if (Helpers.CheckPathClear(startSquare, new Position(row, column), pieces))
+                        {
+                            int direction = column == 0 ? -1 : 1;
+                            consideredPosition = new Position(row, startColumn + 2 * direction);
+                            Move move = new Move
+                            {
+                                startPosition = startSquare,
+                                targetPosition = consideredPosition,
+                                capture = false
+                            };
+                            moves.Add(move);
+                        }
+                    }
                 }
             }
             return moves;

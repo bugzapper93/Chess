@@ -181,6 +181,17 @@ public partial class MainWindow : Window
                 PiecesDisplay[positionStart.row, positionEnd.column] = null;
             }
         }
+        if ((pieceValue & 7) == Pieces.King && Math.Abs(move.startPosition.column - move.targetPosition.column) != 1)
+        {
+            // Castling
+            int rookCol = move.targetPosition.column == 2 ? 0 : 7;
+            int rookTargetCol = move.targetPosition.column == 2 ? 3 : 5;
+            Rectangle rook = PiecesDisplay[startRow, rookCol];
+            Canvas.SetLeft(rook, rookTargetCol * SquareSize);
+            Canvas.SetTop(rook, startRow * SquareSize);
+            PiecesDisplay[startRow, rookTargetCol] = rook;
+            PiecesDisplay[startRow, rookCol] = null;
+        }
 
         ResetBoard();
         Board.MakeMove(move);
