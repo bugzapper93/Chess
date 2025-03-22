@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chess
+namespace Chess.Objects
 {
-    struct Piece
+    public struct Piece
     {
         public int value;
         public bool hasMoved;
@@ -64,7 +64,10 @@ namespace Chess
         public const int Black = 16;
 
         public const string DefaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-
+        public static int GetOppositeColor(int color)
+        {
+            return color == White ? Black : White;
+        }
         public static char GetPieceChar(int piece)
         {
             foreach (KeyValuePair<char, int> pair in PieceNotation)

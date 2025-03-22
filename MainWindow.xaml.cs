@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Chess.Objects;
+using Chess.Tools;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -31,9 +33,9 @@ public partial class MainWindow : Window
         DrawChessboard();
         PlacePieces();
     }
+    #region Initialization
     private void DrawChessboard()
     {
-        // Create an 8x8 chessboard
         for (int row = 0; row < 8; row++)
         {
             for (int col = 0; col < 8; col++)
@@ -41,14 +43,15 @@ public partial class MainWindow : Window
                 Rectangle square = new Rectangle
                 {
                     Width = SquareSize,
-                    Height = SquareSize,
-                    Fill = ((row + col) % 2 == 0) ? Brushes.White : Brushes.Black
+                    Height = SquareSize
                 };
                 Canvas.SetLeft(square, col * SquareSize);
                 Canvas.SetTop(square, row * SquareSize);
+                Squares[row, col] = square;
                 display.Children.Add(square);
             }
         }
+        ResetBoard();
     }
 
     private void PlacePieces()
@@ -76,6 +79,8 @@ public partial class MainWindow : Window
             }
         }
     }
+    #endregion
+    #region Mouse handlers
     private void PieceMouseDown(object sender, MouseEventArgs e)
     {
         if (sender is Rectangle rect)
@@ -91,7 +96,7 @@ public partial class MainWindow : Window
 
                         Point mousePosition = e.GetPosition(piece);
                         originalMouseOffset = new Point(mousePosition.X, mousePosition.Y);
-
+                        HighlightBoard();
                         piece.CaptureMouse();
                     }
         }
@@ -118,34 +123,75 @@ public partial class MainWindow : Window
             Point mousePosition = e.GetPosition(display);
             int row = (int)(mousePosition.Y / SquareSize);
             int col = (int)(mousePosition.X / SquareSize);
-            if (row < 0 || row >= 8 || col < 0 || col >= 8)
+            if (row < 0 || row >= 8 || col < 0 || col >= 8 || (row == selectedPosition.row && col == selectedPosition.column))
             {
                 Canvas.SetLeft(selectedPiece, selectedPosition.column * SquareSize);
                 Canvas.SetTop(selectedPiece, selectedPosition.row * SquareSize);
             }
             else
             {
-                MovePiece(new Position(row, col));
+                MovePiece(selectedPosition, new Position(row, col));
             }
         }
     }
-    private void MovePiece(Position position)
+    #endregion
+    private void MovePiece(Position positionStart, Position positionEnd)
     {
-        if (selectedPiece == null) return;
+        
 
+        UIElement selectedPiece = Pieces[positionStart.row, positionStart.column];
         var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
-        if (parentCanvas == null) return;
+        if (parentCanvas == null)
+            return;
 
-        if (Pieces[position.row, position.column] != null)
+        int index = Helpers.GetMoveIndex(Board.possibleMoves, positionStart, positionEnd);
+        if (index == -1)
         {
-            // Remove the existing piece from the canvas
-            parentCanvas.Children.Remove(Pieces[position.row, position.column]);
-            Pieces[position.row, position.column] = null;
+            Canvas.SetLeft(selectedPiece, positionStart.column * SquareSize);
+            Canvas.SetTop(selectedPiece, positionStart.row * SquareSize);
+            return;
         }
 
-        Canvas.SetLeft(selectedPiece, position.column * SquareSize);
-        Canvas.SetTop(selectedPiece, position.row * SquareSize);
-        
-        Pieces[position.row, position.column] = (Rectangle)selectedPiece;
+        if (Pieces[positionEnd.row, positionEnd.column] != null && Pieces[positionEnd.row, positionEnd.column] != selectedPiece)
+        {
+            parentCanvas.Children.Remove(Pieces[positionEnd.row, positionEnd.column]);
+            Pieces[positionEnd.row, positionEnd.column] = null;
+        }
+
+        Canvas.SetLeft(selectedPiece, positionEnd.column * SquareSize);
+        Canvas.SetTop(selectedPiece, positionEnd.row * SquareSize);
+
+        Pieces[positionEnd.row, positionEnd.column] = (Rectangle)selectedPiece;
+        Pieces[positionStart.row, positionStart.column] = null;  // Clear the starting square
+
+        // Continue with any additional game logic
+        ResetBoard();
+        Move move = Board.possibleMoves[index];
+        Board.MakeMove(move);
+    }
+    private void HighlightBoard()
+    {
+        ResetBoard();
+        int row = selectedPosition.row;
+        int col = selectedPosition.column;
+        List<Move> moves = Board.possibleMoves;
+        foreach (Move move in moves)
+        {
+            if (move.startPosition == selectedPosition)
+            {
+                Rectangle square = Squares[move.targetPosition.row, move.targetPosition.column];
+                square.Fill = Brushes.Red;
+            }
+        }
+    }
+    private void ResetBoard()
+    {
+        for (int row = 0; row < 8; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
+                Squares[row, col].Fill = ((row + col) % 2 == 0) ? Constants.Primary : Constants.Secondary;
+            }
+        }
     }
 }
