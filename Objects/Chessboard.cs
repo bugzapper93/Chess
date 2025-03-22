@@ -8,21 +8,30 @@ using System.Windows.Documents;
 
 namespace Chess.Objects
 {
+    public struct Square
+    {
+        public Position position;
+        public bool dangerWhite;
+        public bool dangerBlack;
+    }
     public class Chessboard
     {
+        public Square[,] squares;
         public Piece[,] pieces;
         private bool isWhiteTurn;
         public Moveset moveset = new Moveset
         {
             moves = new List<Move>(),
             dangerSquares = new List<SquareDangerType>(),
-            pins = new List<Pin>()
+            pins = new List<Pin>(),
+            checks = new List<Check>()
         }; 
         public Position? enPassantTarget;
         public Chessboard(string FENstring = Pieces.DefaultPosition, bool whiteStarts = true)
         {
             isWhiteTurn = whiteStarts;
             pieces = new Piece[8, 8];
+            squares = new Square[8, 8];
 
             Initialize(FENstring);
         }
@@ -30,6 +39,7 @@ namespace Chess.Objects
         {
             pieces = Pieces.Parse_FEN(position);
             moveset = Moves.GetAllMoves(this, isWhiteTurn ? Pieces.White : Pieces.Black);
+            UpdateDanger();
         }
         public void MakeMove(Move move)
         {
@@ -53,6 +63,12 @@ namespace Chess.Objects
                 }
             }
 
+            // Handle promotion
+            if ((pieceValue & 7) == Pieces.Pawn && (move.targetPosition.row == 0 || move.targetPosition.row == 7))
+            {
+                //pieces[move.targetPosition.row, move.targetPosition.column].value = Pieces.Queen | currentColor;
+            }
+
             // Handle castling
             if ((pieceValue & 7) == Pieces.King)
             {
@@ -72,8 +88,23 @@ namespace Chess.Objects
             moveset = Moves.GetAllMoves(this, currentColor);
             UpdateDanger();
             isWhiteTurn = !isWhiteTurn;
+
+            // Handle checkmate/stalemate
+            int checkCount = moveset.checks.Count;
             currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
+            
             moveset = Moves.GetAllMoves(this, currentColor);
+            if (moveset.moves.Count == 0)
+            {
+                if (checkCount > 0)
+                {
+                    MessageBox.Show("Checkmate");
+                }
+                else
+                {
+                    MessageBox.Show("Stalemate");
+                }
+            }
         }
         private void UpdateDanger()
         {
@@ -82,8 +113,19 @@ namespace Chess.Objects
                 for (int col = 0; col < 8; col++)
                 {
                     pieces[row, col].isPinned = false;
+                    squares[row, col].dangerWhite = false;
+                    squares[row, col].dangerBlack = false;
                 }
             }
+
+            foreach (SquareDangerType danger in moveset.dangerSquares)
+            {
+                if (danger.attackerColor == Pieces.White)
+                    squares[danger.dangerPosition.row, danger.dangerPosition.column].dangerWhite = true;
+                if (danger.attackerColor == Pieces.Black)
+                    squares[danger.dangerPosition.row, danger.dangerPosition.column].dangerBlack = true;
+            }
+
             foreach (Pin pin in moveset.pins)
             {
                 pieces[pin.pinned.row, pin.pinned.column].isPinned = true;

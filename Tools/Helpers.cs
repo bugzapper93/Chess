@@ -1,5 +1,6 @@
 ﻿using Chess.Objects;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -75,10 +76,76 @@ namespace Chess.Tools
             }
             return true;
         }
-        // Check if the path goes through 'check'
-        public static bool CheckPathCheck()
+        public static List<Pin> GetAllPiecePins(Position position, List<Pin> pins)
         {
-            return false;
+            List<Pin> piecePins = new List<Pin>();
+            foreach (Pin pin in pins)
+            {
+                if (pin.pinned == position)
+                {
+                    piecePins.Add(pin);
+                }
+            }
+            return piecePins;
+        }
+        public static bool ColinearPaths(Position startPos, Position endPos, Position pin)
+        {
+            int moveRow = endPos.row - startPos.row;
+            int moveCol = endPos.column - startPos.column;
+            int pinRow = pin.row - startPos.row;
+            int pinCol = pin.column - startPos.column;
+
+            return (moveRow * pinCol == moveCol * pinRow);
+        }
+        public static bool IsBetween(Position start, Position checking, Position target)
+        {
+            int vRow = target.row - start.row;
+            int vCol = target.column - start.column;
+            int wRow = checking.row - start.row;
+            int wCol = checking.column - start.column;
+
+            int dot = vRow * wRow + vCol * wCol;
+            int wSquared = wRow * wRow + wCol * wCol;
+
+            return dot >= 0 && dot <= wSquared;
+        }
+        public static bool ValidForAllChecks(Position startPos, Position endPos, List<Check> checks)
+        {
+            foreach (Check check in checks)
+            {
+                if (!ColinearPaths(startPos, endPos, check.checkingPiece) || !IsBetween(startPos, check.checkingPiece, endPos))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // Check if the path goes through 'check'
+        public static bool CheckPathCheck(Position startPos, Position endPos, Chessboard board)
+        {
+            int currentColor = board.pieces[startPos.row, startPos.column].value & 24;
+
+            int rowDiff = endPos.row - startPos.row;
+            int colDiff = endPos.column - startPos.column;
+
+            int rowDir = rowDiff == 0 ? 0 : rowDiff / Math.Abs(rowDiff);
+            int colDir = colDiff == 0 ? 0 : colDiff / Math.Abs(colDiff);
+
+            int step = 1;
+            while (true)
+            {
+                Position currentPos = new Position(startPos.row + step * rowDir, startPos.column + step * colDir);
+                if (currentPos == endPos)
+                {
+                    break;
+                }
+                if (currentColor == Pieces.White && board.squares[currentPos.row, currentPos.column].dangerBlack)
+                    return false;
+                if (currentColor == Pieces.Black && board.squares[currentPos.row, currentPos.column].dangerWhite)
+                    return false;
+                step++;
+            }
+            return true;
         }
         public static bool CheckEnPassant(Position startPos, Position endPos, Chessboard board)
         {

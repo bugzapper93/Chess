@@ -181,7 +181,7 @@ public partial class MainWindow : Window
                 PiecesDisplay[positionStart.row, positionEnd.column] = null;
             }
         }
-        if ((pieceValue & 7) == Pieces.King && Math.Abs(move.startPosition.column - move.targetPosition.column) != 1)
+        if ((pieceValue & 7) == Pieces.King && Math.Abs(move.startPosition.row - move.targetPosition.row) == 2)
         {
             // Castling
             int rookCol = move.targetPosition.column == 2 ? 0 : 7;
@@ -192,9 +192,8 @@ public partial class MainWindow : Window
             PiecesDisplay[startRow, rookTargetCol] = rook;
             PiecesDisplay[startRow, rookCol] = null;
         }
-
-        ResetBoard();
         Board.MakeMove(move);
+        ResetBoard();
     }
     private void HighlightBoard()
     {
@@ -218,6 +217,14 @@ public partial class MainWindow : Window
             for (int col = 0; col < 8; col++)
             {
                 Squares[row, col].Fill = ((row + col) % 2 == 0) ? Constants.Primary : Constants.Secondary;
+                if (Board.squares[row, col].dangerWhite)
+                {
+                    Squares[row, col].Fill = Brushes.LightGoldenrodYellow;
+                }
+                if (Board.squares[row, col].dangerBlack)
+                {
+                    Squares[row, col].Fill = Brushes.LightCoral;
+                }
             }
         }
     }
