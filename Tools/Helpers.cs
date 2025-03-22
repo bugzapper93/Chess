@@ -75,23 +75,50 @@ namespace Chess.Tools
             }
             return true;
         }
-        //public static bool CheckEnPassant(Position startPos, Position endPos, Chessboard board)
-        //{
-        //    if (board.enPassantTarget == null)
-        //    {
-        //        return false;
-        //    }
-        //    Position enPassantPos = (Position)board.enPassantTarget;
-        //    if (endPos == enPassantPos)
-        //    {
-        //        int rowDiff = endPos.row - startPos.row;
-        //        int colDiff = endPos.column - startPos.column;
-        //        int rowDir = rowDiff == 0 ? 0 : rowDiff / Math.Abs(rowDiff);
-        //        int colDir = colDiff == 0 ? 0 : colDiff / Math.Abs(colDiff);
-        //        Position currentPos = new Position(startPos.row + rowDir, startPos.column + colDir);
-                
-        //    }
-        //    return false;
-        //}
+        public static bool CheckEnPassant(Position startPos, Position endPos, Chessboard board)
+        {
+            // Ensure there is a valid en passant target.
+            if (board.enPassantTarget == null)
+            {
+                return false;
+            }
+            Position targetPos = board.enPassantTarget.Value;
+            // Check if the end position matches the en passant target.
+            if (endPos.row != targetPos.row || endPos.column != targetPos.column)
+            {
+                return false;
+            }
+
+            // The pawn to be captured en passant is not on the target square,
+            // but on the same row as the moving pawn and in the column of the target.
+            Position capturedPawnPos = new Position(startPos.row, endPos.column);
+            Piece capturedPawn = board.pieces[capturedPawnPos.row, capturedPawnPos.column];
+
+            // Ensure a pawn exists at the captured position.
+            if (capturedPawn.value == 0)
+            {
+                return false;
+            }
+
+            // Check that the captured piece is indeed a pawn.
+            if ((capturedPawn.value & 7) != Pieces.Pawn)
+            {
+                return false;
+            }
+
+            // Retrieve the moving pawn from the starting position.
+            Piece movingPawn = board.pieces[startPos.row, startPos.column];
+            if (movingPawn.value == 0)
+            {
+                return false;
+            }
+
+            // Verify that the captured pawn is of the opposite color.
+            if ((capturedPawn.value & 24) == (movingPawn.value & 24))
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

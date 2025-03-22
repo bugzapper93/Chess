@@ -7,17 +7,18 @@ using System.Windows.Documents;
 
 namespace Chess.Objects
 {
-    class Chessboard
+    public class Chessboard
     {
         public Piece[,] pieces;
         private bool isWhiteTurn;
-        public List<Move> possibleMoves;
+        public Moveset moveset;
+        public List<Move> legalMoves;
         public Position? enPassantTarget;
         public Chessboard(string FENstring = Pieces.DefaultPosition, bool whiteStarts = true)
         {
             isWhiteTurn = whiteStarts;
             pieces = new Piece[8, 8];
-            possibleMoves = new List<Move>();
+            moveset = new Moveset();
             Initialize(FENstring);
         }
         public void Initialize(string position)
@@ -43,7 +44,8 @@ namespace Chess.Objects
         public void GetMoves()
         {
             int currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
-            possibleMoves = Moves.GetAllMoves(this, currentColor);
+            moveset = Moves.GetAllMoves(this, currentColor);
+            legalMoves = moveset.moves;
         }
     }
 }

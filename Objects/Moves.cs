@@ -29,10 +29,16 @@ namespace Chess.Objects
             return !(a == b);
         }
     }
+    public struct Pin
+    {
+        public Position start;
+        public Position pinned;
+    }
     public struct SquareDangerType
     {
-        Position position;
-        int attackerColor;
+        public Position dangerPosition;
+        public Position attackerPosition;
+        public int attackerColor;
     }
     public struct Move
     {
@@ -40,9 +46,15 @@ namespace Chess.Objects
         public Position targetPosition;
         public bool capture;
     }
+    public struct Moveset
+    {
+        public List<Move> moves;
+        public List<SquareDangerType> dangerSquares;
+        public List<Pin> pins;
+    }
     class Moves
     {
-        public static List<Move> GetAllMoves(Chessboard board, int color)
+        public static Moveset GetAllMoves(Chessboard board, int color)
         {
             Piece[,] pieces = board.pieces;
             List<Move> moves = new List<Move>();
@@ -66,13 +78,42 @@ namespace Chess.Objects
                             case Pieces.Queen:
                                 moves.AddRange(GetSlidingMoves(new Position(row, col), board));
                                 break;
-                            //case Pieces.King:
-                            //    moves.AddRange(GetKingMoves(new Position(row, col), pieces));
-                            //    break;
+                            case Pieces.King:
+                                moves.AddRange(GetKingMoves(new Position(row, col), board));
+                                break;
                         }
                     }
                 }
-            return moves;
+            Moveset moveset = ValidateMoves(moves, board);
+            return moveset;
+        }
+        private static Moveset ValidateMoves(List<Move> moves, Chessboard board)
+        {
+            List<Pin> pins = new List<Pin>();
+            List<SquareDangerType> dangerSquares = new List<SquareDangerType>();
+            List<Move> possibleMoves = new List<Move>();
+
+            Piece[,] pieces = board.pieces;
+            foreach (Move move in moves)
+            {
+                int startRow = move.startPosition.row;
+                int startColumn = move.startPosition.column;
+                int currentPiece = pieces[startRow, startColumn].value;
+                int currentColor = currentPiece & 24;
+                if ((currentPiece & 7) != Pieces.Pawn)
+                {
+                    dangerSquares.Add(new SquareDangerType { dangerPosition = move.targetPosition, attackerPosition = move.startPosition, attackerColor = currentColor });
+                }
+                else
+                {
+                    if (move.capture)
+                    {
+                        dangerSquares.Add(new SquareDangerType { dangerPosition = move.targetPosition, attackerPosition = move.startPosition, attackerColor = currentColor });
+                    }
+                }
+            }
+            Moveset moveset = new Moveset { moves = moves, dangerSquares = dangerSquares, pins = pins };
+            return moveset;
         }
         private static List<Move> GetPawnMoves(Position startSquare, Chessboard board)
         {
@@ -101,7 +142,6 @@ namespace Chess.Objects
                 };
                 moves.Add(move);
             }
-
             // Moving two squares forward
             consideredPosition = new Position(startRow + 2 * direction, startColumn);
             if (Helpers.InBounds(consideredPosition) && Helpers.OccupationType(consideredPosition, pieces) == 0 && startRow == (currentColor == Pieces.White ? 6 : 1) && Helpers.CheckPathClear(startSquare, consideredPosition, pieces))
@@ -114,12 +154,11 @@ namespace Chess.Objects
                 };
                 moves.Add(move);
             }
-
             // Capturing
             foreach(int var in colVars)
             {
                 consideredPosition = new Position(startRow + direction, startColumn + var);
-                if (Helpers.InBounds(consideredPosition) && (Helpers.OccupationType(consideredPosition, pieces) == Pieces.GetOppositeColor(currentColor)))
+                if (Helpers.InBounds(consideredPosition) && (Helpers.OccupationType(consideredPosition, pieces) == Pieces.GetOppositeColor(currentColor) || Helpers.CheckEnPassant(startSquare, consideredPosition, board)))
                 {
                     Move move = new Move
                     {
@@ -130,7 +169,6 @@ namespace Chess.Objects
                     moves.Add(move);
                 }
             }
-
             return moves;
         }
         private static List<Move> GetSlidingMoves(Position startSquare, Chessboard board)
@@ -213,6 +251,33 @@ namespace Chess.Objects
             foreach (Position direction in Constants.KnightDirections)
             {
                 consideredPosition = startSquare + direction;
+                if (Helpers.InBounds(consideredPosition) && Helpers.OccupationType(consideredPosition, pieces) != currentColor)
+                {
+                    Move move = new Move
+                    {
+                        startPosition = startSquare,
+                        targetPosition = consideredPosition,
+                        capture = Helpers.OccupationType(consideredPosition, pieces) != 0
+                    };
+                    moves.Add(move);
+                }
+            }
+            return moves;
+        }
+        private static List<Move> GetKingMoves(Position startSquare, Chessboard board)
+        {
+            Piece[,] pieces = board.pieces;
+            List<Move> moves = new List<Move>();
+            Position consideredPosition;
+
+            int startRow = startSquare.row;
+            int startColumn = startSquare.column;
+
+            int currentPiece = pieces[startRow, startColumn].value;
+            int currentColor = currentPiece & 24;
+            for (int direction = 0; direction < 8; direction++)
+            {
+                consideredPosition = startSquare + Constants.Directions[direction];
                 if (Helpers.InBounds(consideredPosition) && Helpers.OccupationType(consideredPosition, pieces) != currentColor)
                 {
                     Move move = new Move

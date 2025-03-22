@@ -16,7 +16,7 @@ namespace Chess;
 public partial class MainWindow : Window
 {
     private int SquareSize = Constants.Square_Size;
-    private Rectangle[,] Pieces = new Rectangle[8, 8];
+    private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
     private Rectangle[,] Squares = new Rectangle[8, 8];
 
     private Point startPos;
@@ -73,7 +73,7 @@ public partial class MainWindow : Window
                     piece.MouseMove += PieceMouseMove;
                     piece.MouseUp += PieceMouseUp;
 
-                    Pieces[row, col] = piece;
+                    PiecesDisplay[row, col] = piece;
                     display.Children.Add(piece);
                 }
             }
@@ -88,7 +88,7 @@ public partial class MainWindow : Window
             Rectangle piece = (Rectangle)sender;
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
-                    if (Pieces[i, j] == piece)
+                    if (PiecesDisplay[i, j] == piece)
                     {
                         selectedPiece = piece;
                         selectedPosition = new Position(i, j);
@@ -137,14 +137,19 @@ public partial class MainWindow : Window
     #endregion
     private void MovePiece(Position positionStart, Position positionEnd)
     {
-        
+        // Getting piece information
+        int pieceValue = Board.pieces[positionStart.row, positionStart.column].value;
+        int startRow = positionStart.row;
+        int startCol = positionStart.column;
+        int endRow = positionEnd.row;
+        int endCol = positionEnd.column;
 
-        UIElement selectedPiece = Pieces[positionStart.row, positionStart.column];
+        UIElement selectedPiece = PiecesDisplay[positionStart.row, positionStart.column];
         var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
         if (parentCanvas == null)
             return;
 
-        int index = Helpers.GetMoveIndex(Board.possibleMoves, positionStart, positionEnd);
+        int index = Helpers.GetMoveIndex(Board.legalMoves, positionStart, positionEnd);
         if (index == -1)
         {
             Canvas.SetLeft(selectedPiece, positionStart.column * SquareSize);
@@ -152,21 +157,32 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (Pieces[positionEnd.row, positionEnd.column] != null && Pieces[positionEnd.row, positionEnd.column] != selectedPiece)
+        if (PiecesDisplay[positionEnd.row, positionEnd.column] != null && PiecesDisplay[positionEnd.row, positionEnd.column] != selectedPiece)
         {
-            parentCanvas.Children.Remove(Pieces[positionEnd.row, positionEnd.column]);
-            Pieces[positionEnd.row, positionEnd.column] = null;
+            parentCanvas.Children.Remove(PiecesDisplay[positionEnd.row, positionEnd.column]);
+            PiecesDisplay[positionEnd.row, positionEnd.column] = null;
         }
 
         Canvas.SetLeft(selectedPiece, positionEnd.column * SquareSize);
         Canvas.SetTop(selectedPiece, positionEnd.row * SquareSize);
 
-        Pieces[positionEnd.row, positionEnd.column] = (Rectangle)selectedPiece;
-        Pieces[positionStart.row, positionStart.column] = null;  // Clear the starting square
+        PiecesDisplay[positionEnd.row, positionEnd.column] = (Rectangle)selectedPiece;
+        PiecesDisplay[positionStart.row, positionStart.column] = null;
 
-        // Continue with any additional game logic
+        Move move = Board.legalMoves[index];
+
+        // Handle special moves
+        if ((pieceValue & 7) == Pieces.Pawn && move.capture)
+        {
+            // En passant
+            if (Board.pieces[endRow, endCol].value == 0)
+            {
+                parentCanvas.Children.Remove(PiecesDisplay[positionStart.row, positionEnd.column]);
+                PiecesDisplay[positionStart.row, positionEnd.column] = null;
+            }
+        }
+
         ResetBoard();
-        Move move = Board.possibleMoves[index];
         Board.MakeMove(move);
     }
     private void HighlightBoard()
@@ -174,7 +190,7 @@ public partial class MainWindow : Window
         ResetBoard();
         int row = selectedPosition.row;
         int col = selectedPosition.column;
-        List<Move> moves = Board.possibleMoves;
+        List<Move> moves = Board.legalMoves;
         foreach (Move move in moves)
         {
             if (move.startPosition == selectedPosition)
