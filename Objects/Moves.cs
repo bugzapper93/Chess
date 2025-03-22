@@ -1,9 +1,11 @@
 ﻿using Chess.Tools;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -50,9 +52,13 @@ namespace Chess.Objects
     }
     public struct Move
     {
+        public int piece;
         public Position startPosition;
         public Position targetPosition;
         public bool capture;
+        public int captured_piece;
+        public Position capture_pos;
+        public bool isEnPassant;
     }
     public struct Moveset
     {
@@ -63,12 +69,12 @@ namespace Chess.Objects
     }
     class Moves
     {
+        public static int pieceValue = 0;
         public static Position friendlyKingPos = new Position();
         public static Position enemyKingPos = new Position();
         public static Moveset GetAllMoves(Chessboard board, int color)
         {
             Piece[,] pieces = board.pieces;
-
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 8; col++)
@@ -91,7 +97,7 @@ namespace Chess.Objects
             for (int row = 0; row < 8; row++)
                 for (int col = 0; col < 8; col++)
                 {
-                    int pieceValue = pieces[row, col].value;
+                    pieceValue = pieces[row, col].value;
                     int pieceColor = pieceValue & 24;
                     if (pieceColor == color)
                     {
@@ -243,7 +249,7 @@ namespace Chess.Objects
 
             int currentPiece = pieces[startRow, startColumn].value;
             int currentColor = currentPiece & 24;
-
+            Position default_capture = new Position { row = -1, column = -1 };
             int direction = currentColor == Pieces.White ? -1 : 1;
             int[] colVars = [-1, 1];
 
@@ -255,7 +261,8 @@ namespace Chess.Objects
                 {
                     startPosition = startSquare,
                     targetPosition = consideredPosition,
-                    capture = false
+                    capture = false,
+                    capture_pos = default_capture
                 };
                 moves.Add(move);
             }
@@ -267,7 +274,8 @@ namespace Chess.Objects
                 {
                     startPosition = startSquare,
                     targetPosition = consideredPosition,
-                    capture = false
+                    capture = false,
+                    capture_pos = default_capture
                 };
                 moves.Add(move);
             }
@@ -275,16 +283,31 @@ namespace Chess.Objects
             foreach(int var in colVars)
             {
                 consideredPosition = new Position(startRow + direction, startColumn + var);
+               // int squareValue = pieces[consideredPosition.row, consideredPosition.column].value;
                 if (Helpers.InBounds(consideredPosition))
                 {
-                    if ((Helpers.OccupationType(consideredPosition, pieces) == Pieces.GetOppositeColor(currentColor) || Helpers.CheckEnPassant(startSquare, consideredPosition, board)))
+                    bool isEnPassant = Helpers.CheckEnPassant(startSquare, consideredPosition, board);
+                    if ((Helpers.OccupationType(consideredPosition, pieces) == Pieces.GetOppositeColor(currentColor) || Helpers.CheckEnPassant(startSquare, consideredPosition, board) || isEnPassant))
                     {
                         Move move = new Move
                         {
                             startPosition = startSquare,
                             targetPosition = consideredPosition,
-                            capture = true
+                            capture = true,
+                            isEnPassant = isEnPassant
                         };
+
+                        if (isEnPassant)
+                        {
+                            Position pawnTargetPos = new Position(startRow, startColumn + var);
+                            move.captured_piece = Pieces.Get_Value(pieces, pawnTargetPos);
+                            move.capture_pos = pawnTargetPos;
+                        }
+                        else
+                        {
+                            move.captured_piece = pieces[consideredPosition.row, consideredPosition.column].value;
+                            move.capture_pos = consideredPosition;
+                        }
                         moves.Add(move);
                     }
                     squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
@@ -339,6 +362,7 @@ namespace Chess.Objects
                     consideredPosition = new Position(rowDiff * step + startRow, colDiff * step + startColumn);
                     if (Helpers.InBounds(consideredPosition) && Helpers.CheckPathClear(startSquare, consideredPosition, pieces))
                     {
+                        int squareValue = pieces[consideredPosition.row, consideredPosition.column].value;
                         if (Helpers.OccupationType(consideredPosition, pieces) != currentColor)
                         {
                             // Checking positions for pins
@@ -373,16 +397,24 @@ namespace Chess.Objects
                                         break;
                                     }
                                 }
-                            }    
+                            }
                             Move move = new Move
                             {
                                 startPosition = startSquare,
                                 targetPosition = consideredPosition,
                                 capture = Helpers.OccupationType(consideredPosition, pieces) != 0
                             };
+                            if (Helpers.OccupationType(consideredPosition, pieces) != 0)
+                            {
+                                move.captured_piece = squareValue;
+                                move.capture_pos = consideredPosition;
+                            }
                             moves.Add(move);
+
                         }
                         squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
+                        if (Helpers.OccupationType(consideredPosition, pieces) != 0)
+                            break;
                     }
                     else
                     {
@@ -419,8 +451,13 @@ namespace Chess.Objects
                         {
                             startPosition = startSquare,
                             targetPosition = consideredPosition,
-                            capture = Helpers.OccupationType(consideredPosition, pieces) != 0
+                            capture = Helpers.OccupationType(consideredPosition, pieces) != 0,                      
                         };
+                        if (Helpers.OccupationType(consideredPosition, pieces) != 0)
+                        {
+                            move.captured_piece = pieces[consideredPosition.row, consideredPosition.column].value;
+                            move.capture_pos = consideredPosition;
+                        }
                         moves.Add(move);
                     }
                     squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
@@ -455,6 +492,11 @@ namespace Chess.Objects
                             targetPosition = consideredPosition,
                             capture = Helpers.OccupationType(consideredPosition, pieces) != 0
                         };
+                        if (Helpers.OccupationType(consideredPosition, pieces) != 0)
+                        {
+                            move.captured_piece = pieces[consideredPosition.row, consideredPosition.column].value;
+                            move.capture_pos = consideredPosition;
+                        }
                         moves.Add(move);
                     }
                     squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
@@ -485,6 +527,12 @@ namespace Chess.Objects
                 }
             }
             return new Moveset { moves = moves, dangerSquares = squares };
+        }
+        public static bool Compare_Positions(Position pos_1, Position pos_2)
+        {
+            if (pos_1.row == pos_2.row && pos_1.column == pos_2.column)
+                return true;
+            return false;
         }
     }
 }

@@ -18,13 +18,11 @@ public partial class MainWindow : Window
     private int SquareSize = Constants.Square_Size;
     private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
     private Rectangle[,] Squares = new Rectangle[8, 8];
-
     private Point startPos;
     private Position selectedPosition;
     private Point originalMouseOffset;
     private bool isDragging = false;
     private UIElement? selectedPiece;
-
     Chessboard Board = new Chessboard();
 
     public MainWindow()
@@ -119,6 +117,7 @@ public partial class MainWindow : Window
         if (isDragging && selectedPiece != null)
         {
             isDragging = false;
+            var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
             selectedPiece.ReleaseMouseCapture();
             Point mousePosition = e.GetPosition(display);
             int row = (int)(mousePosition.Y / SquareSize);
@@ -131,6 +130,7 @@ public partial class MainWindow : Window
             else
             {
                 MovePiece(selectedPosition, new Position(row, col));
+
             }
         }
     }
@@ -227,5 +227,16 @@ public partial class MainWindow : Window
                 }
             }
         }
+    }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+        AIMode aiModeWindow = new AIMode();
+
+        // Wyświetlenie okna AIMode
+        aiModeWindow.Show();
+
+        // Opcjonalnie: Zamknięcie bieżącego okna (jeśli chcesz przełączyć się do nowego okna)
+        this.Close();
     }
 }
