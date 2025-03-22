@@ -25,7 +25,7 @@ public partial class MainWindow : Window
     private bool isDragging = false;
     private UIElement? selectedPiece;
 
-    private AIPlayer AI = new AIPlayer(3, Pieces.Black, 1000);
+    private ChessAI AI = new ChessAI(3);
     Chessboard Board = new Chessboard();
 
     public MainWindow()
@@ -135,7 +135,8 @@ public partial class MainWindow : Window
             {
                 MovePiece(selectedPosition, new Position(row, col));
 
-                Move bestMove = AI.GetBestMove(Board);
+                int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+                Move bestMove = AI.GetBestMove(Board, color);
                 MovePiece(bestMove.startPosition, bestMove.targetPosition);
             }
         }

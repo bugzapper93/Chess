@@ -18,7 +18,7 @@ namespace Chess.Objects
     {
         public Square[,] squares;
         public Piece[,] pieces;
-        private bool isWhiteTurn;
+        public bool isWhiteTurn;
         public Moveset moveset = new Moveset
         {
             moves = new List<Move>(),
