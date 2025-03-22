@@ -8,4 +8,34 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Resources\Images\bishop_black.png" />
+    <None Remove="Resources\Images\bishop_white.png" />
+    <None Remove="Resources\Images\king_black.png" />
+    <None Remove="Resources\Images\king_white.png" />
+    <None Remove="Resources\Images\knight_black.png" />
+    <None Remove="Resources\Images\knight_white.png" />
+    <None Remove="Resources\Images\pawn_black.png" />
+    <None Remove="Resources\Images\pawn_white.png" />
+    <None Remove="Resources\Images\queen_black.png" />
+    <None Remove="Resources\Images\queen_white.png" />
+    <None Remove="Resources\Images\rook_black.png" />
+    <None Remove="Resources\Images\rook_white.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Images\bishop_black.png" />
+    <EmbeddedResource Include="Resources\Images\bishop_white.png" />
+    <EmbeddedResource Include="Resources\Images\king_black.png" />
+    <EmbeddedResource Include="Resources\Images\king_white.png" />
+    <EmbeddedResource Include="Resources\Images\knight_black.png" />
+    <EmbeddedResource Include="Resources\Images\knight_white.png" />
+    <EmbeddedResource Include="Resources\Images\pawn_black.png" />
+    <EmbeddedResource Include="Resources\Images\pawn_white.png" />
+    <EmbeddedResource Include="Resources\Images\queen_black.png" />
+    <EmbeddedResource Include="Resources\Images\queen_white.png" />
+    <EmbeddedResource Include="Resources\Images\rook_black.png" />
+    <EmbeddedResource Include="Resources\Images\rook_white.png" />
+  </ItemGroup>
+
 </Project>
