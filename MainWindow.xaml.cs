@@ -18,7 +18,6 @@ public partial class MainWindow : Window
     private int SquareSize = Constants.Square_Size;
     private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
     private Rectangle[,] Squares = new Rectangle[8, 8];
-
     private Point startPos;
     private Position selectedPosition;
     private Point originalMouseOffset;
@@ -122,6 +121,7 @@ public partial class MainWindow : Window
         if (isDragging && selectedPiece != null)
         {
             isDragging = false;
+            var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
             selectedPiece.ReleaseMouseCapture();
             Point mousePosition = e.GetPosition(display);
             int row = (int)(mousePosition.Y / SquareSize);
@@ -235,4 +235,5 @@ public partial class MainWindow : Window
             }
         }
     }
+
 }

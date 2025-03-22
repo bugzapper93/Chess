@@ -77,6 +77,12 @@ namespace Chess.Objects
             }
             return ' ';
         }
+        public static int Get_Value(Piece[,] pieces, Position pos)
+        {
+            if (pos.row < 0 || pos.row > 7 || pos.column < 0 || pos.column > 7)
+                return -1;
+            return pieces[pos.row, pos.column].value;
+        }
         public static Piece[,] Parse_FEN(string FEN_string)
         {
             Piece[,] pieces = new Piece[8, 8];

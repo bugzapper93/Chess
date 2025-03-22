@@ -21,6 +21,7 @@ namespace Chess.Objects
         public bool isWhiteTurn;
         public bool isCheckMate;
         public bool isStaleMate;
+        public int? en_passant_target_color = null;
         public Moveset moveset = new Moveset
         {
             moves = new List<Move>(),
@@ -56,8 +57,10 @@ namespace Chess.Objects
             // Set up en passant target
             int pieceValue = pieces[move.targetPosition.row, move.targetPosition.column].value;
             if ((pieceValue & 7) == Pieces.Pawn && Math.Abs(move.targetPosition.row - move.startPosition.row) == 2)
+            {
                 enPassantTarget = new Position(move.startPosition.row + (move.targetPosition.row - move.startPosition.row) / 2, move.startPosition.column);
-
+                en_passant_target_color = pieceValue & 24;
+            }
             // Handle en passant capture
             if (enPassantTarget != null && (pieceValue & 7) == Pieces.Pawn && move.targetPosition == enPassantTarget.Value)
             {
@@ -110,6 +113,7 @@ namespace Chess.Objects
                 }
             }
         }
+       
         private void UpdateDanger()
         {
             for (int row = 0; row < 8; row++)
@@ -142,6 +146,7 @@ namespace Chess.Objects
                 pieces = (Piece[,])this.pieces.Clone(),
                 squares = (Square[,])this.squares.Clone(),
                 enPassantTarget = this.enPassantTarget,
+                en_passant_target_color = this.en_passant_target_color,
                 isWhiteTurn = this.isWhiteTurn,
                 moveset = new Moveset
                 {
@@ -152,6 +157,20 @@ namespace Chess.Objects
                 }
             };
             return clone;
+        }
+
+        public bool CheckIfValidMove(Position startPos, Position endPos, out Move move)
+        {
+            move = default;
+            foreach (var m in moveset.moves)
+            {
+                if (m.startPosition == startPos && m.targetPosition == endPos)
+                {
+                    move = m;
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
