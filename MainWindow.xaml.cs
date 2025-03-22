@@ -144,7 +144,6 @@ public partial class MainWindow : Window
     #endregion
     private void MovePiece(Position positionStart, Position positionEnd)
     {
-        // Getting piece information
         int pieceValue = Board.pieces[positionStart.row, positionStart.column].value;
         int startRow = positionStart.row;
         int startCol = positionStart.column;
@@ -178,7 +177,6 @@ public partial class MainWindow : Window
 
         Move move = Board.moveset.moves[index];
 
-        // Handle special moves
         if ((pieceValue & 7) == Pieces.Pawn && move.capture)
         {
             // En passant
@@ -190,7 +188,6 @@ public partial class MainWindow : Window
         }
         if ((pieceValue & 7) == Pieces.King && Math.Abs(move.startPosition.row - move.targetPosition.row) == 2)
         {
-            // Castling
             int rookCol = move.targetPosition.column == 2 ? 0 : 7;
             int rookTargetCol = move.targetPosition.column == 2 ? 3 : 5;
             Rectangle rook = PiecesDisplay[startRow, rookCol];

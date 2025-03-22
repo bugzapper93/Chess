@@ -120,7 +120,6 @@ namespace Chess.Tools
             }
             return true;
         }
-        // Check if the path goes through 'check'
         public static bool CheckPathCheck(Position startPos, Position endPos, Chessboard board)
         {
             int currentColor = board.pieces[startPos.row, startPos.column].value & 24;

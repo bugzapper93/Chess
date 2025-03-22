@@ -62,7 +62,6 @@ namespace Chess.Objects
                 clone.MakeMove(move);
                 int eval = Minimax(clone, depth - 1, alpha, beta, !maximizingPlayer, aiColor);
 
-                // Synchronizacja dostępu do współdzielonych zmiennych
                 lock (lockObj)
                 {
                     if (maximizingPlayer)
@@ -77,7 +76,6 @@ namespace Chess.Objects
                     }
                 }
 
-                // Przerwanie, jeśli nastąpiło cięcie alfa-beta
                 if (beta <= alpha)
                     return;
             });
@@ -152,7 +150,6 @@ namespace Chess.Objects
             {
                 evaluation += StaleMateValue;
             }
-            Console.WriteLine(evaluation);
             return evaluation;
         }
     }

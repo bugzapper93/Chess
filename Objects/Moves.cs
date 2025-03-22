@@ -152,7 +152,6 @@ namespace Chess.Objects
 
                 Piece currentPiece = board.pieces[startRow, startColumn];
 
-                // Handle dangerous areas
                 int currentPieceValue = pieces[startRow, startColumn].value;
                 int currentColor = currentPieceValue & 24;
                 if ((currentPieceValue & 7) != Pieces.Pawn)
@@ -169,7 +168,6 @@ namespace Chess.Objects
                     continue;
                 }
 
-                // Handle special movement
                 if ((currentPieceValue & 7) == Pieces.King)
                 {
                     if (currentColor == Pieces.Black && board.squares[move.targetPosition.row, move.targetPosition.column].dangerWhite)
@@ -182,7 +180,6 @@ namespace Chess.Objects
                     continue;
                 }
 
-                // Handle movement along pins
                 if (!currentPiece.isPinned)
                 {
                     possibleMoves.Add(move);
@@ -203,8 +200,6 @@ namespace Chess.Objects
                 }
 
             }
-
-            // Handle checks
 
             List<Move> legalMoves = new List<Move>();
             if (board.moveset.checks.Count > 0)
@@ -253,7 +248,6 @@ namespace Chess.Objects
             int direction = currentColor == Pieces.White ? -1 : 1;
             int[] colVars = [-1, 1];
 
-            // Moving one square forward
             consideredPosition = new Position(startRow + direction, startColumn);
             if (Helpers.InBounds(consideredPosition) && Helpers.OccupationType(consideredPosition, pieces) == 0)
             {
@@ -266,7 +260,7 @@ namespace Chess.Objects
                 };
                 moves.Add(move);
             }
-            // Moving two squares forward
+
             consideredPosition = new Position(startRow + 2 * direction, startColumn);
             if (Helpers.InBounds(consideredPosition) && Helpers.OccupationType(consideredPosition, pieces) == 0 && startRow == (currentColor == Pieces.White ? 6 : 1) && Helpers.CheckPathClear(startSquare, consideredPosition, pieces))
             {
@@ -279,11 +273,10 @@ namespace Chess.Objects
                 };
                 moves.Add(move);
             }
-            // Capturing
+
             foreach (int var in colVars)
             {
                 consideredPosition = new Position(startRow + direction, startColumn + var);
-               // int squareValue = pieces[consideredPosition.row, consideredPosition.column].value;
                 if (Helpers.InBounds(consideredPosition))
                 {
                     bool isEnPassant = Helpers.CheckEnPassant(startSquare, consideredPosition, board);
@@ -365,7 +358,6 @@ namespace Chess.Objects
                         int squareValue = pieces[consideredPosition.row, consideredPosition.column].value;
                         if (Helpers.OccupationType(consideredPosition, pieces) != currentColor)
                         {
-                            // Checking positions for pins
                             if (Helpers.OccupationType(consideredPosition, pieces) != 0)
                             {
                                 int nextStep = step + 1;
@@ -502,7 +494,6 @@ namespace Chess.Objects
                     squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
                 }
             }
-            // Handle castling
             int[] possibleColumns = { 0, 7 };
             int row = currentColor == Pieces.White ? 7 : 0;
             if (!pieces[startRow, startColumn].hasMoved)

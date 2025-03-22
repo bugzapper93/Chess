@@ -54,14 +54,12 @@ namespace Chess.Objects
             pieces[move.startPosition.row, move.startPosition.column] = new Piece { value = 0 };
             pieces[move.targetPosition.row, move.targetPosition.column].hasMoved = true;
 
-            // Set up en passant target
             int pieceValue = pieces[move.targetPosition.row, move.targetPosition.column].value;
             if ((pieceValue & 7) == Pieces.Pawn && Math.Abs(move.targetPosition.row - move.startPosition.row) == 2)
             {
                 enPassantTarget = new Position(move.startPosition.row + (move.targetPosition.row - move.startPosition.row) / 2, move.startPosition.column);
                 en_passant_target_color = pieceValue & 24;
             }
-            // Handle en passant capture
             if (enPassantTarget != null && (pieceValue & 7) == Pieces.Pawn && move.targetPosition == enPassantTarget.Value)
             {
                 if (pieces[move.targetPosition.row, move.targetPosition.column].value == 0)
@@ -70,13 +68,7 @@ namespace Chess.Objects
                 }
             }
 
-            // Handle promotion
-            if ((pieceValue & 7) == Pieces.Pawn && (move.targetPosition.row == 0 || move.targetPosition.row == 7))
-            {
-                //pieces[move.targetPosition.row, move.targetPosition.column].value = Pieces.Queen | currentColor;
-            }
 
-            // Handle castling
             if ((pieceValue & 7) == Pieces.King)
             {
                 if (move.targetPosition.column - move.startPosition.column == 2)
@@ -96,7 +88,6 @@ namespace Chess.Objects
             UpdateDanger();
             isWhiteTurn = !isWhiteTurn;
 
-            // Handle checkmate/stalemate
             int checkCount = moveset.checks.Count;
             currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
 
