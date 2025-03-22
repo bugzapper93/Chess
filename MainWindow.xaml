@@ -6,14 +6,5 @@
         xmlns:local="clr-namespace:Chess"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Canvas x:Name="display" Background="Gray">
-        <Button Content="Button" Canvas.Left="624" Canvas.Top="167" Click="Button_Click"/>
-    </Canvas>
-
-    <!--<Grid>
-        <Grid.ColumnDefinitions>
-            
-        </Grid.ColumnDefinitions>
-
-    </Grid>-->
+    <Canvas x:Name="display" Background="Gray"/>
 </Window>

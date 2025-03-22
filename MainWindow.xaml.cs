@@ -23,6 +23,8 @@ public partial class MainWindow : Window
     private Point originalMouseOffset;
     private bool isDragging = false;
     private UIElement? selectedPiece;
+
+    private ChessAI AI = new ChessAI(2);
     Chessboard Board = new Chessboard();
 
     public MainWindow()
@@ -81,6 +83,8 @@ public partial class MainWindow : Window
     #region Mouse handlers
     private void PieceMouseDown(object sender, MouseEventArgs e)
     {
+        // if current color != player color
+        // return
         if (sender is Rectangle rect)
         {
             Rectangle piece = (Rectangle)sender;
@@ -104,7 +108,7 @@ public partial class MainWindow : Window
         if (isDragging && e.LeftButton == MouseButtonState.Pressed)
         {
             var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
-            if (parentCanvas == null) 
+            if (parentCanvas == null)
                 return;
 
             Point mousePosition = e.GetPosition(parentCanvas);
@@ -131,6 +135,9 @@ public partial class MainWindow : Window
             {
                 MovePiece(selectedPosition, new Position(row, col));
 
+                int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+                Move bestMove = AI.GetBestMove(Board, color);
+                MovePiece(bestMove.startPosition, bestMove.targetPosition);
             }
         }
     }
@@ -229,14 +236,4 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
-        AIMode aiModeWindow = new AIMode();
-
-        // Wyświetlenie okna AIMode
-        aiModeWindow.Show();
-
-        // Opcjonalnie: Zamknięcie bieżącego okna (jeśli chcesz przełączyć się do nowego okna)
-        this.Close();
-    }
 }

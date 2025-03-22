@@ -167,7 +167,7 @@ namespace Chess.Objects
                     bool isSliding = slidingPieces.Contains(currentPieceValue & 7);
                     checks.Add(new Check { checkingPiece = move.startPosition, kingPosition = enemyKingPos, slidingPiece = isSliding });
                     continue;
-                }    
+                }
 
                 // Handle special movement
                 if ((currentPieceValue & 7) == Pieces.King)
@@ -180,7 +180,7 @@ namespace Chess.Objects
 
                     possibleMoves.Add(move);
                     continue;
-                }                
+                }
 
                 // Handle movement along pins
                 if (!currentPiece.isPinned)
@@ -205,7 +205,7 @@ namespace Chess.Objects
             }
 
             // Handle checks
-            
+
             List<Move> legalMoves = new List<Move>();
             if (board.moveset.checks.Count > 0)
             {
@@ -226,7 +226,7 @@ namespace Chess.Objects
                                 continue;
                             }
                         }
-                    }   
+                    }
                 }
             }
             else
@@ -280,7 +280,7 @@ namespace Chess.Objects
                 moves.Add(move);
             }
             // Capturing
-            foreach(int var in colVars)
+            foreach (int var in colVars)
             {
                 consideredPosition = new Position(startRow + direction, startColumn + var);
                // int squareValue = pieces[consideredPosition.row, consideredPosition.column].value;

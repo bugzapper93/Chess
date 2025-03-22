@@ -19,6 +19,8 @@ namespace Chess.Objects
         public Square[,] squares;
         public Piece[,] pieces;
         public bool isWhiteTurn;
+        public bool isCheckMate;
+        public bool isStaleMate;
         public int? en_passant_target_color = null;
         public Moveset moveset = new Moveset
         {
@@ -26,7 +28,7 @@ namespace Chess.Objects
             dangerSquares = new List<SquareDangerType>(),
             pins = new List<Pin>(),
             checks = new List<Check>()
-        }; 
+        };
         public Position? enPassantTarget;
         public Chessboard(string FENstring = Pieces.DefaultPosition, bool whiteStarts = true)
         {
@@ -44,6 +46,8 @@ namespace Chess.Objects
         }
         public void MakeMove(Move move)
         {
+            isCheckMate = false;
+            isStaleMate = false;
             int currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
 
             pieces[move.targetPosition.row, move.targetPosition.column] = pieces[move.startPosition.row, move.startPosition.column];
@@ -95,17 +99,17 @@ namespace Chess.Objects
             // Handle checkmate/stalemate
             int checkCount = moveset.checks.Count;
             currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
-            
+
             moveset = Moves.GetAllMoves(this, currentColor);
             if (moveset.moves.Count == 0)
             {
                 if (checkCount > 0)
                 {
-                    MessageBox.Show("Checkmate");
+                    isCheckMate = true;
                 }
                 else
                 {
-                    MessageBox.Show("Stalemate");
+                    isStaleMate = true;
                 }
             }
         }
@@ -154,6 +158,7 @@ namespace Chess.Objects
             };
             return clone;
         }
+
         public bool CheckIfValidMove(Position startPos, Position endPos, out Move move)
         {
             move = default;
