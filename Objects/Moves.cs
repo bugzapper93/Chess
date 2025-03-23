@@ -4,10 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Input;
 
 namespace Chess.Objects
 {
@@ -60,84 +63,165 @@ namespace Chess.Objects
     public struct Moveset
     {
         public List<Move> moves;
-        public List<SquareDangerType> dangerSquares;
         public List<Pin> pins;
         public List<Check> checks;
     }
     class Moves
     {
+        
         public static int pieceValue = 0;
         public static Position friendlyKingPos = new Position();
         public static Position enemyKingPos = new Position();
-        public static Moveset GetAllMoves(Chessboard board, int color)
+        public static List<Position> GetAffectedPositions(Move move, Chessboard board)
         {
-            Piece[,] pieces = board.pieces;
+            List<Position> affectedPositions = new List<Position>();
+
+            affectedPositions.Add(move.startPosition);
+            affectedPositions.Add(move.targetPosition);
+            affectedPositions.Add(friendlyKingPos);
+
+            // Checking whether sliding pieces were affected
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 8; col++)
                 {
-                    if (pieces[row, col].value == (Pieces.King | Pieces.GetOppositeColor(color)))
+                    Piece piece = board.pieces[row, col];
+                    if (piece.value != 0)
                     {
-                        enemyKingPos = new Position(row, col);
-                    }
-                    else if (pieces[row, col].value == (Pieces.King | color))
-                    {
-                        friendlyKingPos = new Position(row, col);
+                        int pieceType = piece.value & 7;
+                        if (pieceType == Pieces.Bishop || pieceType == Pieces.Rook || pieceType == Pieces.Queen)
+                        {
+                            Position checkPosition = new Position(row, col);
+                            if (Helpers.IsInline(move.startPosition, checkPosition) || Helpers.IsInline(move.targetPosition, checkPosition))
+                            {
+                                affectedPositions.Add(new Position(row, col));
+                            }
+                        }
                     }
                 }
             }
 
-            List<Move> moves = new List<Move>();
-            List<SquareDangerType> squares = new List<SquareDangerType>();
-            List<Pin> pins = new List<Pin>();
-
+            // Checking whether pawns and knights were affected
             for (int row = 0; row < 8; row++)
+            {
                 for (int col = 0; col < 8; col++)
                 {
-                    pieceValue = pieces[row, col].value;
-                    int pieceColor = pieceValue & 24;
-                    if (pieceColor == color)
+                    Piece piece = board.pieces[row, col];
+                    if (piece.value != 0)
                     {
-                        Moveset temp;
-                        switch (pieceValue & 7)
+                        int pieceType = piece.value & 7;
+                        Position currentPos = new Position(row, col);
+                        if (pieceType == Pieces.Knight)
                         {
-                            case Pieces.Pawn:
-                                temp = GetPawnMoves(new Position(row, col), board);
-                                moves.AddRange(temp.moves);
-                                squares.AddRange(temp.dangerSquares);
-                                break;
-                            case Pieces.Knight:
-                                temp = GetKnightMoves(new Position(row, col), board);
-                                moves.AddRange(temp.moves);
-                                squares.AddRange(temp.dangerSquares);
-                                break;
-                            case Pieces.Bishop:
-                            case Pieces.Rook:
-                            case Pieces.Queen:
-                                temp = GetSlidingMoves(new Position(row, col), board);
-                                moves.AddRange(temp.moves);
-                                squares.AddRange(temp.dangerSquares);
-                                if (temp.pins != null)
-                                    pins.AddRange(temp.pins);
-                                break;
-                            case Pieces.King:
-                                temp = GetKingMoves(new Position(row, col), board);
-                                moves.AddRange(temp.moves);
-                                squares.AddRange(temp.dangerSquares);
-                                break;
+                            foreach (Position direction in Constants.KnightDirections)
+                            {
+                                Position checkPosition = currentPos + direction;
+                                if (Helpers.InBounds(checkPosition) && (checkPosition == move.startPosition || checkPosition == move.targetPosition))
+                                {
+                                    affectedPositions.Add(currentPos);
+                                    break;
+                                }
+                            }
+                        }
+                        else if (pieceType == Pieces.Pawn)
+                        {
+                            int direction = (piece.value & 24) == Pieces.White ? -1 : 1;
+                            Position forwardOne = new Position(row + direction, col);
+                            Position forwardTwo = new Position(row + 2 * direction, col);
+                            Position attackLeft = new Position(row + direction, col - 1);
+                            Position attackRight = new Position(row + direction, col + 1);
+
+                            if ((Helpers.InBounds(forwardOne) && (forwardOne == move.startPosition || forwardOne == move.targetPosition)) ||
+                                (Helpers.InBounds(forwardTwo) && (forwardTwo == move.startPosition || forwardTwo == move.targetPosition)) ||
+                                (Helpers.InBounds(attackRight) && (attackRight == move.startPosition || attackRight == move.targetPosition)) ||
+                                (Helpers.InBounds(attackLeft) && (attackLeft == move.startPosition || attackLeft == move.targetPosition)))
+                            {
+                                affectedPositions.Add(currentPos);
+                            }
                         }
                     }
                 }
-
-            Moveset inputSet = new Moveset { moves = moves, dangerSquares = squares };
-            Moveset temp_moveset = ValidateMoves(inputSet, board);
-            return new Moveset { moves = temp_moveset.moves, dangerSquares = temp_moveset.dangerSquares, pins = pins, checks = temp_moveset.checks };
+            }
+            return affectedPositions;
         }
-        private static Moveset ValidateMoves(Moveset moveset, Chessboard board)
+        public static Moveset UpdatePieceCache(Position pos, Chessboard board)
+        {
+            Piece piece = board.pieces[pos.row, pos.column];
+            int row = pos.row;
+            int col = pos.column;
+            int pieceValue = piece.value;
+            Moveset temp = new Moveset();
+            switch (pieceValue & 7)
+            {
+                case Pieces.Pawn:
+                    temp = GetPawnMoves(new Position(row, col), board);
+                    break;
+                case Pieces.Knight:
+                    temp = GetKnightMoves(new Position(row, col), board);
+                    break;
+                case Pieces.Bishop:
+                case Pieces.Rook:
+                case Pieces.Queen:
+                    temp = GetSlidingMoves(new Position(row, col), board);
+                    break;
+                case Pieces.King:
+                    temp = GetKingMoves(new Position(row, col), board);
+                    break;
+            }
+            return temp;
+        }
+        public static Moveset GetAllMoves(Chessboard board, int color)
+        {
+            List<Move> moves = new List<Move>();
+            List<Pin> pins = new List<Pin>();
+            List<Check> checks = new List<Check>();
+
+            int oppositeColor = Pieces.GetOppositeColor(color);
+            List<Position> slidingPieces = new List<Position>();
+
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    if (board.pieces[row, col].value == (Pieces.King | oppositeColor))
+                    {
+                        enemyKingPos = new Position(row, col);
+                    }
+                    else if (board.pieces[row, col].value == (Pieces.King | color))
+                    {
+                        friendlyKingPos = new Position(row, col);
+                    }
+                    else if (board.pieces[row, col].value == (Pieces.Bishop | oppositeColor) || board.pieces[row, col].value == (Pieces.Rook | oppositeColor) || board.pieces[row, col].value == (Pieces.Queen | oppositeColor))
+                    {
+                        slidingPieces.Add(new Position(row, col));
+                    }
+                }
+            }
+
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    Piece piece = board.pieces[row, col];
+                    int pieceValue = piece.value;
+                    if (pieceValue != 0 && (pieceValue & 24) == color)
+                    {
+                        Moveset tempMoveset = board.pieces[row, col].Cache;
+                        moves.AddRange(tempMoveset.moves);
+                        if (tempMoveset.pins != null)
+                            pins.AddRange(tempMoveset.pins);
+                        if (tempMoveset.checks != null)
+                            checks.AddRange(tempMoveset.checks);
+                    }
+                }
+            }
+            Moveset legalSet = ValidateMoves(new Moveset { moves = moves, pins = pins, checks = checks }, board, slidingPieces);
+            return legalSet;
+        }
+        private static Moveset ValidateMoves(Moveset moveset, Chessboard board, List<Position> slidingPieces)
         {
             List<Move> moves = moveset.moves;
             List<Check> checks = new List<Check>();
-            List<SquareDangerType> dangerSquares = new List<SquareDangerType>();
             List<Move> possibleMoves = new List<Move>();
 
             Piece[,] pieces = board.pieces;
@@ -154,31 +238,50 @@ namespace Chess.Objects
 
                 int currentPieceValue = pieces[startRow, startColumn].value;
                 int currentColor = currentPieceValue & 24;
-                if ((currentPieceValue & 7) != Pieces.Pawn)
-                {
-                    dangerSquares.Add(new SquareDangerType { dangerPosition = move.targetPosition, attackerPosition = move.startPosition, attackerColor = currentColor });
-                }
-                dangerSquares.AddRange(moveset.dangerSquares);
-
+                    
                 if (move.targetPosition == enemyKingPos)
                 {
-                    int[] slidingPieces = [Pieces.Bishop, Pieces.Rook, Pieces.Queen];
-                    bool isSliding = slidingPieces.Contains(currentPieceValue & 7);
+                    int[] sliding = [Pieces.Bishop, Pieces.Rook, Pieces.Queen];
+                    bool isSliding = sliding.Contains(currentPieceValue & 7);
                     checks.Add(new Check { checkingPiece = move.startPosition, kingPosition = enemyKingPos, slidingPiece = isSliding });
                     continue;
                 }
 
+                // Handling possibly moving into a check
                 if ((currentPieceValue & 7) == Pieces.King)
                 {
+                    bool validMove = true;
+                    Position checkPosition = move.targetPosition;
 
+                    // Unable to move into a knight attack
+                    foreach (Position direction in Constants.KnightDirections)
+                    {
+                        Position position = checkPosition + direction;
+                        if (Helpers.InBounds(position) && pieces[position.row, position.column].value == (Pieces.Knight | Pieces.GetOppositeColor(currentColor)))
+                        {
+                            validMove = false;
+                            break;
+                        }
+                    }
 
-                    if (currentColor == Pieces.Black && board.squares[move.targetPosition.row, move.targetPosition.column].dangerWhite)
-                        continue;
+                    foreach (Position slidingPiece in slidingPieces)
+                    {
+                        int attackerType = pieces[slidingPiece.row, slidingPiece.column].value & 7;
+                        int type = 0;
+                        if (attackerType == Pieces.Bishop)
+                            type = 1;
+                        else if (attackerType == Pieces.Rook)
+                            type = 2;
 
-                    if (currentColor == Pieces.White && board.squares[move.targetPosition.row, move.targetPosition.column].dangerBlack)
-                        continue;
+                        if (Helpers.IsInline(checkPosition, slidingPiece, type) && checkPosition != slidingPiece && Helpers.CheckPathClear(checkPosition, slidingPiece, board.pieces))
+                        {
+                            validMove = false;
+                            break;
+                        }
+                    }
 
-                    possibleMoves.Add(move);
+                    if (validMove)
+                        possibleMoves.Add(move);
                     continue;
                 }
 
@@ -200,7 +303,6 @@ namespace Chess.Objects
                     }
                     continue;
                 }
-
             }
 
             List<Move> legalMoves = new List<Move>();
@@ -231,8 +333,9 @@ namespace Chess.Objects
                 legalMoves = possibleMoves;
             }
 
-            return new Moveset { moves = legalMoves, dangerSquares = dangerSquares, checks = checks };
+            return new Moveset { moves = legalMoves, checks = checks, pins = new List<Pin>() };
         }
+        #region Getting moves for each piece
         private static Moveset GetPawnMoves(Position startSquare, Chessboard board)
         {
             Piece[,] pieces = board.pieces;
@@ -297,7 +400,7 @@ namespace Chess.Objects
                     squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
                 }
             }
-            return new Moveset { moves = moves, dangerSquares = squares };
+            return new Moveset { moves = moves };
         }
         private static Moveset GetSlidingMoves(Position startSquare, Chessboard board)
         {
@@ -400,7 +503,7 @@ namespace Chess.Objects
                     step++;
                 }
             }
-            return new Moveset { moves = moves, dangerSquares = squares, pins = pins };
+            return new Moveset { moves = moves, pins = pins };
         }
         private static Moveset GetKnightMoves(Position startSquare, Chessboard board)
         {
@@ -435,7 +538,7 @@ namespace Chess.Objects
                     squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
                 }
             }
-            return new Moveset { moves = moves, dangerSquares = squares };
+            return new Moveset { moves = moves };
         }
         private static Moveset GetKingMoves(Position startSquare, Chessboard board)
         {
@@ -493,7 +596,8 @@ namespace Chess.Objects
                     }
                 }
             }
-            return new Moveset { moves = moves, dangerSquares = squares };
+            return new Moveset { moves = moves };
         }
+        #endregion
     }
 }
