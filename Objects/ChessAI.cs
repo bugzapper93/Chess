@@ -21,7 +21,7 @@ namespace Chess.Objects
             Move bestMove = new Move();
             object lockObj = new object();
 
-            Moveset moveset = board.moveset;//Moves.GetAllMoves(board, color);
+            Moveset moveset = board.moveset;
             Parallel.ForEach(moveset.moves, move =>
             {
                 Chessboard clone = board.Clone();
@@ -44,42 +44,40 @@ namespace Chess.Objects
 
         private int Minimax(Chessboard board, int depth, int alpha, int beta, bool maximizingPlayer, int aiColor)
         {
-            if (depth == 0)
+            if (depth == 0 || board.moveset.moves.Count == 0)
                 return EvaluateBoard(board, aiColor);
 
-            int currentColor = maximizingPlayer ? aiColor : (aiColor == Pieces.White ? Pieces.Black : Pieces.White);
             Moveset moveset = board.moveset;
-
-            if (moveset.moves.Count == 0)
-                return EvaluateBoard(board, aiColor);
-
-            int value = maximizingPlayer ? int.MinValue : int.MaxValue;
-            object lockObj = new object();
-
-            Parallel.ForEach(moveset.moves, move =>
+            if (maximizingPlayer)
             {
-                Chessboard clone = board.Clone();
-                clone.MakeMove(move);
-                int eval = Minimax(clone, depth - 1, alpha, beta, !maximizingPlayer, aiColor);
-
-                lock (lockObj)
+                int maxEval = int.MinValue;
+                foreach (var move in moveset.moves)
                 {
-                    if (maximizingPlayer)
-                    {
-                        value = Math.Max(value, eval);
-                        alpha = Math.Max(alpha, value);
-                    }
-                    else
-                    {
-                        value = Math.Min(value, eval);
-                        beta = Math.Min(beta, value);
-                    }
+                    Chessboard clone = board.Clone();
+                    clone.MakeMove(move);
+                    int eval = Minimax(clone, depth - 1, alpha, beta, false, aiColor);
+                    maxEval = Math.Max(maxEval, eval);
+                    alpha = Math.Max(alpha, eval);
+                    if (beta <= alpha)
+                        break;
                 }
-
-                if (beta <= alpha)
-                    return;
-            });
-            return value;
+                return maxEval;
+            }
+            else
+            {
+                int minEval = int.MaxValue;
+                foreach (var move in moveset.moves)
+                {
+                    Chessboard clone = board.Clone();
+                    clone.MakeMove(move);
+                    int eval = Minimax(clone, depth - 1, alpha, beta, true, aiColor);
+                    minEval = Math.Min(minEval, eval);
+                    beta = Math.Min(beta, eval);
+                    if (beta <= alpha)
+                        break;
+                }
+                return minEval;
+            }
         }
 
         private int EvaluateBoard(Chessboard board, int aiColor)

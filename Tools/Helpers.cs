@@ -97,6 +97,31 @@ namespace Chess.Tools
 
             return (moveRow * pinCol == moveCol * pinRow);
         }
+        /// <summary>
+        /// Checks if the path between two positions is inline
+        /// </summary>
+        /// <param name="piecePos">First position</param>
+        /// <param name="targetPos">Second Position</param>
+        /// <param name="type">Whether to check diagonals, or straight lines, or both. 0 - both, 1 - diagonals, 3 - straight lines</param>
+        /// <returns>true if the two positions are in-line</returns>
+        public static bool IsInline(Position piecePos, Position targetPos, int type = 0)
+        {
+            int rowDiff = targetPos.row - piecePos.row;
+            int colDiff = targetPos.column - piecePos.column;
+            if (type == 0)
+            {
+                return rowDiff == 0 || colDiff == 0 || Math.Abs(rowDiff) == Math.Abs(colDiff);
+            }
+            if (type == 1)
+            {
+                return Math.Abs(rowDiff) == Math.Abs(colDiff);
+            }
+            if (type == 2)
+            {
+                return rowDiff == 0 || colDiff == 0;
+            }
+            return false;
+        }
         public static bool IsBetween(Position start, Position checking, Position target)
         {
             int vRow = target.row - start.row;
@@ -120,6 +145,9 @@ namespace Chess.Tools
             }
             return true;
         }
+
+        //NEEDS UPDATE
+
         public static bool CheckPathCheck(Position startPos, Position endPos, Chessboard board)
         {
             int currentColor = board.pieces[startPos.row, startPos.column].value & 24;
@@ -138,10 +166,6 @@ namespace Chess.Tools
                 {
                     break;
                 }
-                if (currentColor == Pieces.White && board.squares[currentPos.row, currentPos.column].dangerBlack)
-                    return false;
-                if (currentColor == Pieces.Black && board.squares[currentPos.row, currentPos.column].dangerWhite)
-                    return false;
                 step++;
             }
             return true;

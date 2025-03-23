@@ -157,7 +157,7 @@ public partial class MainWindow : Window
                     {
                         if (Board.isWhiteTurn == isBoardFlipped)
                         {
-                            FlipBoard();
+                            //FlipBoard();
                         }
                     }
                     else
@@ -275,14 +275,6 @@ public partial class MainWindow : Window
             for (int col = 0; col < 8; col++)
             {
                 Squares[row, col].Fill = ((row + col) % 2 == 0) ? Constants.Primary : Constants.Secondary;
-                if (Board.squares[row, col].dangerWhite)
-                {
-                    Squares[row, col].Fill = Brushes.LightGoldenrodYellow;
-                }
-                if (Board.squares[row, col].dangerBlack)
-                {
-                    Squares[row, col].Fill = Brushes.LightCoral;
-                }
             }
         }
     }

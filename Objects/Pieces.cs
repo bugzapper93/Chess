@@ -11,6 +11,7 @@ namespace Chess.Objects
         public int value;
         public bool hasMoved;
         public bool isPinned;
+        public Moveset Cache;
     }
     class Pieces
     {

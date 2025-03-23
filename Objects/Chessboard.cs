@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chess.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,15 +9,8 @@ using System.Windows.Documents;
 
 namespace Chess.Objects
 {
-    public struct Square
-    {
-        public Position position;
-        public bool dangerWhite;
-        public bool dangerBlack;
-    }
     public class Chessboard
     {
-        public Square[,] squares;
         public Piece[,] pieces;
         public bool isWhiteTurn;
         public bool isCheckMate;
@@ -24,7 +18,6 @@ namespace Chess.Objects
         public Moveset moveset = new Moveset
         {
             moves = new List<Move>(),
-            dangerSquares = new List<SquareDangerType>(),
             pins = new List<Pin>(),
             checks = new List<Check>()
         };
@@ -33,13 +26,19 @@ namespace Chess.Objects
         {
             isWhiteTurn = whiteStarts;
             pieces = new Piece[8, 8];
-            squares = new Square[8, 8];
 
             Initialize(FENstring);
         }
         public void Initialize(string position)
         {
             pieces = Pieces.Parse_FEN(position);
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    pieces[row, col].Cache = Moves.UpdatePieceCache(new Position(row, col), this);
+                }
+            }
             moveset = Moves.GetAllMoves(this, isWhiteTurn ? Pieces.White : Pieces.Black);
             UpdateDanger();
         }
@@ -84,7 +83,29 @@ namespace Chess.Objects
                     pieces[move.targetPosition.row, move.targetPosition.column + 1].hasMoved = true;
                 }
             }
-            moveset = Moves.GetAllMoves(this, currentColor);
+
+            List<Position> affectedPositions = Moves.GetAffectedPositions(move, this);
+
+            if (!affectedPositions.Contains(move.startPosition))
+                affectedPositions.Add(move.startPosition);
+
+            if (!affectedPositions.Contains(move.targetPosition))
+                affectedPositions.Add(move.targetPosition);
+
+            foreach (Position piecePos in affectedPositions)
+            {
+                if (Helpers.InBounds(piecePos) && pieceValue != 0)
+                    pieces[piecePos.row, piecePos.column].Cache = Moves.UpdatePieceCache(piecePos, this);
+            }
+
+            moveset = new Moveset
+            {
+                moves = new List<Move>(),
+                pins = new List<Pin>(),
+                checks = new List<Check>()
+            };
+
+            //moveset = Moves.GetAllMoves(this, currentColor);
             UpdateDanger();
             isWhiteTurn = !isWhiteTurn;
 
@@ -112,29 +133,11 @@ namespace Chess.Objects
                 for (int col = 0; col < 8; col++)
                 {
                     pieces[row, col].isPinned = false;
-                    squares[row, col].dangerWhite = false;
-                    squares[row, col].dangerBlack = false;
                 }
             }
 
-            // Aktualizacja zagrożeń na podstawie moveset.dangerSquares
-            foreach (SquareDangerType danger in moveset.dangerSquares)
-            {
-                if (danger.dangerPosition == null)
-                    continue; // Pomijaj nieprawidłowe elementy
-
-                int row = danger.dangerPosition.row;
-                int col = danger.dangerPosition.column;
-
-                // Sprawdź, czy pozycja jest w zakresie 0-7
-                if (row >= 0 && row < 8 && col >= 0 && col < 8)
-                {
-                    if (danger.attackerColor == Pieces.White)
-                        squares[row, col].dangerWhite = true;
-                    else if (danger.attackerColor == Pieces.Black)
-                        squares[row, col].dangerBlack = true;
-                }
-            }
+            if (moveset.pins == null)
+                return;
 
             // Aktualizacja pinów
             foreach (Pin pin in moveset.pins)
@@ -157,13 +160,11 @@ namespace Chess.Objects
             Chessboard clone = new Chessboard
             {
                 pieces = (Piece[,])this.pieces.Clone(),
-                squares = (Square[,])this.squares.Clone(),
                 enPassantTarget = this.enPassantTarget,
                 isWhiteTurn = this.isWhiteTurn,
                 moveset = new Moveset
                 {
                     moves = new List<Move>(this.moveset.moves),
-                    dangerSquares = new List<SquareDangerType>(this.moveset.dangerSquares),
                     pins = new List<Pin>(this.moveset.pins),
                     checks = new List<Check>(this.moveset.checks)
                 }
