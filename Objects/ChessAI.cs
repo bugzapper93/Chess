@@ -15,19 +15,20 @@ namespace Chess.Objects
             maxDepth = searchDepth;
         }
 
-        public Move GetBestMove(Chessboard board, int color)
+        public async Task<Move> GetBestMove(Chessboard board, int color)
         {
             int bestValue = int.MinValue;
             Move bestMove = new Move();
             object lockObj = new object();
 
             Moveset moveset = board.moveset;
-            Parallel.ForEach(moveset.moves, move =>
+
+            var tasks = moveset.moves.Select(async move =>
             {
                 Chessboard clone = board.Clone();
                 clone.MakeMove(move);
 
-                int moveValue = Minimax(clone, maxDepth - 1, int.MinValue, int.MaxValue, false, color);
+                int moveValue = await Task.Run(() => Minimax(clone, maxDepth - 1, int.MinValue, int.MaxValue, false, color));
 
                 lock (lockObj)
                 {
@@ -38,6 +39,8 @@ namespace Chess.Objects
                     }
                 }
             });
+
+            await Task.WhenAll(tasks);
 
             return bestMove;
         }

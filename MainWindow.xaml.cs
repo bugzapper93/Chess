@@ -126,7 +126,7 @@ public partial class MainWindow : Window
             Canvas.SetTop(selectedPiece, mousePosition.Y - originalMouseOffset.Y);
         }
     }
-    private void PieceMouseUp(object sender, MouseEventArgs e)
+    private async void PieceMouseUp(object sender, MouseEventArgs e)
     {
         if (isDragging && selectedPiece != null)
         {
@@ -141,31 +141,20 @@ public partial class MainWindow : Window
                 row = 7 - row;
                 col = 7 - col;
             }
-            if (row < 0 || row >= 8 || col < 0 || col >= 8 || (row == selectedPosition.row && col == selectedPosition.column))
+            if (MovePiece(selectedPosition, new Position(row, col)))
             {
-                int displayStartRow = isBoardFlipped ? 7 - selectedPosition.row : selectedPosition.row;
-                int displayStartCol = isBoardFlipped ? 7 - selectedPosition.column : selectedPosition.column;
-
-                Canvas.SetLeft(selectedPiece, displayStartCol * SquareSize);
-                Canvas.SetTop(selectedPiece, displayStartRow * SquareSize);
-            }
-            else
-            {
-                if (MovePiece(selectedPosition, new Position(row, col)))
+                if (!aiModeON)
                 {
-                    if (!aiModeON)
+                    if (Board.isWhiteTurn == isBoardFlipped)
                     {
-                        if (Board.isWhiteTurn == isBoardFlipped)
-                        {
-                            //FlipBoard();
-                        }
+                        FlipBoard();
                     }
-                    else
-                    {
-                        int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
-                        Move bestMove = AI.GetBestMove(Board, color);
-                        MovePiece(bestMove.startPosition, bestMove.targetPosition);
-                    }
+                }
+                else
+                {
+                    int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+                    Move bestMove = await AI.GetBestMove(Board, color);
+                    MovePiece(bestMove.startPosition, bestMove.targetPosition);
                 }
             }
         }
@@ -195,8 +184,11 @@ public partial class MainWindow : Window
             int displayStartRow = isBoardFlipped ? 7 - positionStart.row : positionStart.row;
             int displayStartCol = isBoardFlipped ? 7 - positionStart.column : positionStart.column;
 
-            Canvas.SetLeft(selectedPiece, displayStartCol * SquareSize);
-            Canvas.SetTop(selectedPiece, displayStartRow * SquareSize + 5);
+            double pieceLeft = displayStartCol * SquareSize + (SquareSize - selectedPiece.RenderSize.Width) / 2;
+            double pieceTop = (displayStartRow * SquareSize + (SquareSize - selectedPiece.RenderSize.Height) / 2) + 5;
+
+            Canvas.SetLeft(selectedPiece, pieceLeft);
+            Canvas.SetTop(selectedPiece, pieceTop);
             return false;
         }
 

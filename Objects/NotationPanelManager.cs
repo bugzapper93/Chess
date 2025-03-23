@@ -45,18 +45,27 @@ namespace Chess.Objects
                 Grid.SetRow(whiteMoveLabel, currentRow + 1);
                 Grid.SetColumn(whiteMoveLabel, 1);
                 notationGrid.Children.Add(whiteMoveLabel);
-            }
-            else
-            {
+
                 TextBlock blackMoveLabel = new TextBlock
                 {
-                    Text = moveNotation,
+                    Text = "", 
                     Style = (Style)notationGrid.FindResource("NotationTextBlockStyle"),
                     Width = 78
                 };
                 Grid.SetRow(blackMoveLabel, currentRow + 1);
                 Grid.SetColumn(blackMoveLabel, 2);
                 notationGrid.Children.Add(blackMoveLabel);
+            }
+            else
+            {
+                var blackMoveLabel = notationGrid.Children
+                  .OfType<TextBlock>()
+                  .FirstOrDefault(tb => Grid.GetRow(tb) == currentRow + 1 && Grid.GetColumn(tb) == 2);
+
+                if (blackMoveLabel != null)
+                {
+                    blackMoveLabel.Text = moveNotation;
+                }
 
                 currentRow++; 
             }
@@ -110,7 +119,7 @@ namespace Chess.Objects
         {
             var elementsToRemove = notationGrid.Children
                 .Cast<UIElement>()
-                .Where(el => Grid.GetRow(el) > 0)
+                .Where(el => Grid.GetRow(el) > 0) 
                 .ToList();
 
             foreach (var element in elementsToRemove)
@@ -118,12 +127,12 @@ namespace Chess.Objects
                 notationGrid.Children.Remove(element);
             }
 
-            while (notationGrid.RowDefinitions.Count > 1)
+            while (notationGrid.RowDefinitions.Count > 1) 
             {
                 notationGrid.RowDefinitions.RemoveAt(1);
             }
 
-            currentRow = 0; 
+            currentRow = 0;
         }
     }
 }
