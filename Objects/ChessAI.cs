@@ -21,7 +21,7 @@ namespace Chess.Objects
             Move bestMove = new Move();
             object lockObj = new object();
 
-            Moveset moveset = Moves.GetAllMoves(board, color);
+            Moveset moveset = board.moveset;//Moves.GetAllMoves(board, color);
             Parallel.ForEach(moveset.moves, move =>
             {
                 Chessboard clone = board.Clone();
@@ -48,7 +48,7 @@ namespace Chess.Objects
                 return EvaluateBoard(board, aiColor);
 
             int currentColor = maximizingPlayer ? aiColor : (aiColor == Pieces.White ? Pieces.Black : Pieces.White);
-            Moveset moveset = Moves.GetAllMoves(board, currentColor);
+            Moveset moveset = board.moveset;
 
             if (moveset.moves.Count == 0)
                 return EvaluateBoard(board, aiColor);

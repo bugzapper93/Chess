@@ -21,7 +21,6 @@ namespace Chess.Objects
         public bool isWhiteTurn;
         public bool isCheckMate;
         public bool isStaleMate;
-        public int? en_passant_target_color = null;
         public Moveset moveset = new Moveset
         {
             moves = new List<Move>(),
@@ -46,6 +45,8 @@ namespace Chess.Objects
         }
         public void MakeMove(Move move)
         {
+            enPassantTarget = null;
+
             isCheckMate = false;
             isStaleMate = false;
             int currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
@@ -58,7 +59,6 @@ namespace Chess.Objects
             if ((pieceValue & 7) == Pieces.Pawn && Math.Abs(move.targetPosition.row - move.startPosition.row) == 2)
             {
                 enPassantTarget = new Position(move.startPosition.row + (move.targetPosition.row - move.startPosition.row) / 2, move.startPosition.column);
-                en_passant_target_color = pieceValue & 24;
             }
             if (enPassantTarget != null && (pieceValue & 7) == Pieces.Pawn && move.targetPosition == enPassantTarget.Value)
             {
@@ -103,7 +103,6 @@ namespace Chess.Objects
                     isStaleMate = true;
                 }
             }
-
         }
        
         private void UpdateDanger()
@@ -160,7 +159,6 @@ namespace Chess.Objects
                 pieces = (Piece[,])this.pieces.Clone(),
                 squares = (Square[,])this.squares.Clone(),
                 enPassantTarget = this.enPassantTarget,
-                en_passant_target_color = this.en_passant_target_color,
                 isWhiteTurn = this.isWhiteTurn,
                 moveset = new Moveset
                 {

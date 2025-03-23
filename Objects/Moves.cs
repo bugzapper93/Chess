@@ -56,7 +56,6 @@ namespace Chess.Objects
         public Position startPosition;
         public Position targetPosition;
         public bool capture;
-        public bool isEnPassant;
     }
     public struct Moveset
     {
@@ -148,6 +147,9 @@ namespace Chess.Objects
                 int startRow = move.startPosition.row;
                 int startColumn = move.startPosition.column;
 
+                if (!Helpers.InBounds(move.targetPosition) || !Helpers.InBounds(move.startPosition))
+                    continue;
+
                 Piece currentPiece = board.pieces[startRow, startColumn];
 
                 int currentPieceValue = pieces[startRow, startColumn].value;
@@ -168,6 +170,8 @@ namespace Chess.Objects
 
                 if ((currentPieceValue & 7) == Pieces.King)
                 {
+
+
                     if (currentColor == Pieces.Black && board.squares[move.targetPosition.row, move.targetPosition.column].dangerWhite)
                         continue;
 
@@ -282,7 +286,6 @@ namespace Chess.Objects
                             startPosition = startSquare,
                             targetPosition = consideredPosition,
                             capture = true,
-                            isEnPassant = isEnPassant
                         };
 
                         if (isEnPassant)

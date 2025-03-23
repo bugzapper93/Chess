@@ -16,6 +16,9 @@ namespace Chess;
 
 public partial class MainWindow : Window
 {
+    private NotationPanelManager notationPanelManager;
+    private bool isBoardFlipped = false;
+
     private int SquareSize = Constants.Square_Size;
     private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
     private Rectangle[,] Squares = new Rectangle[8, 8];
@@ -24,11 +27,10 @@ public partial class MainWindow : Window
     private bool isDragging = false;
     private UIElement? selectedPiece;
     public bool aiModeON = true;
+
     private ChessAI AI = new ChessAI(2);
     Chessboard Board = new Chessboard();
-    private bool isBoardFlipped = false;
-    private NotationPanelManager notationPanelManager;
-
+    
     public MainWindow()
     {
         InitializeComponent();
@@ -148,37 +150,38 @@ public partial class MainWindow : Window
             }
             else
             {
-                MovePiece(selectedPosition, new Position(row, col));
-
-                if (!aiModeON)
+                if (MovePiece(selectedPosition, new Position(row, col)))
                 {
-                    if (Board.isWhiteTurn == isBoardFlipped)
+                    if (!aiModeON)
                     {
-                        FlipBoard();
+                        if (Board.isWhiteTurn == isBoardFlipped)
+                        {
+                            FlipBoard();
+                        }
                     }
-                }
-                else
-                {
-                    int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
-                    Move bestMove = AI.GetBestMove(Board, color);
-                    MovePiece(bestMove.startPosition, bestMove.targetPosition);
+                    else
+                    {
+                        int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+                        Move bestMove = AI.GetBestMove(Board, color);
+                        MovePiece(bestMove.startPosition, bestMove.targetPosition);
+                    }
                 }
             }
         }
     }
     #endregion
-    private void MovePiece(Position positionStart, Position positionEnd)
+    private bool MovePiece(Position positionStart, Position positionEnd)
     {
         int pieceValue = Board.pieces[positionStart.row, positionStart.column].value;
         int startRow = positionStart.row;
         int startCol = positionStart.column;
         int endRow = positionEnd.row;
         int endCol = positionEnd.column;
-
+            
         UIElement selectedPiece = PiecesDisplay[positionStart.row, positionStart.column];
         var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
         if (parentCanvas == null)
-            return;
+            return false;
 
         int index = Helpers.GetMoveIndex(Board.moveset.moves, positionStart, positionEnd);
         if (index == -1)
@@ -188,7 +191,7 @@ public partial class MainWindow : Window
 
             Canvas.SetLeft(selectedPiece, displayStartCol * SquareSize);
             Canvas.SetTop(selectedPiece, displayStartRow * SquareSize);
-            return;
+            return false;
         }
 
         if (PiecesDisplay[positionEnd.row, positionEnd.column] != null && PiecesDisplay[positionEnd.row, positionEnd.column] != selectedPiece)
@@ -208,7 +211,7 @@ public partial class MainWindow : Window
         PiecesDisplay[positionStart.row, positionStart.column] = null;
 
         Move move = Board.moveset.moves[index];
-
+        bool enPassant = false;
         if ((pieceValue & 7) == Pieces.Pawn && move.capture)
         {
             // En passant
@@ -216,6 +219,7 @@ public partial class MainWindow : Window
             {
                 parentCanvas.Children.Remove(PiecesDisplay[positionStart.row, positionEnd.column]);
                 PiecesDisplay[positionStart.row, positionEnd.column] = null;
+                enPassant = true;
             }
         }
         if ((pieceValue & 7) == Pieces.King && Math.Abs(move.startPosition.row - move.targetPosition.row) == 2)
@@ -229,18 +233,12 @@ public partial class MainWindow : Window
             PiecesDisplay[startRow, rookCol] = null;
         }
         Board.MakeMove(move);
-        string moveNotation = notationPanelManager.GetAlgebraicNotation(
-        positionStart,
-        positionEnd,
-        Board.isWhiteTurn, 
-        move.capture,      
-        (pieceValue & 7) == Pieces.Pawn, 
-        move.isEnPassant, 
-        pieceValue          
-    );
 
+        string moveNotation = notationPanelManager.GetAlgebraicNotation(move, Board, pieceValue, enPassant);
         notationPanelManager.AddRowToTable(moveNotation, Board.isWhiteTurn);
         ResetBoard();
+
+        return true;
     }
     private void HighlightBoard()
     {

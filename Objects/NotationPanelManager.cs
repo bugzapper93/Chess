@@ -16,7 +16,7 @@ namespace Chess.Objects
 
         public NotationPanelManager(Grid grid)
         {
-            this.notationGrid = grid;
+            notationGrid = grid;
         }
 
         public void AddRowToTable(string moveNotation, bool isWhiteTurn)
@@ -87,8 +87,14 @@ namespace Chess.Objects
             }
             return null;
         }
-        public string GetAlgebraicNotation(Position startPos, Position endPos, bool isWhiteTurn, bool isCapture, bool isPawnMove, bool isEnPassant, int pieceType)
+        public string GetAlgebraicNotation(Move move, Chessboard board, int pieceType, bool isEnPassant)//Position startPos, Position endPos, bool isWhiteTurn, bool isCapture, bool isPawnMove, bool isEnPassant, int pieceType)
         {
+            Position startPos = move.startPosition;
+            Position endPos = move.targetPosition;
+            bool isWhiteTurn = board.isWhiteTurn;
+            bool isCapture = move.capture;
+            bool isPawnMove = (pieceType & 7) == Pieces.Pawn;
+
             string pieceNotation = Pieces.PieceValueToString(pieceType);
             char columnStart = (char)('a' + startPos.column);
             char rowStart = (char)('8' - startPos.row);
@@ -101,7 +107,7 @@ namespace Chess.Objects
             {
                 if (isCapture)
                 {
-                    notation = $"{columnStart} x {columnEnd}{rowEnd}";
+                    notation = $"{columnStart}x{columnEnd}{rowEnd}";
                 }
                 else
                 {
@@ -119,7 +125,7 @@ namespace Chess.Objects
 
                 if (isCapture)
                 {
-                    notation = $"{pieceNotation} x {columnEnd}{rowEnd}";
+                    notation = $"{pieceNotation}x{columnEnd}{rowEnd}";
                 }
             }
 
