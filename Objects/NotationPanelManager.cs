@@ -26,9 +26,10 @@ namespace Chess.Objects
             {
                 TextBlock indexLabel = new TextBlock
                 {
-                    Text = (currentRow + 1).ToString(),
+                    Text = (currentRow + 1).ToString() + ".",
 
-                    Style = (Style)notationGrid.FindResource("NotationTextBlockStyle")
+                    Style = (Style)notationGrid.FindResource("NotationTextBlockStyle"),
+                    Width = 52
                 };
                 Grid.SetRow(indexLabel, currentRow + 1); 
                 Grid.SetColumn(indexLabel, 0);
@@ -37,7 +38,8 @@ namespace Chess.Objects
                 TextBlock whiteMoveLabel = new TextBlock
                 {
                     Text = moveNotation,
-                    Style = (Style)notationGrid.FindResource("NotationTextBlockStyle")
+                    Style = (Style)notationGrid.FindResource("NotationTextBlockStyle"),
+                    Width = 78
                 };
 
                 Grid.SetRow(whiteMoveLabel, currentRow + 1);
@@ -49,7 +51,8 @@ namespace Chess.Objects
                 TextBlock blackMoveLabel = new TextBlock
                 {
                     Text = moveNotation,
-                    Style = (Style)notationGrid.FindResource("NotationTextBlockStyle")
+                    Style = (Style)notationGrid.FindResource("NotationTextBlockStyle"),
+                    Width = 78
                 };
                 Grid.SetRow(blackMoveLabel, currentRow + 1);
                 Grid.SetColumn(blackMoveLabel, 2);
@@ -57,36 +60,8 @@ namespace Chess.Objects
 
                 currentRow++; 
             }
-            ScrollToLastRow();
-
-
-        }
-        public void ScrollToLastRow()
-        {
-            var scrollViewer = FindVisualChild<ScrollViewer>(notationGrid);
-            if (scrollViewer != null)
-            {
-                scrollViewer.ScrollToEnd();
-            }
         }
 
-        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T result)
-                {
-                    return result;
-                }
-                var descendant = FindVisualChild<T>(child);
-                if (descendant != null)
-                {
-                    return descendant;
-                }
-            }
-            return null;
-        }
         public string GetAlgebraicNotation(Move move, Chessboard board, int pieceType, bool isEnPassant)//Position startPos, Position endPos, bool isWhiteTurn, bool isCapture, bool isPawnMove, bool isEnPassant, int pieceType)
         {
             Position startPos = move.startPosition;
@@ -130,6 +105,25 @@ namespace Chess.Objects
             }
 
             return notation;
-        }   
+        }
+        public void ClearNotations()
+        {
+            var elementsToRemove = notationGrid.Children
+                .Cast<UIElement>()
+                .Where(el => Grid.GetRow(el) > 0)
+                .ToList();
+
+            foreach (var element in elementsToRemove)
+            {
+                notationGrid.Children.Remove(element);
+            }
+
+            while (notationGrid.RowDefinitions.Count > 1)
+            {
+                notationGrid.RowDefinitions.RemoveAt(1);
+            }
+
+            currentRow = 0; 
+        }
     }
 }

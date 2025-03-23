@@ -14,7 +14,7 @@ namespace Chess.Tools
         public static readonly int Margin = 10;
         public static readonly int Square_Size = 50;
         public static Brush Primary = Brushes.LightBlue;
-        public static Brush Secondary = Brushes.DarkBlue;
+        public static Brush Secondary = Brushes.CadetBlue;
         public static readonly Position[] Directions =
         {
             new Position { row = -1, column= 0 },

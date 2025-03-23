@@ -27,16 +27,17 @@ public partial class MainWindow : Window
     private bool isDragging = false;
     private UIElement? selectedPiece;
     public bool aiModeON = true;
-
-    private ChessAI AI = new ChessAI(2);
+    public int depth = 2;
+    private ChessAI AI = new ChessAI(3);
     Chessboard Board = new Chessboard();
     
     public MainWindow()
     {
         InitializeComponent();
-        notationPanelManager = new NotationPanelManager(NotationGrid);//NotationGrid);
+        notationPanelManager = new NotationPanelManager(NotationGrid);
         DrawChessboard();
         PlacePieces();
+        CheckVisibility();
     }
     #region Initialization
     private void DrawChessboard()
@@ -53,7 +54,7 @@ public partial class MainWindow : Window
                 int displayRow = isBoardFlipped ? 7 - row : row;
                 int displayCol = isBoardFlipped ? 7 - col : col;
                 Canvas.SetLeft(square, displayCol * SquareSize);
-                Canvas.SetTop(square, displayRow * SquareSize);
+                Canvas.SetTop(square, displayRow * SquareSize + 5);
                 Squares[row, col] = square;
                 display.Children.Add(square);
             }
@@ -74,8 +75,8 @@ public partial class MainWindow : Window
                     int displayRow = isBoardFlipped ? 7 - row : row;
                     int displayCol = isBoardFlipped ? 7 - col : col;
 
-                    double pieceLeft = displayCol * SquareSize + (SquareSize - piece.Width) / 2;
-                    double pieceTop = displayRow * SquareSize + (SquareSize - piece.Height) / 2;
+                    double pieceLeft = displayCol * SquareSize + (SquareSize - piece.Width) / 2 ;
+                    double pieceTop = (displayRow * SquareSize + (SquareSize - piece.Height) / 2) + 5;
 
                     Canvas.SetLeft(piece, pieceLeft);
                     Canvas.SetTop(piece, pieceTop);
@@ -170,6 +171,7 @@ public partial class MainWindow : Window
         }
     }
     #endregion
+    #region BoardInteraction
     private bool MovePiece(Position positionStart, Position positionEnd)
     {
         int pieceValue = Board.pieces[positionStart.row, positionStart.column].value;
@@ -177,9 +179,13 @@ public partial class MainWindow : Window
         int startCol = positionStart.column;
         int endRow = positionEnd.row;
         int endCol = positionEnd.column;
-            
+
         UIElement selectedPiece = PiecesDisplay[positionStart.row, positionStart.column];
+        if (selectedPiece == null) 
+            return false;
+
         var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
+
         if (parentCanvas == null)
             return false;
 
@@ -190,7 +196,7 @@ public partial class MainWindow : Window
             int displayStartCol = isBoardFlipped ? 7 - positionStart.column : positionStart.column;
 
             Canvas.SetLeft(selectedPiece, displayStartCol * SquareSize);
-            Canvas.SetTop(selectedPiece, displayStartRow * SquareSize);
+            Canvas.SetTop(selectedPiece, displayStartRow * SquareSize + 5);
             return false;
         }
 
@@ -204,7 +210,7 @@ public partial class MainWindow : Window
         int displayEndCol = isBoardFlipped ? 7 - positionEnd.column : positionEnd.column;
 
         Canvas.SetLeft(selectedPiece, displayEndCol * SquareSize);
-        Canvas.SetTop(selectedPiece, displayEndRow * SquareSize);
+        Canvas.SetTop(selectedPiece, displayEndRow * SquareSize + 5);
 
 
         PiecesDisplay[positionEnd.row, positionEnd.column] = (Rectangle)selectedPiece;
@@ -228,7 +234,7 @@ public partial class MainWindow : Window
             int rookTargetCol = move.targetPosition.column == 2 ? 3 : 5;
             Rectangle rook = PiecesDisplay[startRow, rookCol];
             Canvas.SetLeft(rook, rookTargetCol * SquareSize);
-            Canvas.SetTop(rook, startRow * SquareSize);
+            Canvas.SetTop(rook, startRow * SquareSize + 5);
             PiecesDisplay[startRow, rookTargetCol] = rook;
             PiecesDisplay[startRow, rookCol] = null;
         }
@@ -280,11 +286,153 @@ public partial class MainWindow : Window
             }
         }
     }
+    #endregion
+    #region UIManagement
     private void Hide(object sender, RoutedEventArgs e)
     {
-        if (display.Visibility == Visibility.Visible)
-            display.Visibility = Visibility.Hidden;
-        else
-            display.Visibility = Visibility.Visible;
+        CheckVisibility();
     }
+    private void startBTN_Click(object sender, RoutedEventArgs e)
+    {
+        ChooseModeMenu();
+    }
+    private void CheckVisibility()
+    {
+        if (display.Visibility == Visibility.Visible)
+        {
+            display.Visibility = Visibility.Hidden;
+            NotationGridScrollView.Visibility = Visibility.Hidden;
+            MainMenu.Visibility = Visibility.Visible;
+            HideBtn.Visibility = Visibility.Hidden;
+            ModeMenu.Visibility = Visibility.Hidden;
+            AuthorsMenu.Visibility = Visibility.Hidden;
+            SettingsMenu.Visibility = Visibility.Hidden;
+        }
+        else
+        {
+            if(ModeMenu.Visibility == Visibility.Visible 
+                || AuthorsMenu.Visibility == Visibility.Visible 
+                || SettingsMenu.Visibility == Visibility.Visible)
+            {
+                MainMenu.Visibility = Visibility.Visible;
+                HideBtn.Visibility = Visibility.Hidden;
+                ModeMenu.Visibility = Visibility.Hidden;
+                AuthorsMenu.Visibility = Visibility.Hidden;
+                SettingsMenu.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                display.Visibility = Visibility.Visible;
+                NotationGridScrollView.Visibility = Visibility.Visible;
+                MainMenu.Visibility = Visibility.Hidden;
+                HideBtn.Visibility = Visibility.Visible;
+                ModeMenu.Visibility = Visibility.Hidden;
+                AuthorsMenu.Visibility = Visibility.Hidden;
+                SettingsMenu.Visibility = Visibility.Hidden;
+            }
+        }
+    }
+    private void ShowBoard()
+    {
+        display.Visibility = Visibility.Visible;
+        HideBtn.Visibility = Visibility.Visible;
+        NotationGridScrollView.Visibility = Visibility.Visible;
+        ModeMenu.Visibility = Visibility.Hidden;
+        ResetGame();
+    }
+    private void ShowAuthorsPanel()
+    {
+        AuthorsMenu.Visibility = Visibility.Visible;
+        MainMenu.Visibility = Visibility.Hidden;
+        HideBtn.Visibility = Visibility.Visible;
+    }
+    private void ShowSettingsPanel()
+    {
+        SettingsMenu.Visibility = Visibility.Visible;
+        MainMenu.Visibility = Visibility.Hidden;
+        HideBtn.Visibility = Visibility.Visible;
+    }
+    private void ResetGame()
+    {
+        isBoardFlipped = false;
+        Board = new Chessboard(); 
+        display.Children.Clear(); 
+        DrawChessboard(); 
+        PlacePieces();
+        notationPanelManager.ClearNotations();
+    }
+    private void ChooseModeMenu()
+    {
+        ModeMenu.Visibility = Visibility.Visible;
+        MainMenu.Visibility = Visibility.Hidden;
+        HideBtn.Visibility = Visibility.Visible;
+    }
+
+    private void SlowGameCheck_Checked(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void SpeedGameCheck_Checked(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void PvPBtn_Click(object sender, RoutedEventArgs e)
+    {
+        aiModeON = false;
+        ShowBoard();
+    }
+
+    private void PvCBtn_Click(object sender, RoutedEventArgs e)
+    {
+        aiModeON = true;
+        ShowBoard();
+    }
+
+    private void PvPLANBtn_Click(object sender, RoutedEventArgs e)
+    {
+        aiModeON = false;
+        ShowBoard();
+    }
+
+    private void PvCGMBtn_Click(object sender, RoutedEventArgs e)
+    {
+        aiModeON = true;
+        ShowBoard();
+    }
+
+    private void settingsBtn_Click(object sender, RoutedEventArgs e)
+    {
+        ShowSettingsPanel();
+    }
+
+    private void authorsBtn_Click(object sender, RoutedEventArgs e)
+    {
+        ShowAuthorsPanel();
+    }
+
+    private void exitBtn_Click(object sender, RoutedEventArgs e)
+    {
+        App.Current.Shutdown();
+    }
+
+    private void easyAiDiffRB_Checked(object sender, RoutedEventArgs e)
+    {
+        depth = 1;
+        AI = new ChessAI(depth);
+    }
+
+    private void mediumAiDiffRB_Checked(object sender, RoutedEventArgs e)
+    {
+        depth = 3;
+        AI = new ChessAI(depth);
+    }
+
+    private void hardAiDiffRB_Checked(object sender, RoutedEventArgs e)
+    {
+        depth = 5;
+        AI = new ChessAI(depth);
+    }
+    #endregion
 }
