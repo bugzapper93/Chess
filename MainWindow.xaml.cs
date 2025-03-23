@@ -228,4 +228,11 @@ public partial class MainWindow : Window
             }
         }
     }
+    private void Hide(object sender, RoutedEventArgs e)
+    {
+        if (display.Visibility == Visibility.Visible)
+            display.Visibility = Visibility.Hidden;
+        else
+            display.Visibility = Visibility.Visible;
+    }
 }
