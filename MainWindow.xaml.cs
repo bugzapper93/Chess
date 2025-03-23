@@ -34,7 +34,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        notationPanelManager = new NotationPanelManager(NotationGrid);
+        notationPanelManager = new NotationPanelManager(NotationGrid);//NotationGrid);
         DrawChessboard();
         PlacePieces();
     }
