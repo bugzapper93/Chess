@@ -103,6 +103,7 @@ namespace Chess.Objects
                     isStaleMate = true;
                 }
             }
+
         }
        
         private void UpdateDanger()
@@ -117,17 +118,39 @@ namespace Chess.Objects
                 }
             }
 
+            // Aktualizacja zagrożeń na podstawie moveset.dangerSquares
             foreach (SquareDangerType danger in moveset.dangerSquares)
             {
-                if (danger.attackerColor == Pieces.White)
-                    squares[danger.dangerPosition.row, danger.dangerPosition.column].dangerWhite = true;
-                if (danger.attackerColor == Pieces.Black)
-                    squares[danger.dangerPosition.row, danger.dangerPosition.column].dangerBlack = true;
+                if (danger.dangerPosition == null)
+                    continue; // Pomijaj nieprawidłowe elementy
+
+                int row = danger.dangerPosition.row;
+                int col = danger.dangerPosition.column;
+
+                // Sprawdź, czy pozycja jest w zakresie 0-7
+                if (row >= 0 && row < 8 && col >= 0 && col < 8)
+                {
+                    if (danger.attackerColor == Pieces.White)
+                        squares[row, col].dangerWhite = true;
+                    else if (danger.attackerColor == Pieces.Black)
+                        squares[row, col].dangerBlack = true;
+                }
             }
 
+            // Aktualizacja pinów
             foreach (Pin pin in moveset.pins)
             {
-                pieces[pin.pinned.row, pin.pinned.column].isPinned = true;
+                if (pin.pinned == null)
+                    continue; // Pomijaj nieprawidłowe elementy
+
+                int row = pin.pinned.row;
+                int col = pin.pinned.column;
+
+                // Sprawdź, czy pozycja jest w zakresie 0-7
+                if (row >= 0 && row < 8 && col >= 0 && col < 8)
+                {
+                    pieces[row, col].isPinned = true;
+                }
             }
         }
         public Chessboard Clone()
@@ -148,20 +171,6 @@ namespace Chess.Objects
                 }
             };
             return clone;
-        }
-
-        public bool CheckIfValidMove(Position startPos, Position endPos, out Move move)
-        {
-            move = default;
-            foreach (var m in moveset.moves)
-            {
-                if (m.startPosition == startPos && m.targetPosition == endPos)
-                {
-                    move = m;
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

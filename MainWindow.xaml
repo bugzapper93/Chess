@@ -6,5 +6,36 @@
         xmlns:local="clr-namespace:Chess"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Canvas x:Name="display" Background="Gray"/>
+    <Window.Resources>
+        <Style x:Key="NotationTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Margin" Value="10" />
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="Background" Value="LightGray" />
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Canvas x:Name="display" Background="Gray"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="426,10,0,10">
+            <Grid x:Name="NotationGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                
+                <Grid.RowDefinitions>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Move" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" />
+                <TextBlock Grid.Column="1" Text="White" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" />
+                <TextBlock Grid.Column="2" Text="Black" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" />
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+
 </Window>

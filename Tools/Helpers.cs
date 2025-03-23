@@ -60,6 +60,8 @@ namespace Chess.Tools
         }
         public static bool CheckPathClear(Position startPos, Position endPos, Piece[,] pieces)
         {
+            if (!IsPositionValid(startPos) || !IsPositionValid(endPos))
+                return false;
             int rowDiff = endPos.row - startPos.row;
             int colDiff = endPos.column - startPos.column;
             int rowDir = rowDiff == 0 ? 0 : rowDiff / Math.Abs(rowDiff);
@@ -67,14 +69,18 @@ namespace Chess.Tools
             Position currentPos = new Position(startPos.row + rowDir, startPos.column + colDir);
             while (currentPos != endPos)
             {
-                if (pieces[currentPos.row, currentPos.column].value != 0)
-                {
+                if (!IsPositionValid(currentPos))
                     return false;
-                }
+                if (pieces[currentPos.row, currentPos.column].value != 0)
+                    return false;
                 currentPos.row += rowDir;
                 currentPos.column += colDir;
             }
             return true;
+        }
+        private static bool IsPositionValid(Position pos)
+        {
+            return pos.row >= 0 && pos.row < 8 && pos.column >= 0 && pos.column < 8;
         }
         public static List<Pin> GetAllPiecePins(Position position, List<Pin> pins)
         {

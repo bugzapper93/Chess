@@ -139,5 +139,17 @@ namespace Chess.Objects
                 default: return 0;
             }
         }
+        public static string PieceValueToString(int value)
+        {
+            foreach (var entry in PieceNotation)
+            {
+                if (entry.Value == value)
+                {
+                    return entry.Key.ToString();
+                }
+            }
+
+            return string.Empty;
+        }
     }
 }
