@@ -77,6 +77,12 @@ namespace Chess.Objects
             }
             return ' ';
         }
+        public static int Get_Value(Piece[,] pieces, Position pos)
+        {
+            if (pos.row < 0 || pos.row > 7 || pos.column < 0 || pos.column > 7)
+                return -1;
+            return pieces[pos.row, pos.column].value;
+        }
         public static Piece[,] Parse_FEN(string FEN_string)
         {
             Piece[,] pieces = new Piece[8, 8];
@@ -119,6 +125,31 @@ namespace Chess.Objects
                 }
             }
             return pieces;
+        }
+        public static int GetPieceValue(int piece)
+        {
+            switch (piece & ~24)
+            {
+                case King: return 1000;
+                case Queen: return 9;
+                case Rook: return 5;
+                case Bishop: return 3;
+                case Knight: return 3;
+                case Pawn: return 1;
+                default: return 0;
+            }
+        }
+        public static string PieceValueToString(int value)
+        {
+            foreach (var entry in PieceNotation)
+            {
+                if (entry.Value == value)
+                {
+                    return entry.Key.ToString();
+                }
+            }
+
+            return string.Empty;
         }
     }
 }

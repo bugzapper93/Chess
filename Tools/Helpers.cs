@@ -67,10 +67,10 @@ namespace Chess.Tools
             Position currentPos = new Position(startPos.row + rowDir, startPos.column + colDir);
             while (currentPos != endPos)
             {
-                if (pieces[currentPos.row, currentPos.column].value != 0)
-                {
+                if (!InBounds(currentPos))
                     return false;
-                }
+                if (pieces[currentPos.row, currentPos.column].value != 0)
+                    return false;
                 currentPos.row += rowDir;
                 currentPos.column += colDir;
             }
@@ -120,7 +120,6 @@ namespace Chess.Tools
             }
             return true;
         }
-        // Check if the path goes through 'check'
         public static bool CheckPathCheck(Position startPos, Position endPos, Chessboard board)
         {
             int currentColor = board.pieces[startPos.row, startPos.column].value & 24;
