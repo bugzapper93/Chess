@@ -343,7 +343,7 @@ public partial class MainWindow : Window
         display.Children.Clear(); 
         DrawChessboard(); 
         PlacePieces();
-        notationPanelManager.ClearNotations();
+        //notationPanelManager.ClearNotations();
     }
     private void ChooseModeMenu()
     {

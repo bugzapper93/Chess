@@ -39,5 +39,16 @@ namespace Chess.Tools
         };
         public static readonly char[] Files = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
         public static readonly char[] Ranks = { '1', '2', '3', '4', '5', '6', '7', '8' };
+        public static readonly List<Position> AllPositions = new List<Position>();
+        static Constants()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    AllPositions.Add(new Position { row = i, column = j });
+                }
+            }
+        }
     }
 }

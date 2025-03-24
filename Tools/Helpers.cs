@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
@@ -138,7 +139,7 @@ namespace Chess.Tools
         {
             foreach (Check check in checks)
             {
-                if (!ColinearPaths(startPos, endPos, check.checkingPiece) || !IsBetween(startPos, check.checkingPiece, endPos))
+                if (!IsInline(startPos, check.checkingPiece) || !IsBetween(startPos, check.checkingPiece, endPos))
                 {
                     return false;
                 }
@@ -148,27 +149,65 @@ namespace Chess.Tools
 
         //NEEDS UPDATE
 
-        public static bool CheckPathCheck(Position startPos, Position endPos, Chessboard board)
+        public static bool CheckValidKingMove(int currentColor, Move move, Piece[,] pieces, List<Position> slidingPieces, bool check = false)
         {
-            int currentColor = board.pieces[startPos.row, startPos.column].value & 24;
+            bool validMove = true;
+            Position startPosition = move.startPosition;
+            Position checkPosition = move.targetPosition;
 
-            int rowDiff = endPos.row - startPos.row;
-            int colDiff = endPos.column - startPos.column;
-
-            int rowDir = rowDiff == 0 ? 0 : rowDiff / Math.Abs(rowDiff);
-            int colDir = colDiff == 0 ? 0 : colDiff / Math.Abs(colDiff);
-
-            int step = 1;
-            while (true)
+            // Unable to move into a knight attack
+            foreach (Position direction in Constants.KnightDirections)
             {
-                Position currentPos = new Position(startPos.row + step * rowDir, startPos.column + step * colDir);
-                if (currentPos == endPos)
+                Position position = checkPosition + direction;
+                if (Helpers.InBounds(position) && pieces[position.row, position.column].value == (Pieces.Knight | Pieces.GetOppositeColor(currentColor)))
                 {
+                    validMove = false;
                     break;
                 }
-                step++;
             }
-            return true;
+
+            // Unable to move into a sliding attack
+            foreach (Position slidingPiece in slidingPieces)
+            {
+                int attackerType = pieces[slidingPiece.row, slidingPiece.column].value & 7;
+                int type = 0;
+                if (attackerType == Pieces.Bishop)
+                    type = 1;
+                else if (attackerType == Pieces.Rook)
+                    type = 2;
+                if (check)
+                {
+                    if ((Helpers.IsInline(checkPosition, slidingPiece, type) || Helpers.IsInline(checkPosition, startPosition, type)) && checkPosition != slidingPiece)
+                    {
+                        validMove = false;
+                        break;
+                    }
+                }
+                else if (Helpers.IsInline(checkPosition, slidingPiece, type) && checkPosition != slidingPiece && Helpers.CheckPathClear(checkPosition, slidingPiece, pieces))
+                {
+                    validMove = false;
+                    break;
+                }
+            }
+
+            // Unable to move into a pawn attack
+            int moveDirection = currentColor == Pieces.White ? -1 : 1;
+            int[] cols = { -1, 1 };
+            foreach (int col in cols)
+            {
+                Position pawnPos = new Position(checkPosition.row + moveDirection, checkPosition.column + col);
+                if (!Helpers.InBounds(pawnPos))
+                    continue;
+                if (pieces[pawnPos.row, pawnPos.column].value == (Pieces.Pawn | Pieces.GetOppositeColor(currentColor)))
+                {
+                    validMove = false;
+                    break;
+                }
+            }
+
+            if (validMove)
+                return true;
+            return false;
         }
         public static bool CheckEnPassant(Position startPos, Position endPos, Chessboard board)
         {
@@ -193,7 +232,6 @@ namespace Chess.Tools
             {
                 return false;
             }
-
             return true;
         }
     }

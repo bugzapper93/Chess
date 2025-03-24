@@ -39,7 +39,7 @@ namespace Chess.Objects
                     pieces[row, col].Cache = Moves.UpdatePieceCache(new Position(row, col), this);
                 }
             }
-            moveset = Moves.GetAllMoves(this, isWhiteTurn ? Pieces.White : Pieces.Black);
+            moveset = Moves.GetAllMoves(this, isWhiteTurn ? Pieces.White : Pieces.Black, Constants.AllPositions);
             UpdateDanger();
         }
         public void MakeMove(Move move)
@@ -86,6 +86,17 @@ namespace Chess.Objects
 
             List<Position> affectedPositions = Moves.GetAffectedPositions(move, this);
 
+            // Always update the moves for the king
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if ((pieces[i, j].value & 7) == Pieces.King)
+                        affectedPositions.Add(new Position(i, j));
+                }
+            }
+
+            // Update the piece that moved
             if (!affectedPositions.Contains(move.startPosition))
                 affectedPositions.Add(move.startPosition);
 
@@ -105,14 +116,23 @@ namespace Chess.Objects
                 checks = new List<Check>()
             };
 
-            //moveset = Moves.GetAllMoves(this, currentColor);
-            UpdateDanger();
+            moveset = Moves.GetAllMoves(this, currentColor, affectedPositions);
+
+            if (moveset.checks.Count > 0)
+            {
+                affectedPositions = Constants.AllPositions;
+            }
+
+            // Pinned pieces need updating
+            List<Position> pinnedPieces = UpdateDanger();
+            affectedPositions.AddRange(pinnedPieces);
+
             isWhiteTurn = !isWhiteTurn;
 
             int checkCount = moveset.checks.Count;
             currentColor = isWhiteTurn ? Pieces.White : Pieces.Black;
 
-            moveset = Moves.GetAllMoves(this, currentColor);
+            moveset = Moves.GetAllMoves(this, currentColor, affectedPositions);
             if (moveset.moves.Count == 0)
             {
                 if (checkCount > 0)
@@ -126,8 +146,9 @@ namespace Chess.Objects
             }
         }
        
-        private void UpdateDanger()
+        private List<Position> UpdateDanger()
         {
+            List<Position> danger = new List<Position>();
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 8; col++)
@@ -136,14 +157,9 @@ namespace Chess.Objects
                 }
             }
 
-            if (moveset.pins == null)
-                return;
-
             // Aktualizacja pinów
             foreach (Pin pin in moveset.pins)
             {
-                if (pin.pinned == null)
-                    continue; // Pomijaj nieprawidłowe elementy
 
                 int row = pin.pinned.row;
                 int col = pin.pinned.column;
@@ -152,8 +168,10 @@ namespace Chess.Objects
                 if (row >= 0 && row < 8 && col >= 0 && col < 8)
                 {
                     pieces[row, col].isPinned = true;
+                    danger.Add(new Position(row, col));
                 }
             }
+            return danger;
         }
         public Chessboard Clone()
         {

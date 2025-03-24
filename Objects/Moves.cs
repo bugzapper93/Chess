@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -170,7 +171,7 @@ namespace Chess.Objects
             }
             return temp;
         }
-        public static Moveset GetAllMoves(Chessboard board, int color)
+        public static Moveset GetAllMoves(Chessboard board, int color, List<Position> toValidate)
         {
             List<Move> moves = new List<Move>();
             List<Pin> pins = new List<Pin>();
@@ -198,6 +199,13 @@ namespace Chess.Objects
                 }
             }
 
+            Moveset noValidation = new Moveset 
+            { 
+                moves = new List<Move>(), 
+                pins = new List<Pin>(), 
+                checks = new List<Check>() 
+            };
+
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 8; col++)
@@ -206,16 +214,33 @@ namespace Chess.Objects
                     int pieceValue = piece.value;
                     if (pieceValue != 0 && (pieceValue & 24) == color)
                     {
-                        Moveset tempMoveset = board.pieces[row, col].Cache;
-                        moves.AddRange(tempMoveset.moves);
-                        if (tempMoveset.pins != null)
-                            pins.AddRange(tempMoveset.pins);
-                        if (tempMoveset.checks != null)
-                            checks.AddRange(tempMoveset.checks);
+                        if (toValidate.Contains(new Position(row, col)))
+                        {
+                            Moveset tempMoveset = board.pieces[row, col].Cache;
+                            moves.AddRange(tempMoveset.moves);
+                            if (tempMoveset.pins != null)
+                                pins.AddRange(tempMoveset.pins);
+                            if (tempMoveset.checks != null)
+                                checks.AddRange(tempMoveset.checks);
+                        }
+                        else
+                        {
+                            Moveset tempMoveset = board.pieces[row, col].Cache;
+                            noValidation.moves.AddRange(tempMoveset.moves);
+                            if (tempMoveset.pins != null)
+                                noValidation.pins.AddRange(tempMoveset.pins);
+                            if (tempMoveset.checks != null)
+                                noValidation.checks.AddRange(tempMoveset.checks);
+                        }
                     }
                 }
             }
             Moveset legalSet = ValidateMoves(new Moveset { moves = moves, pins = pins, checks = checks }, board, slidingPieces);
+        
+            legalSet.moves.AddRange(noValidation.moves);
+            legalSet.pins.AddRange(noValidation.pins);
+            legalSet.checks.AddRange(noValidation.checks);
+
             return legalSet;
         }
         private static Moveset ValidateMoves(Moveset moveset, Chessboard board, List<Position> slidingPieces)
@@ -251,32 +276,30 @@ namespace Chess.Objects
                 if ((currentPieceValue & 7) == Pieces.King)
                 {
                     bool validMove = true;
-                    Position checkPosition = move.targetPosition;
 
-                    // Unable to move into a knight attack
-                    foreach (Position direction in Constants.KnightDirections)
+                    validMove = Helpers.CheckValidKingMove(currentColor, move, pieces, slidingPieces);
+
+                    // Handle castling
+                    int colDiff =  move.targetPosition.column - move.startPosition.column;
+                    int row = currentColor == Pieces.White ? 7 : 0;
+
+                    if (Math.Abs(colDiff) == 2)
                     {
-                        Position position = checkPosition + direction;
-                        if (Helpers.InBounds(position) && pieces[position.row, position.column].value == (Pieces.Knight | Pieces.GetOppositeColor(currentColor)))
+                        int colDir = colDiff / 2;
+                        int step = 1;
+                        while (true)
                         {
-                            validMove = false;
-                            break;
-                        }
-                    }
-
-                    foreach (Position slidingPiece in slidingPieces)
-                    {
-                        int attackerType = pieces[slidingPiece.row, slidingPiece.column].value & 7;
-                        int type = 0;
-                        if (attackerType == Pieces.Bishop)
-                            type = 1;
-                        else if (attackerType == Pieces.Rook)
-                            type = 2;
-
-                        if (Helpers.IsInline(checkPosition, slidingPiece, type) && checkPosition != slidingPiece && Helpers.CheckPathClear(checkPosition, slidingPiece, board.pieces))
-                        {
-                            validMove = false;
-                            break;
+                            Position currentPos = new Position(move.startPosition.row, move.startPosition.column + step * colDir);
+                            if (!Helpers.CheckValidKingMove(currentColor, new Move { startPosition = move.startPosition, targetPosition = currentPos }, pieces, slidingPieces))
+                            {
+                                validMove = false;
+                                break;
+                            }
+                            if (currentPos == move.targetPosition)
+                            {
+                                break;
+                            }
+                            step++;
                         }
                     }
 
@@ -308,11 +331,12 @@ namespace Chess.Objects
             List<Move> legalMoves = new List<Move>();
             if (board.moveset.checks.Count > 0)
             {
+                int currentColor = pieces[friendlyKingPos.row, friendlyKingPos.column].value & 24;
                 foreach (Check check in board.moveset.checks)
                 {
                     foreach (Move move in possibleMoves)
                     {
-                        if ((board.pieces[move.startPosition.row, move.startPosition.column].value & 7) == Pieces.King && Helpers.ValidForAllChecks(move.startPosition, move.targetPosition, board.moveset.checks))
+                        if ((pieces[move.startPosition.row, move.startPosition.column].value & 7) == Pieces.King && Helpers.CheckValidKingMove(currentColor, move, pieces, slidingPieces))
                         {
                             legalMoves.Add(move);
                             continue;
@@ -333,14 +357,13 @@ namespace Chess.Objects
                 legalMoves = possibleMoves;
             }
 
-            return new Moveset { moves = legalMoves, checks = checks, pins = new List<Pin>() };
+            return new Moveset { moves = legalMoves, checks = checks, pins = moveset.pins };
         }
         #region Getting moves for each piece
         private static Moveset GetPawnMoves(Position startSquare, Chessboard board)
         {
             Piece[,] pieces = board.pieces;
             List<Move> moves = new List<Move>();
-            List<SquareDangerType> squares = new List<SquareDangerType>();
 
             Position consideredPosition;
 
@@ -397,7 +420,6 @@ namespace Chess.Objects
                         }
                         moves.Add(move);
                     }
-                    squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
                 }
             }
             return new Moveset { moves = moves };
@@ -406,7 +428,6 @@ namespace Chess.Objects
         {
             Piece[,] pieces = board.pieces;
             List<Move> moves = new List<Move>();
-            List<SquareDangerType> squares = new List<SquareDangerType>();
             List<Pin> pins = new List<Pin>();
             Position consideredPosition;
 
@@ -492,7 +513,6 @@ namespace Chess.Objects
                             moves.Add(move);
 
                         }
-                        squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
                         if (Helpers.OccupationType(consideredPosition, pieces) != 0)
                             break;
                     }
@@ -510,7 +530,6 @@ namespace Chess.Objects
             Piece[,] pieces = board.pieces;
 
             List<Move> moves = new List<Move>();
-            List<SquareDangerType> squares = new List<SquareDangerType>();
 
             Position consideredPosition;
 
@@ -535,7 +554,6 @@ namespace Chess.Objects
                         };
                         moves.Add(move);
                     }
-                    squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
                 }
             }
             return new Moveset { moves = moves };
@@ -545,7 +563,6 @@ namespace Chess.Objects
             Piece[,] pieces = board.pieces;
 
             List<Move> moves = new List<Move>();
-            List<SquareDangerType> squares = new List<SquareDangerType>();
 
             Position consideredPosition;
 
@@ -570,7 +587,6 @@ namespace Chess.Objects
 
                         moves.Add(move);
                     }
-                    squares.Add(new SquareDangerType { dangerPosition = consideredPosition, attackerPosition = startSquare, attackerColor = currentColor });
                 }
             }
             int[] possibleColumns = { 0, 7 };
@@ -581,7 +597,7 @@ namespace Chess.Objects
                 {
                     if (!pieces[row, column].hasMoved)
                     {
-                        if (Helpers.CheckPathClear(startSquare, new Position(row, column), pieces) && Helpers.CheckPathCheck(startSquare, new Position(row, column), board))
+                        if (Helpers.CheckPathClear(startSquare, new Position(row, column), pieces))
                         {
                             int direction = column == 0 ? -1 : 1;
                             consideredPosition = new Position(row, startColumn + 2 * direction);
@@ -596,6 +612,7 @@ namespace Chess.Objects
                     }
                 }
             }
+
             return new Moveset { moves = moves };
         }
         #endregion
