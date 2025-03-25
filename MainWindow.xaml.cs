@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -17,7 +18,7 @@ namespace Chess;
 public partial class MainWindow : Window
 {
     private NotationPanelManager notationPanelManager;
-    private bool isBoardFlipped = false;
+    public bool isBoardFlipped = false;
 
     private int SquareSize = Constants.Square_Size;
     private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
@@ -26,15 +27,18 @@ public partial class MainWindow : Window
     private Point originalMouseOffset;
     private bool isDragging = false;
     private UIElement? selectedPiece;
-    public bool aiModeON = true;
+    public bool aiModeON = false;
+    public bool onlineModeON = false;
     public int depth = 2;
     private ChessAI AI = new ChessAI(3);
-    Chessboard Board = new Chessboard();
-    
+    public Chessboard Board = new Chessboard();
+    private ChessOnline _chessOnline;
+
     public MainWindow()
     {
         InitializeComponent();
         notationPanelManager = new NotationPanelManager(NotationGrid);
+        _chessOnline = new ChessOnline(this);
         DrawChessboard();
         PlacePieces();
         CheckVisibility();
@@ -75,7 +79,7 @@ public partial class MainWindow : Window
                     int displayRow = isBoardFlipped ? 7 - row : row;
                     int displayCol = isBoardFlipped ? 7 - col : col;
 
-                    double pieceLeft = displayCol * SquareSize + (SquareSize - piece.Width) / 2 ;
+                    double pieceLeft = displayCol * SquareSize + (SquareSize - piece.Width) / 2;
                     double pieceTop = (displayRow * SquareSize + (SquareSize - piece.Height) / 2) + 5;
 
                     Canvas.SetLeft(piece, pieceLeft);
@@ -141,27 +145,38 @@ public partial class MainWindow : Window
                 row = 7 - row;
                 col = 7 - col;
             }
-            if (MovePiece(selectedPosition, new Position(row, col)))
+            Position targetPosition = new Position(row, col); // Define targetPosition here
+            if (MovePiece(selectedPosition, targetPosition))
             {
-                if (!aiModeON)
+                if (!aiModeON && !onlineModeON)
                 {
                     if (Board.isWhiteTurn == isBoardFlipped)
                     {
                         FlipBoard();
                     }
                 }
-                else
+                else if (aiModeON)
                 {
                     int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
                     Move bestMove = await AI.GetBestMove(Board, color);
                     MovePiece(bestMove.startPosition, bestMove.targetPosition);
+                }
+                else if (onlineModeON)
+                {
+                    await _chessOnline.SendMoveAsync(selectedPosition, targetPosition); // Use targetPosition here
+                    Trace.WriteLine($"[PieceMouseUp] Sending move from {selectedPosition.row},{selectedPosition.column} " +
+                $"to {targetPosition.row},{targetPosition.column}");
+                    if (Board.isWhiteTurn == isBoardFlipped)
+                    {
+                        FlipBoard();
+                    }
                 }
             }
         }
     }
     #endregion
     #region BoardInteraction
-    private bool MovePiece(Position positionStart, Position positionEnd)
+    public bool MovePiece(Position positionStart, Position positionEnd)
     {
         int pieceValue = Board.pieces[positionStart.row, positionStart.column].value;
         int startRow = positionStart.row;
@@ -170,7 +185,7 @@ public partial class MainWindow : Window
         int endCol = positionEnd.column;
 
         UIElement selectedPiece = PiecesDisplay[positionStart.row, positionStart.column];
-        if (selectedPiece == null) 
+        if (selectedPiece == null)
             return false;
 
         var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
@@ -253,12 +268,12 @@ public partial class MainWindow : Window
             }
         }
     }
-    private void FlipBoard()
+    public void FlipBoard()
     {
-        isBoardFlipped = !isBoardFlipped; 
-        display.Children.Clear(); 
-        DrawChessboard(); 
-        PlacePieces(); 
+        isBoardFlipped = !isBoardFlipped;
+        display.Children.Clear();
+        DrawChessboard();
+        PlacePieces();
     }
     private void ResetBoard()
     {
@@ -294,8 +309,8 @@ public partial class MainWindow : Window
         }
         else
         {
-            if(ModeMenu.Visibility == Visibility.Visible 
-                || AuthorsMenu.Visibility == Visibility.Visible 
+            if (ModeMenu.Visibility == Visibility.Visible
+                || AuthorsMenu.Visibility == Visibility.Visible
                 || SettingsMenu.Visibility == Visibility.Visible)
             {
                 MainMenu.Visibility = Visibility.Visible;
@@ -316,7 +331,7 @@ public partial class MainWindow : Window
             }
         }
     }
-    private void ShowBoard()
+    public void ShowBoard()
     {
         display.Visibility = Visibility.Visible;
         HideBtn.Visibility = Visibility.Visible;
@@ -336,12 +351,20 @@ public partial class MainWindow : Window
         MainMenu.Visibility = Visibility.Hidden;
         HideBtn.Visibility = Visibility.Visible;
     }
+
+    private void ShowServerPanel()
+    {
+        MainMenu.Visibility = Visibility.Hidden;
+        HideBtn.Visibility = Visibility.Hidden;
+        _chessOnline.ShowServerPanel();
+    }
+
     private void ResetGame()
     {
         isBoardFlipped = false;
-        Board = new Chessboard(); 
-        display.Children.Clear(); 
-        DrawChessboard(); 
+        Board = new Chessboard();
+        display.Children.Clear();
+        DrawChessboard();
         PlacePieces();
         //notationPanelManager.ClearNotations();
     }
@@ -350,6 +373,193 @@ public partial class MainWindow : Window
         ModeMenu.Visibility = Visibility.Visible;
         MainMenu.Visibility = Visibility.Hidden;
         HideBtn.Visibility = Visibility.Visible;
+    }
+    private async void btnHost_Click(object sender, RoutedEventArgs e)
+    {
+        if (_chessOnline._networkManager.IsHosting) return;
+
+        string nickname = txtNick.Text.Trim();
+        if (string.IsNullOrWhiteSpace(nickname) || nickname.Length < 3 || nickname.Length > 20)
+        {
+            MessageBox.Show("Nickname must be between 3 and 20 characters.");
+            return;
+        }
+
+        try
+        {
+            btnHost.IsEnabled = false;
+            await _chessOnline._networkManager.StartHostingAsync(nickname);
+            MessageBox.Show("Hosting started successfully!");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Error starting host: " + ex.Message);
+            await _chessOnline._networkManager.LeaveAsync(nickname);
+            btnHost.IsEnabled = true;
+        }
+    }
+
+    private async void btnDolacz_Click(object sender, RoutedEventArgs e)
+    {
+        if (_chessOnline._networkManager.IsConnected) return;
+
+        string nickname = txtNick.Text.Trim();
+        if (string.IsNullOrWhiteSpace(nickname) || nickname.Length < 3 || nickname.Length > 20)
+        {
+            MessageBox.Show("Nickname must be between 3 and 20 characters.");
+            return;
+        }
+
+        if (lvwHosts.SelectedItem == null)
+        {
+            MessageBox.Show("Select a lobby first!");
+            return;
+        }
+
+        var selectedHost = (ChessOnline.HostInfo)lvwHosts.SelectedItem;
+        string ip = selectedHost.IP;
+        string hostNickname = selectedHost.Nickname;
+        try
+        {
+            await _chessOnline._networkManager.JoinLobbyAsync(nickname, ip, hostNickname);
+            MessageBox.Show($"Joined {ip}! Press 'Leave' to exit.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Error joining: " + ex.Message);
+        }
+    }
+
+    private async void btnWyjdz_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _chessOnline._networkManager.LeaveAsync(txtNick.Text.Trim());
+            lstGracze.Items.Clear();
+            playersGroupBox.Header = "Players (0)";
+            MessageBox.Show("Left the lobby.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Error leaving: " + ex.Message);
+        }
+    }
+
+    private async void btnRefresh_Click(object sender, RoutedEventArgs e)
+    {
+        if (_chessOnline._networkManager.IsHosting) return;
+
+        btnRefresh.IsEnabled = false;
+        try
+        {
+            lvwHosts.Items.Clear();
+            await _chessOnline._networkManager.DiscoverHostsAsync();
+            if (lvwHosts.Items.Count == 0)
+            {
+                MessageBox.Show("No hosts found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Error refreshing host list: " + ex.Message);
+        }
+        finally
+        {
+            btnRefresh.IsEnabled = true;
+        }
+    }
+
+    private async void btnSendMessage_Click(object sender, RoutedEventArgs e)
+    {
+        string message = txtChatInput.Text.Trim();
+        if (string.IsNullOrEmpty(message)) return;
+
+        try
+        {
+            lstChatMessages.Items.Add($"{txtNick.Text.Trim()}: {message}");
+            await _chessOnline._networkManager.SendChatMessageAsync(txtNick.Text.Trim(), message);
+            txtChatInput.Text = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Error sending message: " + ex.Message);
+        }
+    }
+
+    private void txtChatInput_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            btnSendMessage_Click(sender, e);
+            e.Handled = true;
+        }
+    }
+
+    private async void btnClearChat_Click(object sender, RoutedEventArgs e)
+    {
+        await AnimateAndRemoveItems(lstChatMessages);
+    }
+
+    private void btnStartGame_Click(object sender, RoutedEventArgs e)
+    {
+        if (_chessOnline._networkManager.IsConnected || _chessOnline._networkManager.IsHosting)
+        {
+            ShowBoard();
+            ServerPanel.Visibility = Visibility.Hidden;
+        }
+        else
+        {
+            MessageBox.Show("You must be connected to a lobby to start the game.");
+        }
+    }
+
+    private static async Task AnimateAndRemoveItems(ListBox listBox)
+    {
+        if (listBox.Items.Count == 0) return;
+
+        var itemsToRemove = listBox.Items.Cast<object>().ToList();
+        var tcs = new TaskCompletionSource<bool>();
+        int animationsPending = itemsToRemove.Count;
+
+        if (animationsPending == 0)
+        {
+            tcs.SetResult(true);
+        }
+        else
+        {
+            foreach (var item in itemsToRemove)
+            {
+                var listBoxItem = (ListBoxItem)listBox.ItemContainerGenerator.ContainerFromItem(item);
+                if (listBoxItem != null)
+                {
+                    var fadeOut = new DoubleAnimation
+                    {
+                        From = 1,
+                        To = 0,
+                        Duration = TimeSpan.FromSeconds(0.1)
+                    };
+                    fadeOut.Completed += (s, e) =>
+                    {
+                        listBox.Items.Remove(item);
+                        if (System.Threading.Interlocked.Decrement(ref animationsPending) == 0)
+                        {
+                            tcs.SetResult(true);
+                        }
+                    };
+                    listBoxItem.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+                }
+                else
+                {
+                    listBox.Items.Remove(item);
+                    if (System.Threading.Interlocked.Decrement(ref animationsPending) == 0)
+                    {
+                        tcs.SetResult(true);
+                    }
+                }
+            }
+        }
+
+        await tcs.Task;
     }
 
     private void SlowGameCheck_Checked(object sender, RoutedEventArgs e)
@@ -365,24 +575,29 @@ public partial class MainWindow : Window
     private void PvPBtn_Click(object sender, RoutedEventArgs e)
     {
         aiModeON = false;
+        onlineModeON = false;
         ShowBoard();
     }
 
     private void PvCBtn_Click(object sender, RoutedEventArgs e)
     {
         aiModeON = true;
+        onlineModeON = false;
         ShowBoard();
     }
 
     private void PvPLANBtn_Click(object sender, RoutedEventArgs e)
     {
         aiModeON = false;
-        ShowBoard();
+        onlineModeON = true;
+        ShowServerPanel();
+        //ShowBoard();
     }
 
     private void PvCGMBtn_Click(object sender, RoutedEventArgs e)
     {
         aiModeON = true;
+        onlineModeON = false;
         ShowBoard();
     }
 
@@ -418,5 +633,11 @@ public partial class MainWindow : Window
         depth = 5;
         AI = new ChessAI(depth);
     }
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+        _chessOnline.Dispose(); // Clean up P2P resources
+    }
+
     #endregion
 }
