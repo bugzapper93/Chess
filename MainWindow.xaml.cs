@@ -20,19 +20,27 @@ public partial class MainWindow : Window
     private NotationPanelManager notationPanelManager;
     public bool isBoardFlipped = false;
 
+    // Board variables
     private int SquareSize = Constants.Square_Size;
     private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
     private Rectangle[,] Squares = new Rectangle[8, 8];
+    public Chessboard Board = new Chessboard();
+
+    // Mouse piece movement
     private Position selectedPosition;
     private Point originalMouseOffset;
     private bool isDragging = false;
     private UIElement? selectedPiece;
+
+    // AI variables
     public bool aiModeON = false;
     public bool onlineModeON = false;
     public int depth = 2;
     private ChessAI AI = new ChessAI(3);
-    public Chessboard Board = new Chessboard();
+    
+    // LAN and player turn variables
     private ChessOnline _chessOnline;
+    private int playerColor = Pieces.Black;
 
     public MainWindow()
     {
@@ -146,7 +154,7 @@ public partial class MainWindow : Window
                 col = 7 - col;
             }
             Position targetPosition = new Position(row, col); // Define targetPosition here
-            if (MovePiece(selectedPosition, targetPosition))
+            if (MovePiece(selectedPosition, targetPosition, playerColor))
             {
                 if (!aiModeON && !onlineModeON)
                 {
@@ -159,7 +167,7 @@ public partial class MainWindow : Window
                 {
                     int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
                     Move bestMove = await AI.GetBestMove(Board, color);
-                    MovePiece(bestMove.startPosition, bestMove.targetPosition);
+                    MovePiece(bestMove.startPosition, bestMove.targetPosition, Pieces.GetOppositeColor(playerColor));
                 }
                 else if (onlineModeON)
                 {
@@ -176,13 +184,15 @@ public partial class MainWindow : Window
     }
     #endregion
     #region BoardInteraction
-    public bool MovePiece(Position positionStart, Position positionEnd)
+    public bool MovePiece(Position positionStart, Position positionEnd, int playerColor)
     {
         int pieceValue = Board.pieces[positionStart.row, positionStart.column].value;
         int startRow = positionStart.row;
         int startCol = positionStart.column;
         int endRow = positionEnd.row;
         int endCol = positionEnd.column;
+
+        int currentColorTurn = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
 
         UIElement selectedPiece = PiecesDisplay[positionStart.row, positionStart.column];
         if (selectedPiece == null)
@@ -193,17 +203,25 @@ public partial class MainWindow : Window
         if (parentCanvas == null)
             return false;
 
+        if (playerColor != currentColorTurn)
+        {
+            ResetPiecePosition(positionStart, selectedPiece);
+            return false;
+        }
+
         int index = Helpers.GetMoveIndex(Board.moveset.moves, positionStart, positionEnd);
         if (index == -1)
         {
-            int displayStartRow = isBoardFlipped ? 7 - positionStart.row : positionStart.row;
-            int displayStartCol = isBoardFlipped ? 7 - positionStart.column : positionStart.column;
+            ResetPiecePosition(positionStart, selectedPiece);
 
-            double pieceLeft = displayStartCol * SquareSize + (SquareSize - selectedPiece.RenderSize.Width) / 2;
-            double pieceTop = (displayStartRow * SquareSize + (SquareSize - selectedPiece.RenderSize.Height) / 2) + 5;
+            //int displayStartRow = isBoardFlipped ? 7 - positionStart.row : positionStart.row;
+            //int displayStartCol = isBoardFlipped ? 7 - positionStart.column : positionStart.column;
 
-            Canvas.SetLeft(selectedPiece, pieceLeft);
-            Canvas.SetTop(selectedPiece, pieceTop);
+            //double pieceLeft = displayStartCol * SquareSize + (SquareSize - selectedPiece.RenderSize.Width) / 2;
+            //double pieceTop = (displayStartRow * SquareSize + (SquareSize - selectedPiece.RenderSize.Height) / 2) + 5;
+
+            //Canvas.SetLeft(selectedPiece, pieceLeft);
+            //Canvas.SetTop(selectedPiece, pieceTop);
             return false;
         }
 
@@ -252,6 +270,17 @@ public partial class MainWindow : Window
         ResetBoard();
 
         return true;
+    }
+    private void ResetPiecePosition(Position position, UIElement piece)
+    {
+        int displayStartRow = isBoardFlipped ? 7 - position.row : position.row;
+        int displayStartCol = isBoardFlipped ? 7 - position.column : position.column;
+
+        double pieceLeft = displayStartCol * SquareSize + (SquareSize - piece.RenderSize.Width) / 2;
+        double pieceTop = (displayStartRow * SquareSize + (SquareSize - piece.RenderSize.Height) / 2) + 5;
+
+        Canvas.SetLeft(piece, pieceLeft);
+        Canvas.SetTop(piece, pieceTop);
     }
     private void HighlightBoard()
     {

@@ -16,7 +16,7 @@ namespace Chess.Objects
         public readonly P2PNetworkManager _networkManager;
         private readonly MainWindow _chessMainWindow;
         private string _nickname;
-
+        private int playerColor;
         public ChessOnline(MainWindow chessMainWindow)
         {
             _networkManager = new P2PNetworkManager(NetworkConfig.MulticastGroup, NetworkConfig.Port);
@@ -61,7 +61,7 @@ namespace Chess.Objects
                         Position end = new Position(int.Parse(endParts[0]), int.Parse(endParts[1]));
                         _chessMainWindow.Dispatcher.Invoke(() =>
                         {
-                            _chessMainWindow.MovePiece(start, end);
+                            _chessMainWindow.MovePiece(start, end, playerColor);
                             if (_chessMainWindow.Board.isWhiteTurn == _chessMainWindow.isBoardFlipped)
                             {
                                 _chessMainWindow.FlipBoard();

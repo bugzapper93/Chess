@@ -135,6 +135,7 @@ namespace Chess.Tools
 
             return dot >= 0 && dot <= wSquared;
         }
+        #region Handling king movement validation
         public static bool ValidForAllChecks(Position startPos, Position endPos, List<Check> checks)
         {
             foreach (Check check in checks)
@@ -146,9 +147,6 @@ namespace Chess.Tools
             }
             return true;
         }
-
-        //NEEDS UPDATE
-
         public static bool CheckValidKingMove(int currentColor, Move move, Piece[,] pieces, List<Position> slidingPieces, bool check = false)
         {
             bool validMove = true;
@@ -209,6 +207,8 @@ namespace Chess.Tools
                 return true;
             return false;
         }
+        #endregion
+        #region Handling edge cases
         public static bool CheckEnPassant(Position startPos, Position endPos, Chessboard board)
         {
             if (board.enPassantTarget == null)
@@ -233,6 +233,11 @@ namespace Chess.Tools
                 return false;
             }
             return true;
+        }
+        #endregion
+        public static Position NotationToMove(string notation, Piece[,] pieces)
+        {
+
         }
     }
 }
