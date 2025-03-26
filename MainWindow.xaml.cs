@@ -40,7 +40,12 @@ public partial class MainWindow : Window
     
     // LAN and player turn variables
     private ChessOnline _chessOnline;
-    private int playerColor = Pieces.Black;
+    private int playerColor = Pieces.White;
+
+    //Promotion variables
+    private bool isPromotionPending = false;
+    private Position? promotionPosition;
+    private Move? lastMove;
 
     public MainWindow()
     {
@@ -114,6 +119,13 @@ public partial class MainWindow : Window
                 for (int j = 0; j < 8; j++)
                     if (PiecesDisplay[i, j] == piece)
                     {
+                        int pieceValue = Board.pieces[i, j].value;
+                        int pieceColor = pieceValue >= 16 ? Pieces.Black : Pieces.White;
+                        int currentColorTurn = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+                        if (onlineModeON && (pieceColor != playerColor || playerColor != currentColorTurn))
+                        {
+                            return; // Only allow selecting own pieces on player's turn in online mode
+                        }
                         selectedPiece = piece;
                         selectedPosition = new Position(i, j);
                         isDragging = true;
@@ -156,27 +168,27 @@ public partial class MainWindow : Window
             Position targetPosition = new Position(row, col); // Define targetPosition here
             if (MovePiece(selectedPosition, targetPosition, playerColor))
             {
-                if (!aiModeON && !onlineModeON)
+                if (!isPromotionPending)
                 {
-                    if (Board.isWhiteTurn == isBoardFlipped)
+                    if (!aiModeON && !onlineModeON)
                     {
-                        FlipBoard();
+                        if (Board.isWhiteTurn == isBoardFlipped)
+                        {
+                            FlipBoard();
+                            playerColor = playerColor == Pieces.Black ? Pieces.White : Pieces.Black;
+                        }
                     }
-                }
-                else if (aiModeON)
-                {
-                    int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
-                    Move bestMove = await AI.GetBestMove(Board, color);
-                    MovePiece(bestMove.startPosition, bestMove.targetPosition, Pieces.GetOppositeColor(playerColor));
-                }
-                else if (onlineModeON)
-                {
-                    await _chessOnline.SendMoveAsync(selectedPosition, targetPosition); // Use targetPosition here
-                    Trace.WriteLine($"[PieceMouseUp] Sending move from {selectedPosition.row},{selectedPosition.column} " +
-                $"to {targetPosition.row},{targetPosition.column}");
-                    if (Board.isWhiteTurn == isBoardFlipped)
+                    else if (aiModeON)
                     {
-                        FlipBoard();
+                        int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+                        Move bestMove = await AI.GetBestMove(Board, color);
+                        MovePiece(bestMove.startPosition, bestMove.targetPosition, Pieces.GetOppositeColor(playerColor));
+                    }
+                    else if (onlineModeON)
+                    {
+                        await _chessOnline.SendMoveAsync(selectedPosition, targetPosition, playerColor); // Use targetPosition here
+                        Trace.WriteLine($"[PieceMouseUp] Sending move from {selectedPosition.row},{selectedPosition.column} " +
+                    $"to {targetPosition.row},{targetPosition.column}");
                     }
                 }
             }
@@ -242,6 +254,7 @@ public partial class MainWindow : Window
         PiecesDisplay[positionStart.row, positionStart.column] = null;
 
         Move move = Board.moveset.moves[index];
+        lastMove = move;
         bool enPassant = false;
         if ((pieceValue & 7) == Pieces.Pawn && move.capture)
         {
@@ -263,10 +276,11 @@ public partial class MainWindow : Window
             PiecesDisplay[startRow, rookTargetCol] = rook;
             PiecesDisplay[startRow, rookCol] = null;
         }
+        PromotionChess(positionEnd, pieceValue);
         Board.MakeMove(move);
 
         string moveNotation = notationPanelManager.GetAlgebraicNotation(move, Board, pieceValue, enPassant);
-        notationPanelManager.AddRowToTable(moveNotation, Board.isWhiteTurn);
+       notationPanelManager.AddRowToTable(move, moveNotation, Board.isWhiteTurn, Board);
         ResetBoard();
 
         return true;
@@ -326,9 +340,11 @@ public partial class MainWindow : Window
     }
     private void CheckVisibility()
     {
+        promotionMenu.Visibility = Visibility.Hidden;
         if (display.Visibility == Visibility.Visible)
         {
             display.Visibility = Visibility.Hidden;
+            notationType.Visibility = Visibility.Hidden;
             NotationGridScrollView.Visibility = Visibility.Hidden;
             MainMenu.Visibility = Visibility.Visible;
             HideBtn.Visibility = Visibility.Hidden;
@@ -351,6 +367,7 @@ public partial class MainWindow : Window
             else
             {
                 display.Visibility = Visibility.Visible;
+                notationType.Visibility = Visibility.Visible;
                 NotationGridScrollView.Visibility = Visibility.Visible;
                 MainMenu.Visibility = Visibility.Hidden;
                 HideBtn.Visibility = Visibility.Visible;
@@ -363,9 +380,18 @@ public partial class MainWindow : Window
     public void ShowBoard()
     {
         display.Visibility = Visibility.Visible;
+        notationType.Visibility = Visibility.Visible;
         HideBtn.Visibility = Visibility.Visible;
         NotationGridScrollView.Visibility = Visibility.Visible;
         ModeMenu.Visibility = Visibility.Hidden;
+        if (onlineModeON)
+        {
+            isBoardFlipped = (playerColor == Pieces.Black); // Black sees board flipped (black at bottom)
+        }
+        else
+        {
+            isBoardFlipped = false;
+        }
         ResetGame();
     }
     private void ShowAuthorsPanel()
@@ -387,15 +413,51 @@ public partial class MainWindow : Window
         HideBtn.Visibility = Visibility.Hidden;
         _chessOnline.ShowServerPanel();
     }
+    private void PromotionChess(Position targetPos, int pieceValue)
+    {
+        int pieceType = Pieces.GetPieceValue(pieceValue) & 7;
+        if ((targetPos.row == 0 || targetPos.row == 7) && pieceType == Pieces.Pawn)
+        {
+            promotionPosition = targetPos;
+            promotionMenu.Visibility = Visibility.Visible;
+            isPromotionPending = true;
+        }
+    }
+    private void ChangeImageForPiece(Position pos, int newPieceValue)
+    {
+        if (PiecesDisplay[pos.row, pos.column] != null)
+        {
+            display.Children.Remove(PiecesDisplay[pos.row, pos.column]);
+            PiecesDisplay[pos.row, pos.column] = null;
+        }
 
+        Rectangle newPiece = Helpers.CreatePiece(newPieceValue);
+
+        int displayRow = isBoardFlipped ? 7 - pos.row : pos.row;
+        int displayCol = isBoardFlipped ? 7 - pos.column : pos.column;
+
+        double pieceLeft = displayCol * SquareSize + (SquareSize - newPiece.Width) / 2;
+        double pieceTop = (displayRow * SquareSize + (SquareSize - newPiece.Height) / 2) + 5;
+
+        Canvas.SetLeft(newPiece, pieceLeft);
+        Canvas.SetTop(newPiece, pieceTop);
+
+        newPiece.MouseDown += PieceMouseDown;
+        newPiece.MouseMove += PieceMouseMove;
+        newPiece.MouseUp += PieceMouseUp;
+
+        PiecesDisplay[pos.row, pos.column] = newPiece;
+        display.Children.Add(newPiece);
+    }
     private void ResetGame()
     {
-        isBoardFlipped = false;
+       // isBoardFlipped = false;
         Board = new Chessboard();
         display.Children.Clear();
         DrawChessboard();
         PlacePieces();
-        //notationPanelManager.ClearNotations();
+        notationPanelManager.ClearNotations();
+        Board.isWhiteTurn = true;
     }
     private void ChooseModeMenu()
     {
@@ -419,6 +481,7 @@ public partial class MainWindow : Window
             btnHost.IsEnabled = false;
             await _chessOnline._networkManager.StartHostingAsync(nickname);
             MessageBox.Show("Hosting started successfully!");
+            playerColor = Pieces.White;
         }
         catch (Exception ex)
         {
@@ -452,6 +515,7 @@ public partial class MainWindow : Window
         {
             await _chessOnline._networkManager.JoinLobbyAsync(nickname, ip, hostNickname);
             MessageBox.Show($"Joined {ip}! Press 'Leave' to exit.");
+            playerColor = Pieces.Black;
         }
         catch (Exception ex)
         {
@@ -667,6 +731,74 @@ public partial class MainWindow : Window
         base.OnClosed(e);
         _chessOnline.Dispose(); // Clean up P2P resources
     }
+    private async void RadioButtons_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton rb && isPromotionPending && promotionPosition.HasValue && lastMove.HasValue)
+        {
+            string pieceName = rb.Name.Replace("Choose", "");
+            int newPieceType = 0;
+            switch (pieceName)
+            {
+                case "Knight":
+                    newPieceType = Pieces.Knight;
+                    break;
+                case "Rook":
+                    newPieceType = Pieces.Rook;
+                    break;
+                case "Bishop":
+                    newPieceType = Pieces.Bishop;
+                    break;
+                case "Queen":
+                    newPieceType = Pieces.Queen;
+                    break;
+                default:
+                    return;
+            }
 
+            int pieceColor = Board.isWhiteTurn ? Pieces.Black : Pieces.White;
+            int newPieceValue = newPieceType | pieceColor;
+
+            Board.pieces[promotionPosition.Value.row, promotionPosition.Value.column].value = newPieceValue;
+            ChangeImageForPiece(promotionPosition.Value, newPieceValue);
+
+            int originalPieceValue = Pieces.Pawn | pieceColor;
+            string moveNotation = notationPanelManager.GetAlgebraicNotation(lastMove.Value, Board, originalPieceValue, false);
+            notationPanelManager.AddRowToTable(lastMove.Value ,moveNotation, !Board.isWhiteTurn, Board);
+
+            promotionMenu.Visibility = Visibility.Hidden;
+            isPromotionPending = false;
+
+
+            if (!aiModeON && !onlineModeON)
+            {
+                if (Board.isWhiteTurn == isBoardFlipped)
+                {
+                    FlipBoard();
+                    playerColor = playerColor == Pieces.Black ? Pieces.White : Pieces.Black;
+                }
+            }
+            else if (aiModeON)
+            {
+                int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+                Move bestMove = await AI.GetBestMove(Board, color);
+                MovePiece(bestMove.startPosition, bestMove.targetPosition, Pieces.GetOppositeColor(playerColor));
+            }
+        }
+    }
+    private void notationType_Checked(object sender, RoutedEventArgs e)
+    {
+        if (notationType.IsChecked == true)
+        {
+            notationPanelManager.SetNotationType(true, Board); 
+        }
+    }
+    private void notationType_Unchecked(object sender, RoutedEventArgs e)
+    {
+        if (notationType.IsChecked == false)
+        {
+            notationPanelManager.SetNotationType(false, Board);
+        }
+    }
     #endregion
+
 }

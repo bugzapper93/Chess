@@ -16,7 +16,6 @@ namespace Chess.Objects
         public readonly P2PNetworkManager _networkManager;
         private readonly MainWindow _chessMainWindow;
         private string _nickname;
-        private int playerColor;
         public ChessOnline(MainWindow chessMainWindow)
         {
             _networkManager = new P2PNetworkManager(NetworkConfig.MulticastGroup, NetworkConfig.Port);
@@ -36,12 +35,12 @@ namespace Chess.Objects
             UpdateUI(); // Initial UI update
         }
 
-        public async Task SendMoveAsync(Position start, Position end)
+        public async Task SendMoveAsync(Position start, Position end, int playerColor)
         {
             if (_networkManager.IsConnected || _networkManager.IsHosting)
             {
                 _nickname = _chessMainWindow.txtNick.Text.Trim();
-                string moveMessage = $"MOVE|{start.row},{start.column}|{end.row},{end.column}";
+                string moveMessage = $"MOVE|{start.row},{start.column}|{end.row},{end.column}|{playerColor}";
                 await _networkManager.SendChatMessageAsync(_nickname, moveMessage);
             }
         }
@@ -51,7 +50,7 @@ namespace Chess.Objects
             if (message.StartsWith("MOVE|"))
             {
                 var parts = message.Split('|');
-                if (parts.Length == 3)
+                if (parts.Length == 4)
                 {
                     var startParts = parts[1].Split(',');
                     var endParts = parts[2].Split(',');
@@ -59,13 +58,11 @@ namespace Chess.Objects
                     {
                         Position start = new Position(int.Parse(startParts[0]), int.Parse(startParts[1]));
                         Position end = new Position(int.Parse(endParts[0]), int.Parse(endParts[1]));
+                        int opponentColor = int.Parse(parts[3]); // Opponent's color from the message
                         _chessMainWindow.Dispatcher.Invoke(() =>
                         {
-                            _chessMainWindow.MovePiece(start, end, playerColor);
-                            if (_chessMainWindow.Board.isWhiteTurn == _chessMainWindow.isBoardFlipped)
-                            {
-                                _chessMainWindow.FlipBoard();
-                            }
+                            _chessMainWindow.MovePiece(start, end, opponentColor);
+                            // Remove FlipBoard() call since orientation is fixed
                         });
                     }
                 }
@@ -78,7 +75,6 @@ namespace Chess.Objects
                 });
             }
         }
-
         private void UpdateUI()
         {
             _chessMainWindow.Dispatcher.Invoke(() =>
@@ -339,6 +335,11 @@ namespace Chess.Objects
                 _multicastGroup = multicastGroup;
                 _port = port;
                 _messageHandler = new MessageHandler(this);
+            }
+
+            public async Task StartGameAsync()
+            {
+
             }
 
             public async Task StartHostingAsync(string nickname)

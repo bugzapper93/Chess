@@ -235,9 +235,9 @@ namespace Chess.Tools
             return true;
         }
         #endregion
-        public static Position NotationToMove(string notation, Piece[,] pieces)
+/*        public static Position NotationToMove(string notation, Piece[,] pieces)
         {
 
-        }
+        }*/
     }
 }

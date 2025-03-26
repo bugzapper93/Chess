@@ -24,6 +24,22 @@
     <Grid x:Name="gameWindow" Background="DimGray">
         <Canvas x:Name="display" Background="DimGray" Margin="172,0,261,-1" Width="400" Height="435" />
         <Button x:Name="HideBtn" Content="Back To Menu" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="30" Width="119" Click="Hide"/>
+        <Grid x:Name="promotionMenu" Grid.RowSpan="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,100,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+            <RadioButton x:Name="KnightChoose" GroupName="PromotionCheck" Content="Knight" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left" Checked="RadioButtons_Checked"></RadioButton>
+            <RadioButton x:Name="RookChoose" GroupName="PromotionCheck" Content="Rook" Grid.Column="0" Grid.Row="1"  VerticalAlignment="Center" HorizontalAlignment="Left" Checked="RadioButtons_Checked"></RadioButton>
+            <RadioButton x:Name="BishopChoose" GroupName="PromotionCheck" Content="Bishop" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Checked="RadioButtons_Checked"></RadioButton>
+            <RadioButton x:Name="QueenChoose" GroupName="PromotionCheck" Content="Queen" Grid.Column="0" Grid.Row="3"  VerticalAlignment="Center" HorizontalAlignment="Left"  Checked="RadioButtons_Checked"></RadioButton>
+        </Grid>
+        <CheckBox x:Name="notationType" Content="Long - notation" IsChecked="False" Margin="650,10,0,0" Checked="notationType_Checked" Unchecked="notationType_Unchecked"></CheckBox>
         <ScrollViewer x:Name="NotationGridScrollView" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="596,32,30,32">
             <Grid x:Name="NotationGrid">
                 <Grid.ColumnDefinitions>

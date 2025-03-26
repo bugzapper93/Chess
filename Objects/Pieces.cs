@@ -136,7 +136,7 @@ namespace Chess.Objects
                 case Rook: return 5;
                 case Bishop: return 3;
                 case Knight: return 3;
-                case Pawn: return 1;
+                case Pawn: return 2;
                 default: return 0;
             }
         }
