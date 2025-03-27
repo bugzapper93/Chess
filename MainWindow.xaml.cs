@@ -12,6 +12,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Chess;
 
@@ -47,16 +48,85 @@ public partial class MainWindow : Window
     private Position? promotionPosition;
     private Move? lastMove;
 
+    //Timer variables
+    private bool isSlowGame;
+    private TimeSpan timePlayerWhite;
+    private TimeSpan timePlayerBlack;
+    private TimeSpan elapsedWhite = TimeSpan.Zero;
+    private TimeSpan elapsedBlack = TimeSpan.Zero;
+    private Stopwatch turnClock = new Stopwatch();
+    private DispatcherTimer timer;
+    private bool isWhiteLast;
+
     public MainWindow()
     {
+        isWhiteLast = true;
         InitializeComponent();
         notationPanelManager = new NotationPanelManager(NotationGrid);
         _chessOnline = new ChessOnline(this);
         DrawChessboard();
         PlacePieces();
         CheckVisibility();
+        SetupTimer();
     }
+
     #region Initialization
+
+    private void SetupTimer()
+    {
+        timer = new DispatcherTimer();
+        timer.Interval = TimeSpan.FromMilliseconds(100);
+        timer.Tick += Timer_Tick;
+    }
+
+    private void Timer_Tick(object? sender, EventArgs? e)
+    {
+        if (Board.isWhiteTurn != isWhiteLast)
+        {
+            var elapsed = turnClock.Elapsed;
+
+            if (isWhiteLast)
+                elapsedWhite += elapsed;
+            else             
+                elapsedBlack += elapsed;
+
+            isWhiteLast = Board.isWhiteTurn;
+            turnClock.Restart();
+        }
+
+        var currentElapsed = turnClock.Elapsed;
+
+        if (Board.isWhiteTurn)
+        {
+            var remaining = timePlayerWhite - elapsedWhite - currentElapsed;
+
+            if (remaining <= TimeSpan.Zero)
+            {
+                WhiteTimerText.Text = "00:00";
+                timer.Stop();
+                MessageBox.Show("Białe przekroczyły czas!");
+                return;
+            }
+
+            WhiteTimerText.Text = remaining.ToString(@"mm\:ss");
+        }
+        else
+        {
+            var remaining = timePlayerBlack - elapsedBlack - currentElapsed;
+
+            if (remaining <= TimeSpan.Zero)
+            {
+                BlackTimerText.Text = "00:00";
+                timer.Stop();
+                MessageBox.Show("Czarne przekroczyły czas!");
+                return;
+            }
+
+            BlackTimerText.Text = remaining.ToString(@"mm\:ss");
+        }
+    }
+
+
     private void DrawChessboard()
     {
         for (int row = 0; row < 8; row++)
@@ -345,6 +415,7 @@ public partial class MainWindow : Window
         {
             display.Visibility = Visibility.Hidden;
             notationType.Visibility = Visibility.Hidden;
+            timers.Visibility = Visibility.Hidden;
             NotationGridScrollView.Visibility = Visibility.Hidden;
             MainMenu.Visibility = Visibility.Visible;
             HideBtn.Visibility = Visibility.Hidden;
@@ -368,6 +439,7 @@ public partial class MainWindow : Window
             {
                 display.Visibility = Visibility.Visible;
                 notationType.Visibility = Visibility.Visible;
+                timers.Visibility = Visibility.Visible;
                 NotationGridScrollView.Visibility = Visibility.Visible;
                 MainMenu.Visibility = Visibility.Hidden;
                 HideBtn.Visibility = Visibility.Visible;
@@ -381,9 +453,11 @@ public partial class MainWindow : Window
     {
         display.Visibility = Visibility.Visible;
         notationType.Visibility = Visibility.Visible;
+        timers.Visibility = Visibility.Visible;
         HideBtn.Visibility = Visibility.Visible;
         NotationGridScrollView.Visibility = Visibility.Visible;
         ModeMenu.Visibility = Visibility.Hidden;
+        startTimer();
         if (onlineModeON)
         {
             isBoardFlipped = (playerColor == Pieces.Black); // Black sees board flipped (black at bottom)
@@ -598,12 +672,37 @@ public partial class MainWindow : Window
         if (_chessOnline._networkManager.IsConnected || _chessOnline._networkManager.IsHosting)
         {
             ShowBoard();
+
             ServerPanel.Visibility = Visibility.Hidden;
         }
         else
         {
             MessageBox.Show("You must be connected to a lobby to start the game.");
         }
+    }
+
+    private void startTimer()
+    {
+        if (isSlowGame)
+        {
+            timePlayerWhite = TimeSpan.FromMinutes(15);
+            timePlayerBlack = TimeSpan.FromMinutes(15);
+        }
+        else
+        {
+            timePlayerWhite = TimeSpan.FromMinutes(5);
+            timePlayerBlack = TimeSpan.FromMinutes(5);
+        }
+
+        elapsedWhite = TimeSpan.Zero;
+        elapsedBlack = TimeSpan.Zero;
+
+        turnClock.Restart();
+
+        WhiteTimerText.Text = timePlayerWhite.ToString(@"mm\:ss");
+        BlackTimerText.Text = timePlayerBlack.ToString(@"mm\:ss");
+
+        timer.Start();
     }
 
     private static async Task AnimateAndRemoveItems(ListBox listBox)
@@ -657,12 +756,13 @@ public partial class MainWindow : Window
 
     private void SlowGameCheck_Checked(object sender, RoutedEventArgs e)
     {
-
+        isSlowGame = true;
     }
 
     private void SpeedGameCheck_Checked(object sender, RoutedEventArgs e)
     {
 
+        isSlowGame = false;
     }
 
     private void PvPBtn_Click(object sender, RoutedEventArgs e)

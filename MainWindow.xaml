@@ -39,23 +39,50 @@
             <RadioButton x:Name="BishopChoose" GroupName="PromotionCheck" Content="Bishop" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Checked="RadioButtons_Checked"></RadioButton>
             <RadioButton x:Name="QueenChoose" GroupName="PromotionCheck" Content="Queen" Grid.Column="0" Grid.Row="3"  VerticalAlignment="Center" HorizontalAlignment="Left"  Checked="RadioButtons_Checked"></RadioButton>
         </Grid>
-        <CheckBox x:Name="notationType" Content="Long - notation" IsChecked="False" Margin="650,10,0,0" Checked="notationType_Checked" Unchecked="notationType_Unchecked"></CheckBox>
-        <ScrollViewer x:Name="NotationGridScrollView" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="596,32,30,32">
-            <Grid x:Name="NotationGrid">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical" Margin="10">
+            <StackPanel x:Name="timers" Orientation="Horizontal" Margin="580,0,0,5">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Black:" FontSize="13" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <Border BorderBrush="Black" BorderThickness="1" CornerRadius="15" Padding="10,2">
+                        <TextBlock Text="00:00" FontSize="13" x:Name="BlackTimerText" />
+                    </Border>
+                </StackPanel>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock Text="Move" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" Margin="0,5,0,0" Width="52" />
-                <TextBlock Grid.Column="1" Text="White" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" Margin="0,5,0,0" Width="78" />
-                <TextBlock Grid.Column="2" Text="Black" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" Margin="0,5,0,0" Width="78" />
-            </Grid>
-        </ScrollViewer>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="30,0,0,0">
+                    <TextBlock Text="White:" FontSize="13" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <Border BorderBrush="Black" BorderThickness="1" CornerRadius="15" Padding="10,2">
+                        <TextBlock Text="00:00" FontSize="13" x:Name="WhiteTimerText" />
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <CheckBox x:Name="notationType" Content="Long - notation" IsChecked="False"
+              Margin="650,10,0,0"
+              Checked="notationType_Checked"
+              Unchecked="notationType_Unchecked" />
+
+            <ScrollViewer x:Name="NotationGridScrollView"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  Margin="596,32,30,32">
+                <Grid x:Name="NotationGrid">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Move" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" Margin="0,5,0,0" Width="52" />
+                    <TextBlock Grid.Column="1" Text="White" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" Margin="0,5,0,0" Width="78" />
+                    <TextBlock Grid.Column="2" Text="Black" Style="{StaticResource NotationTextBlockStyle}" Background="DarkGray" Foreground="White" Margin="0,5,0,0" Width="78" />
+                </Grid>
+            </ScrollViewer>
+        </StackPanel>
+
         <Grid x:Name="MainMenu">
             <Button x:Name="startBTN" Content="START" Click="startBTN_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Padding="50,10,50,10" UseLayoutRounding="False" Margin="0,100,0,0" FontWeight="Bold" FontFamily="Consolas" Width="150" Height="45"/>
             <Button x:Name="settingsBtn" Content="SETTINGS" Click="settingsBtn_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Padding="40,10,40,10" UseLayoutRounding="True" Margin="0,165,0,0" FontWeight="Bold" FontFamily="Consolas" Width="150" Height="45"/>
