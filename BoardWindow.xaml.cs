@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,172 +23,143 @@ namespace Chess
         public bool isBoardFlipped = false;
 
         // Board variables
-        private int SquareSize = Constants.Square_Size;
         private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
         private Rectangle[,] Squares = new Rectangle[8, 8];
-        public Chessboard Board = new Chessboard();
 
-        private Position selectedPosition;
+        private Chessboard board = new Chessboard();
+
         private Point originalMouseOffset;
         private bool isDragging = false;
         private UIElement? selectedPiece;
-
-        private int playerColor = Pieces.White;
+        int selectedSquare;
+        List<int> possibleMoves = new List<int>();
         public BoardWindow()
         {
             InitializeComponent();
 
             DrawChessboard();
             PlacePieces();
+            board.UpdateMoves();
         }
         private void DrawChessboard()
         {
-            for (int row = 0; row < 8; row++)
+            for (int square = 0; square < 64; square++)
             {
-                for (int col = 0; col < 8; col++)
+                Rectangle backgroundPanel = new Rectangle
                 {
-                    Rectangle square = new Rectangle
-                    {
-                        Width = SquareSize,
-                        Height = SquareSize
-                    };
-                    int displayRow = isBoardFlipped ? 7 - row : row;
-                    int displayCol = isBoardFlipped ? 7 - col : col;
-                    Canvas.SetLeft(square, displayCol * SquareSize);
-                    Canvas.SetTop(square, displayRow * SquareSize + 5);
-                    Squares[row, col] = square;
-                    display.Children.Add(square);
-                }
+                    Width = Constants.SquareSize,
+                    Height = Constants.SquareSize
+                };
+
+                int row = square / 8;
+                int col = square % 8;
+
+                int displayRow = row;
+                int displayCol = col;
+
+                Canvas.SetLeft(backgroundPanel, displayCol * Constants.SquareSize);
+                Canvas.SetBottom(backgroundPanel, displayRow * Constants.SquareSize);
+
+                Squares[row, col] = backgroundPanel;
+                display.Children.Add(backgroundPanel);
             }
-            ResetBoard();
+            ResetBoardView();
         }
 
         private void PlacePieces()
         {
-            for (int row = 0; row < 8; row++)
+            char[] pieces = Helpers.GetPieceArray(board);
+
+            for (int square = 0; square < 64; square++)
             {
-                for (int col = 0; col < 8; col++)
-                {
-                    if (Board.pieces[row, col].value != 0)
-                    {
-                        Rectangle piece = Helpers.CreatePiece(Board.pieces[row, col].value);
+                if (pieces[square] == default(char))
+                    continue;
 
-                        int displayRow = isBoardFlipped ? 7 - row : row;
-                        int displayCol = isBoardFlipped ? 7 - col : col;
+                Rectangle piece = Helpers.GeneratePiece(pieces[square]);
 
-                        double pieceLeft = displayCol * SquareSize + (SquareSize - piece.Width) / 2;
-                        double pieceTop = (displayRow * SquareSize + (SquareSize - piece.Height) / 2) + 5;
+                int row = square / 8;
+                int col = square % 8;
 
-                        Canvas.SetLeft(piece, pieceLeft);
-                        Canvas.SetTop(piece, pieceTop);
+                int displayRow = row;
+                int displayCol = col;
 
-                        piece.MouseDown += PieceMouseDown;
-                        piece.MouseMove += PieceMouseMove;
-                        piece.MouseUp += PieceMouseUp;
+                double pieceLeft = displayCol * Constants.SquareSize + (Constants.SquareSize - piece.Width) / 2;
+                double pieceBottom = displayRow * Constants.SquareSize + (Constants.SquareSize - piece.Height) / 2;
 
-                        PiecesDisplay[row, col] = piece;
-                        display.Children.Add(piece);
-                    }
-                }
+                Canvas.SetLeft(piece, pieceLeft);
+                Canvas.SetBottom(piece, pieceBottom);
+
+                piece.MouseDown += PieceMouseDown;
+                piece.MouseMove += PieceMouseMove;
+                piece.MouseUp += PieceMouseUp;
+
+                PiecesDisplay[row, col] = piece;
+                display.Children.Add(piece);
             }
         }
-        public bool MovePiece(Position positionStart, Position positionEnd, int playerColor)
+        private void RepositionPiece(Move move, bool validMove = true)
         {
-            int pieceValue = Board.pieces[positionStart.row, positionStart.column].value;
-            int startRow = positionStart.row;
-            int startCol = positionStart.column;
-            int endRow = positionEnd.row;
-            int endCol = positionEnd.column;
+            int selectedRow = move.From / 8;
+            int selectedColumn = move.From % 8;
 
-            int currentColorTurn = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
+            int targetRow = move.To / 8;
+            int targetColumn = move.To % 8;
 
-            UIElement selectedPiece = PiecesDisplay[positionStart.row, positionStart.column];
+            UIElement selectedPiece = PiecesDisplay[selectedRow, selectedColumn];
+
             if (selectedPiece == null)
-                return false;
+                return;
 
-            var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
-
-            if (parentCanvas == null)
-                return false;
-
-            if (playerColor != currentColorTurn)
+            if (!validMove)
             {
-                ResetPiecePosition(positionStart, selectedPiece);
-                return false;
+                double tempPosLeft = selectedColumn * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
+                double tempPosBottom = selectedRow * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
+
+                Canvas.SetLeft(selectedPiece, tempPosLeft);
+                Canvas.SetBottom(selectedPiece, tempPosBottom);
+                return;
             }
 
-            int index = Helpers.GetMoveIndex(Board.moveset.moves, positionStart, positionEnd);
-            if (index == -1)
+            double newLeft = targetColumn * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
+            double newBottom = targetRow * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
+
+            Canvas.SetLeft(selectedPiece, newLeft);
+            Canvas.SetBottom(selectedPiece, newBottom);
+
+            PiecesDisplay[targetRow, targetColumn] = (Rectangle)selectedPiece;
+            PiecesDisplay[selectedRow, selectedColumn] = null;
+        }
+        private bool MovePiece(Move move)
+        {
+            int selectedRow = move.From / 8;
+            int selectedColumn = move.From % 8;
+
+            int targetRow = move.To / 8;
+            int targetColumn = move.To % 8;
+
+            int startSquare = move.From;
+            int endSquare = move.To;
+
+            if (possibleMoves.Contains(endSquare))
             {
-                ResetPiecePosition(positionStart, selectedPiece);
-
-                //int displayStartRow = isBoardFlipped ? 7 - positionStart.row : positionStart.row;
-                //int displayStartCol = isBoardFlipped ? 7 - positionStart.column : positionStart.column;
-
-                //double pieceLeft = displayStartCol * SquareSize + (SquareSize - selectedPiece.RenderSize.Width) / 2;
-                //double pieceTop = (displayStartRow * SquareSize + (SquareSize - selectedPiece.RenderSize.Height) / 2) + 5;
-
-                //Canvas.SetLeft(selectedPiece, pieceLeft);
-                //Canvas.SetTop(selectedPiece, pieceTop);
-                return false;
+                RepositionPiece(move);
+                board.MakeMove(move);
             }
-
-            if (PiecesDisplay[positionEnd.row, positionEnd.column] != null && PiecesDisplay[positionEnd.row, positionEnd.column] != selectedPiece)
+            else
             {
-                parentCanvas.Children.Remove(PiecesDisplay[positionEnd.row, positionEnd.column]);
-                PiecesDisplay[positionEnd.row, positionEnd.column] = null;
+                RepositionPiece(new Move(startSquare, startSquare), false);
             }
-
-            int displayEndRow = isBoardFlipped ? 7 - positionEnd.row : positionEnd.row;
-            int displayEndCol = isBoardFlipped ? 7 - positionEnd.column : positionEnd.column;
-
-            Canvas.SetLeft(selectedPiece, displayEndCol * SquareSize);
-            Canvas.SetTop(selectedPiece, displayEndRow * SquareSize + 5);
-
-
-            PiecesDisplay[positionEnd.row, positionEnd.column] = (Rectangle)selectedPiece;
-            PiecesDisplay[positionStart.row, positionStart.column] = null;
-
-            Move move = Board.moveset.moves[index];
-            bool enPassant = false;
-            if ((pieceValue & 7) == Pieces.Pawn && move.capture)
-            {
-                // En passant
-                if (Board.pieces[endRow, endCol].value == 0)
-                {
-                    parentCanvas.Children.Remove(PiecesDisplay[positionStart.row, positionEnd.column]);
-                    PiecesDisplay[positionStart.row, positionEnd.column] = null;
-                    enPassant = true;
-                }
-            }
-            if ((pieceValue & 7) == Pieces.King && Math.Abs(move.startPosition.row - move.targetPosition.row) == 2)
-            {
-                int rookCol = move.targetPosition.column == 2 ? 0 : 7;
-                int rookTargetCol = move.targetPosition.column == 2 ? 3 : 5;
-                Rectangle rook = PiecesDisplay[startRow, rookCol];
-                Canvas.SetLeft(rook, rookTargetCol * SquareSize);
-                Canvas.SetTop(rook, startRow * SquareSize + 5);
-                PiecesDisplay[startRow, rookTargetCol] = rook;
-                PiecesDisplay[startRow, rookCol] = null;
-            }
-            Board.MakeMove(move);
-
-            //string moveNotation = notationPanelManager.GetAlgebraicNotation(move, Board, pieceValue, enPassant);
-            //notationPanelManager.AddRowToTable(moveNotation, Board.isWhiteTurn);
-            ResetBoard();
-
             return true;
         }
-        private void ResetPiecePosition(Position position, UIElement piece)
+        private void HighlightBoard()
         {
-            int displayStartRow = isBoardFlipped ? 7 - position.row : position.row;
-            int displayStartCol = isBoardFlipped ? 7 - position.column : position.column;
-
-            double pieceLeft = displayStartCol * SquareSize + (SquareSize - piece.RenderSize.Width) / 2;
-            double pieceTop = (displayStartRow * SquareSize + (SquareSize - piece.RenderSize.Height) / 2) + 5;
-
-            Canvas.SetLeft(piece, pieceLeft);
-            Canvas.SetTop(piece, pieceTop);
+            possibleMoves = Helpers.GetPieceMoves(board, selectedSquare, board.isWhiteTurn);
+            foreach (int possibleMove in possibleMoves)
+            {
+                int row = possibleMove / 8;
+                int column = possibleMove % 8;
+                Squares[row, column].Fill = Brushes.Red;
+            }
         }
         private void PieceMouseDown(object sender, MouseEventArgs e)
         {
@@ -199,13 +171,12 @@ namespace Chess
                         if (PiecesDisplay[i, j] == piece)
                         {
                             selectedPiece = piece;
-                            selectedPosition = new Position(i, j);
                             isDragging = true;
-
+                            selectedSquare = i * 8 + j;
                             Point mousePosition = e.GetPosition(piece);
                             originalMouseOffset = new Point(mousePosition.X, mousePosition.Y);
-                            HighlightBoard();
                             piece.CaptureMouse();
+                            HighlightBoard();
                         }
             }
         }
@@ -218,8 +189,13 @@ namespace Chess
                     return;
 
                 Point mousePosition = e.GetPosition(parentCanvas);
-                Canvas.SetLeft(selectedPiece, mousePosition.X - originalMouseOffset.X);
-                Canvas.SetTop(selectedPiece, mousePosition.Y - originalMouseOffset.Y);
+                double newLeft = mousePosition.X - originalMouseOffset.X;
+
+                double canvasHeight = parentCanvas.ActualHeight;
+                double newBottom = canvasHeight - mousePosition.Y - (selectedPiece.RenderSize.Height - originalMouseOffset.Y);
+
+                Canvas.SetLeft(selectedPiece, newLeft);
+                Canvas.SetBottom(selectedPiece, newBottom);
             }
         }
         private async void PieceMouseUp(object sender, MouseEventArgs e)
@@ -230,72 +206,26 @@ namespace Chess
                 var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
                 selectedPiece.ReleaseMouseCapture();
                 Point mousePosition = e.GetPosition(display);
-                int row = (int)(mousePosition.Y / SquareSize);
-                int col = (int)(mousePosition.X / SquareSize);
-                if (isBoardFlipped)
-                {
-                    row = 7 - row;
-                    col = 7 - col;
-                }
-                Position targetPosition = new Position(row, col); // Define targetPosition here
-                if (MovePiece(selectedPosition, targetPosition, playerColor))
-                {
-                    //if (!aiModeON && !onlineModeON)
-                    //{
-                    if (Board.isWhiteTurn == isBoardFlipped)
-                    {
-                        FlipBoard();
-                    }
-                    //}
-                    //else if (aiModeON)
-                    //{
-                    //    int color = Board.isWhiteTurn ? Pieces.White : Pieces.Black;
-                    //    Move bestMove = await AI.GetBestMove(Board, color);
-                    //    MovePiece(bestMove.startPosition, bestMove.targetPosition, Pieces.GetOppositeColor(playerColor));
-                    //}
-                    //else if (onlineModeON)
-                    //{
-                    //    await _chessOnline.SendMoveAsync(selectedPosition, targetPosition); // Use targetPosition here
-                    //    Trace.WriteLine($"[PieceMouseUp] Sending move from {selectedPosition.row},{selectedPosition.column} " +
-                    //$"to {targetPosition.row},{targetPosition.column}");
-                    //    if (Board.isWhiteTurn == isBoardFlipped)
-                    //    {
-                    //        FlipBoard();
-                    //    }
-                    //}
-                }
+
+                int row = (int)((display.ActualHeight - mousePosition.Y) / Constants.SquareSize);
+                int col = (int)(mousePosition.X / Constants.SquareSize);
+
+                int targetSquare = row * 8 + col;
+
+                MovePiece(new Move(selectedSquare, targetSquare));
+                selectedPiece = null;
+                isDragging = false;
+                ResetBoardView();
             }
         }
-        private void HighlightBoard()
+        private void ResetBoardView()
         {
-            ResetBoard();
-            int row = selectedPosition.row;
-            int col = selectedPosition.column;
-            List<Move> moves = Board.moveset.moves;
-            foreach (Move move in moves)
+            for (int square = 0; square < 64; square++)
             {
-                if (move.startPosition == selectedPosition)
-                {
-                    Rectangle square = Squares[move.targetPosition.row, move.targetPosition.column];
-                    square.Fill = Brushes.Red;
-                }
-            }
-        }
-        public void FlipBoard()
-        {
-            isBoardFlipped = !isBoardFlipped;
-            display.Children.Clear();
-            DrawChessboard();
-            PlacePieces();
-        }
-        private void ResetBoard()
-        {
-            for (int row = 0; row < 8; row++)
-            {
-                for (int col = 0; col < 8; col++)
-                {
-                    Squares[row, col].Fill = ((row + col) % 2 == 0) ? Constants.Primary : Constants.Secondary;
-                }
+                int row = square / 8;
+                int column = square % 8;
+
+                Squares[row, column].Fill = (((row + column) % 2) == 0) ? Constants.Primary : Constants.Secondary;
             }
         }
     }

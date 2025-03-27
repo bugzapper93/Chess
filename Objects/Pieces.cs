@@ -11,7 +11,6 @@ namespace Chess.Objects
         public int value;
         public bool hasMoved;
         public bool isPinned;
-        public Moveset Cache;
     }
     class Pieces
     {
@@ -28,16 +27,7 @@ namespace Chess.Objects
             { 'N', Knight | White },
             { 'B', Bishop | White },
             { 'R', Rook | White },
-            { 'Q', Queen | White },
-            { '1', 1 },
-            { '2', 2 },
-            { '3', 3 },
-            { '4', 4 },
-            { '5', 5 },
-            { '6', 6 },
-            { '7', 7 },
-            { '8', 8 },
-            { '/', 0 }
+            { 'Q', Queen | White }
         };
         public static Dictionary<char, string> ResourceNames = new Dictionary<char, string>
         {
@@ -65,92 +55,6 @@ namespace Chess.Objects
         public const int Black = 16;
 
         public const string DefaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-        public static int GetOppositeColor(int color)
-        {
-            return color == White ? Black : White;
-        }
-        public static char GetPieceChar(int piece)
-        {
-            foreach (KeyValuePair<char, int> pair in PieceNotation)
-            {
-                if (pair.Value == piece)
-                    return pair.Key;
-            }
-            return ' ';
-        }
-        public static int Get_Value(Piece[,] pieces, Position pos)
-        {
-            if (pos.row < 0 || pos.row > 7 || pos.column < 0 || pos.column > 7)
-                return -1;
-            return pieces[pos.row, pos.column].value;
-        }
-        public static Piece[,] Parse_FEN(string FEN_string)
-        {
-            Piece[,] pieces = new Piece[8, 8];
-            bool has_moved = false;
 
-            int row = 0;
-            int col = 0;
-
-            foreach (char piece in FEN_string)
-            {
-                if (!PieceNotation.ContainsKey(piece))
-                    continue;
-
-                if (FEN_string != DefaultPosition)
-                    has_moved = true;
-
-                int current_piece = PieceNotation[piece];
-
-                if (current_piece == 0)
-                {
-                    row++;
-                    col = 0;
-                    continue;
-                }
-
-                if (current_piece >= 1 && current_piece <= 8)
-                {
-                    col += current_piece;
-                }
-
-                if (col < 8 && row < 8)
-                {
-                    pieces[row, col] = new Piece
-                    {
-                        value = current_piece,
-                        hasMoved = has_moved,
-                        isPinned = false
-                    };
-                    col++;
-                }
-            }
-            return pieces;
-        }
-        public static int GetPieceValue(int piece)
-        {
-            switch (piece & ~24)
-            {
-                case King: return 1000;
-                case Queen: return 9;
-                case Rook: return 5;
-                case Bishop: return 3;
-                case Knight: return 3;
-                case Pawn: return 1;
-                default: return 0;
-            }
-        }
-        public static string PieceValueToString(int value)
-        {
-            foreach (var entry in PieceNotation)
-            {
-                if (entry.Value == value)
-                {
-                    return entry.Key.ToString();
-                }
-            }
-
-            return string.Empty;
-        }
     }
 }

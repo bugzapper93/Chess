@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -18,13 +19,304 @@ namespace Chess.Tools
 {
     public static class Helpers
     {
-        public static Rectangle CreatePiece(int value)
+        public static int BitScan(ulong bitboard)
         {
-            char pieceChar = Pieces.GetPieceChar(value);
-            string resourceName = Pieces.ResourceNames[pieceChar];
+            for (int i = 0; i < 64; i++)
+            {
+                if ((bitboard & (1UL << i)) != 0)
+                    return i;
+            }
+            return -1;
+        }
+        public static bool isPawnCaptureValid(int fromSquare, int toSquare, bool enemyIsWhite = false)
+        {
+            int fromFile = fromSquare % 8;
+            int toFile = toSquare % 8;
+            return Math.Abs(fromFile - toFile) == 1;
+        }
+        public static bool IsKingMoveInBounds(int from, int to)
+        {
+            int fromRank = from / 8;
+            int fromFile = from % 8;
+            int toRank = to / 8;
+            int toFile = to % 8;
 
+            return Math.Abs(fromRank - toRank) <= 1 && Math.Abs(fromFile - toFile) <= 1;
+        }
+        public static bool isKnightMoveInBounds(int from, int to)
+        {
+            int fromRank = from / 8;
+            int fromFile = from % 8;
+            int toRank = to / 8;
+            int toFile = to % 8;
+
+            int rankDiff = Math.Abs(fromRank - toRank);
+            int fileDiff = Math.Abs(fromFile - toFile);
+
+            return (rankDiff == 2 && fileDiff == 1) || (rankDiff == 1 && fileDiff == 2);
+        }
+        public static bool isSlidingMoveInBounds(int from, int target, int dir)
+        {
+            int fromRank = from / 8;
+            int fromFile = from % 8;
+            int targetRank = target / 8;
+            int targetFile = target % 8;
+
+            if (dir == 1 || dir == -1)
+                return fromRank == targetRank;
+            if (dir == 9 || dir == -9 || dir == 7 || dir == -7)
+                return Math.Abs(fromRank - targetRank) == Math.Abs(fromFile - targetFile);
+            if (dir == 8 || dir == 4)
+                return true;
+            return true;
+        }
+        public static bool isOnBoard(int square)
+        {
+            return square >= 0 && square < 64;
+        }
+        public static bool isKingInCheck(Chessboard board, bool isWhite)
+        {
+            int kingSquare = BitScan(isWhite ? board.WhiteKing : board.BlackKing);
+            if (kingSquare == -1)
+                return false;
+
+            if (isWhite)
+            {
+                if (isOnBoard(kingSquare + 7) && isPawnCaptureValid(kingSquare, kingSquare + 7, false))
+                {
+                    if ((board.BlackPawns & (1UL << (kingSquare + 7))) != 0)
+                        return true;
+                }
+                if (isOnBoard(kingSquare + 9) && isPawnCaptureValid(kingSquare, kingSquare + 9, false))
+                {
+                    if ((board.BlackPawns & (1UL << (kingSquare + 9))) != 0)
+                        return true;
+                }
+            }
+            else
+            {
+                // Enemy is White; white pawn attacks from pawn's square are +7 and +9.
+                if (isOnBoard(kingSquare - 7) && isPawnCaptureValid(kingSquare, kingSquare - 7, true))
+                {
+                    if ((board.WhitePawns & (1UL << (kingSquare - 7))) != 0)
+                        return true;
+                }
+                if (isOnBoard(kingSquare - 9) && isPawnCaptureValid(kingSquare, kingSquare - 9, true))
+                {
+                    if ((board.WhitePawns & (1UL << (kingSquare - 9))) != 0)
+                        return true;
+                }
+            }
+
+            // --- Knight Attacks ---
+            int[] knightOffsets = Constants.KnightOffsets;
+            foreach (int offset in knightOffsets)
+            {
+                int target = kingSquare + offset;
+                if (!isKnightMoveInBounds(kingSquare, target))
+                    continue;
+                if (isWhite)
+                {
+                    if ((board.BlackKnights & (1UL << target)) != 0)
+                        return true;
+                }
+                else
+                {
+                    if ((board.WhiteKnights & (1UL << target)) != 0)
+                        return true;
+                }
+            }
+
+            // --- Sliding Attacks ---
+            // Rook and Queen (horizontal & vertical)
+            int[] rookDirections = { 1, -1, 8, -8 };
+            foreach (int dir in rookDirections)
+            {
+                int target = kingSquare;
+                while (true)
+                {
+                    target += dir;
+                    if (!isSlidingMoveInBounds(kingSquare, target, dir))
+                        break;
+                    ulong targetMask = 1UL << target;
+                    if ((board.AllPieces & targetMask) != 0)
+                    {
+                        // Found a piece; check if enemy rook or queen.
+                        if (isWhite)
+                        {
+                            if (((board.BlackRooks | board.BlackQueens) & targetMask) != 0)
+                                return true;
+                        }
+                        else
+                        {
+                            if (((board.WhiteRooks | board.WhiteQueens) & targetMask) != 0)
+                                return true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Bishop and Queen (diagonals)
+            int[] bishopDirections = Constants.BishopDirections;
+            foreach (int dir in bishopDirections)
+            {
+                int target = kingSquare;
+                while (true)
+                {
+                    target += dir;
+                    if (!isSlidingMoveInBounds(kingSquare, target, dir))
+                        break;
+                    ulong targetMask = 1UL << target;
+                    if ((board.AllPieces & targetMask) != 0)
+                    {
+                        // Found a piece; check if enemy bishop or queen.
+                        if (isWhite)
+                        {
+                            if (((board.BlackBishops | board.BlackQueens) & targetMask) != 0)
+                                return true;
+                        }
+                        else
+                        {
+                            if (((board.WhiteBishops | board.WhiteQueens) & targetMask) != 0)
+                                return true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // --- Enemy King (adjacent squares) ---
+            int[] kingOffsets = { -9, -8, -7, -1, 1, 7, 8, 9 };
+            foreach (int offset in kingOffsets)
+            {
+                int target = kingSquare + offset;
+                if (!IsKingMoveInBounds(kingSquare, target))
+                    continue;
+                if (isWhite)
+                {
+                    if ((board.BlackKing & (1UL << target)) != 0)
+                        return true;
+                }
+                else
+                {
+                    if ((board.WhiteKing & (1UL << target)) != 0)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+        public static List<int> GetPieceMoves(Chessboard board, int startSquare, bool isWhite)
+        {
+            List<int> targetSquares = new List<int>();
+            List<Move> possibleList = new List<Move>();
+            ulong startMask = 1UL << startSquare;
+            if (isWhite)
+            {
+                if ((board.WhitePawns & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.WhitePawnMoves;
+                }
+                else if ((board.WhiteKnights & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.WhiteKnightMoves;
+                }
+                else if ((board.WhiteBishops & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.WhiteBishopMoves;
+                }
+                else if ((board.WhiteRooks & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.WhiteRookMoves;
+                }
+                else if ((board.WhiteQueens & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.WhiteQueenMoves;
+                }
+                else if ((board.WhiteKing & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.WhiteKingMoves;
+                }
+            }
+            else
+            {
+                if ((board.BlackPawns & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.BlackPawnMoves;
+                }
+                else if ((board.BlackKnights & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.BlackKnightMoves;
+                }
+                else if ((board.BlackBishops & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.BlackBishopMoves;
+                }
+                else if ((board.BlackRooks & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.BlackRookMoves;
+                }
+                else if ((board.BlackQueens & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.BlackQueenMoves;
+                }
+                else if ((board.BlackKing & startMask) != 0)
+                {
+                    possibleList = board.LegalMoves.BlackKingMoves;
+                }
+            }
+
+            foreach (Move move in possibleList)
+            {
+                if (move.From == startSquare)
+                {
+                    targetSquares.Add(move.To);
+                }
+            }
+            return targetSquares;
+        }
+        #region Displaying the pieces
+        public static char[] GetPieceArray(Chessboard board)
+        {
+            char[] pieces = new char[64];
+            for (int target = 0 ; target < 64; target++)
+            {
+                ulong targetMask = 1UL << target;
+                // White pieces
+                if ((targetMask & board.WhitePawns) != 0)
+                    pieces[target] = 'P';
+                else if ((targetMask & board.WhiteKnights) != 0)
+                    pieces[target] = 'N';
+                else if ((targetMask & board.WhiteBishops) != 0)
+                    pieces[target] = 'B';
+                else if ((targetMask & board.WhiteRooks) != 0)
+                    pieces[target] = 'R';
+                else if ((targetMask & board.WhiteQueens) != 0)
+                    pieces[target] = 'Q';
+                else if ((targetMask & board.WhiteKing) != 0)
+                    pieces[target] = 'K';
+                // Black pieces
+                else if ((targetMask & board.BlackPawns) != 0)
+                    pieces[target] = 'p';
+                else if ((targetMask & board.BlackKnights) != 0)
+                    pieces[target] = 'n';
+                else if ((targetMask & board.BlackBishops) != 0)
+                    pieces[target] = 'b';
+                else if ((targetMask & board.BlackRooks) != 0)
+                    pieces[target] = 'r';
+                else if ((targetMask & board.BlackQueens) != 0)
+                    pieces[target] = 'q';
+                else if ((targetMask & board.BlackKing) != 0)
+                    pieces[target] = 'k';
+            }
+            return pieces;
+        }
+        public static Rectangle GeneratePiece(char pieceChar)
+        {
+            string resource = Pieces.ResourceNames[pieceChar];
             Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
             {
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
@@ -33,211 +325,11 @@ namespace Chess.Tools
                 ImageBrush brush = new ImageBrush(bitmap);
                 Rectangle piece = new Rectangle();
                 piece.Fill = brush;
-                piece.Width = Constants.Square_Size;
-                piece.Height = Constants.Square_Size;
+                piece.Width = Constants.SquareSize;
+                piece.Height = Constants.SquareSize;
                 return piece;
             }
         }
-        public static bool InBounds(Position position)
-        {
-            return position.row >= 0 && position.row < 8 && position.column >= 0 && position.column < 8;
-        }
-        public static int OccupationType(Position position, Piece[,] pieces)
-        {
-            int row = position.row;
-            int column = position.column;
-            return pieces[row, column].value & 24;
-        }
-        public static int GetMoveIndex(List<Move> move, Position startPos, Position endPos)
-        {
-            for (int i = 0; i < move.Count; i++)
-            {
-                if (move[i].startPosition == startPos && move[i].targetPosition == endPos)
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-        public static bool CheckPathClear(Position startPos, Position endPos, Piece[,] pieces)
-        {
-            int rowDiff = endPos.row - startPos.row;
-            int colDiff = endPos.column - startPos.column;
-            int rowDir = rowDiff == 0 ? 0 : rowDiff / Math.Abs(rowDiff);
-            int colDir = colDiff == 0 ? 0 : colDiff / Math.Abs(colDiff);
-            Position currentPos = new Position(startPos.row + rowDir, startPos.column + colDir);
-            while (currentPos != endPos)
-            {
-                if (!InBounds(currentPos))
-                    return false;
-                if (pieces[currentPos.row, currentPos.column].value != 0)
-                    return false;
-                currentPos.row += rowDir;
-                currentPos.column += colDir;
-            }
-            return true;
-        }
-        public static List<Pin> GetAllPiecePins(Position position, List<Pin> pins)
-        {
-            List<Pin> piecePins = new List<Pin>();
-            foreach (Pin pin in pins)
-            {
-                if (pin.pinned == position)
-                {
-                    piecePins.Add(pin);
-                }
-            }
-            return piecePins;
-        }
-        public static bool ColinearPaths(Position startPos, Position endPos, Position pin)
-        {
-            int moveRow = endPos.row - startPos.row;
-            int moveCol = endPos.column - startPos.column;
-            int pinRow = pin.row - startPos.row;
-            int pinCol = pin.column - startPos.column;
-
-            return (moveRow * pinCol == moveCol * pinRow);
-        }
-        /// <summary>
-        /// Checks if the path between two positions is inline
-        /// </summary>
-        /// <param name="piecePos">First position</param>
-        /// <param name="targetPos">Second Position</param>
-        /// <param name="type">Whether to check diagonals, or straight lines, or both. 0 - both, 1 - diagonals, 3 - straight lines</param>
-        /// <returns>true if the two positions are in-line</returns>
-        public static bool IsInline(Position piecePos, Position targetPos, int type = 0)
-        {
-            int rowDiff = targetPos.row - piecePos.row;
-            int colDiff = targetPos.column - piecePos.column;
-            if (type == 0)
-            {
-                return rowDiff == 0 || colDiff == 0 || Math.Abs(rowDiff) == Math.Abs(colDiff);
-            }
-            if (type == 1)
-            {
-                return Math.Abs(rowDiff) == Math.Abs(colDiff);
-            }
-            if (type == 2)
-            {
-                return rowDiff == 0 || colDiff == 0;
-            }
-            return false;
-        }
-        public static bool IsBetween(Position start, Position checking, Position target)
-        {
-            int vRow = target.row - start.row;
-            int vCol = target.column - start.column;
-            int wRow = checking.row - start.row;
-            int wCol = checking.column - start.column;
-
-            int dot = vRow * wRow + vCol * wCol;
-            int wSquared = wRow * wRow + wCol * wCol;
-
-            return dot >= 0 && dot <= wSquared;
-        }
-        #region Handling king movement validation
-        public static bool ValidForAllChecks(Position startPos, Position endPos, List<Check> checks)
-        {
-            foreach (Check check in checks)
-            {
-                if (!IsInline(startPos, check.checkingPiece) || !IsBetween(startPos, check.checkingPiece, endPos))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        public static bool CheckValidKingMove(int currentColor, Move move, Piece[,] pieces, List<Position> slidingPieces, bool check = false)
-        {
-            bool validMove = true;
-            Position startPosition = move.startPosition;
-            Position checkPosition = move.targetPosition;
-
-            // Unable to move into a knight attack
-            foreach (Position direction in Constants.KnightDirections)
-            {
-                Position position = checkPosition + direction;
-                if (Helpers.InBounds(position) && pieces[position.row, position.column].value == (Pieces.Knight | Pieces.GetOppositeColor(currentColor)))
-                {
-                    validMove = false;
-                    break;
-                }
-            }
-
-            // Unable to move into a sliding attack
-            foreach (Position slidingPiece in slidingPieces)
-            {
-                int attackerType = pieces[slidingPiece.row, slidingPiece.column].value & 7;
-                int type = 0;
-                if (attackerType == Pieces.Bishop)
-                    type = 1;
-                else if (attackerType == Pieces.Rook)
-                    type = 2;
-                if (check)
-                {
-                    if ((Helpers.IsInline(checkPosition, slidingPiece, type) || Helpers.IsInline(checkPosition, startPosition, type)) && checkPosition != slidingPiece)
-                    {
-                        validMove = false;
-                        break;
-                    }
-                }
-                else if (Helpers.IsInline(checkPosition, slidingPiece, type) && checkPosition != slidingPiece && Helpers.CheckPathClear(checkPosition, slidingPiece, pieces))
-                {
-                    validMove = false;
-                    break;
-                }
-            }
-
-            // Unable to move into a pawn attack
-            int moveDirection = currentColor == Pieces.White ? -1 : 1;
-            int[] cols = { -1, 1 };
-            foreach (int col in cols)
-            {
-                Position pawnPos = new Position(checkPosition.row + moveDirection, checkPosition.column + col);
-                if (!Helpers.InBounds(pawnPos))
-                    continue;
-                if (pieces[pawnPos.row, pawnPos.column].value == (Pieces.Pawn | Pieces.GetOppositeColor(currentColor)))
-                {
-                    validMove = false;
-                    break;
-                }
-            }
-
-            if (validMove)
-                return true;
-            return false;
-        }
         #endregion
-        #region Handling edge cases
-        public static bool CheckEnPassant(Position startPos, Position endPos, Chessboard board)
-        {
-            if (board.enPassantTarget == null)
-            {
-                return false;
-            }
-
-            Position targetPos = board.enPassantTarget.Value;
-            if (endPos.row != targetPos.row || endPos.column != targetPos.column)
-            {
-                return false;
-            }
-
-            Position capturedPawnPos = new Position(startPos.row, endPos.column);
-            Piece capturedPawn = board.pieces[capturedPawnPos.row, capturedPawnPos.column];
-            if ((capturedPawn.value & 7) != Pieces.Pawn)
-            {
-                return false;
-            }
-            if ((capturedPawn.value & 24) == (board.pieces[startPos.row, startPos.column].value & 24))
-            {
-                return false;
-            }
-            return true;
-        }
-        #endregion
-        //public static Position NotationToMove(string notation, Piece[,] pieces)
-        //{
-
-        //}
     }
 }
