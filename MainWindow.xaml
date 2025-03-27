@@ -62,9 +62,9 @@
               Unchecked="notationType_Unchecked" />
 
             <ScrollViewer x:Name="NotationGridScrollView"
-                  VerticalScrollBarVisibility="Auto"
+                       MaxHeight="300"
                   HorizontalScrollBarVisibility="Disabled"
-                  Margin="596,32,30,32">
+                  Margin="600,35,30,35" CanContentScroll="True" Height="300" VerticalScrollBarVisibility="Auto">
                 <Grid x:Name="NotationGrid">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
