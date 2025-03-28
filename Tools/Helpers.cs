@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -30,12 +31,16 @@ namespace Chess.Tools
         }
         public static bool isPawnCaptureValid(int fromSquare, int toSquare, bool enemyIsWhite = false)
         {
+            if (!isOnBoard(toSquare))
+                return false;
             int fromFile = fromSquare % 8;
             int toFile = toSquare % 8;
             return Math.Abs(fromFile - toFile) == 1;
         }
         public static bool IsKingMoveInBounds(int from, int to)
         {
+            if (!isOnBoard(to))
+                return false;
             int fromRank = from / 8;
             int fromFile = from % 8;
             int toRank = to / 8;
@@ -45,6 +50,8 @@ namespace Chess.Tools
         }
         public static bool isKnightMoveInBounds(int from, int to)
         {
+            if (!isOnBoard(to))
+                return false;
             int fromRank = from / 8;
             int fromFile = from % 8;
             int toRank = to / 8;
@@ -57,6 +64,8 @@ namespace Chess.Tools
         }
         public static bool isSlidingMoveInBounds(int from, int target, int dir)
         {
+            if (!isOnBoard(target))
+                return false;
             int fromRank = from / 8;
             int fromFile = from % 8;
             int targetRank = target / 8;
@@ -95,7 +104,6 @@ namespace Chess.Tools
             }
             else
             {
-                // Enemy is White; white pawn attacks from pawn's square are +7 and +9.
                 if (isOnBoard(kingSquare - 7) && isPawnCaptureValid(kingSquare, kingSquare - 7, true))
                 {
                     if ((board.WhitePawns & (1UL << (kingSquare - 7))) != 0)
@@ -108,7 +116,6 @@ namespace Chess.Tools
                 }
             }
 
-            // --- Knight Attacks ---
             int[] knightOffsets = Constants.KnightOffsets;
             foreach (int offset in knightOffsets)
             {
@@ -123,13 +130,11 @@ namespace Chess.Tools
                 else
                 {
                     if ((board.WhiteKnights & (1UL << target)) != 0)
-                        return true;
+                        return true;                        
                 }
             }
 
-            // --- Sliding Attacks ---
-            // Rook and Queen (horizontal & vertical)
-            int[] rookDirections = { 1, -1, 8, -8 };
+            int[] rookDirections = Constants.RookDirections;
             foreach (int dir in rookDirections)
             {
                 int target = kingSquare;
@@ -141,7 +146,6 @@ namespace Chess.Tools
                     ulong targetMask = 1UL << target;
                     if ((board.AllPieces & targetMask) != 0)
                     {
-                        // Found a piece; check if enemy rook or queen.
                         if (isWhite)
                         {
                             if (((board.BlackRooks | board.BlackQueens) & targetMask) != 0)
@@ -157,7 +161,6 @@ namespace Chess.Tools
                 }
             }
 
-            // Bishop and Queen (diagonals)
             int[] bishopDirections = Constants.BishopDirections;
             foreach (int dir in bishopDirections)
             {
@@ -170,7 +173,6 @@ namespace Chess.Tools
                     ulong targetMask = 1UL << target;
                     if ((board.AllPieces & targetMask) != 0)
                     {
-                        // Found a piece; check if enemy bishop or queen.
                         if (isWhite)
                         {
                             if (((board.BlackBishops | board.BlackQueens) & targetMask) != 0)
@@ -186,8 +188,7 @@ namespace Chess.Tools
                 }
             }
 
-            // --- Enemy King (adjacent squares) ---
-            int[] kingOffsets = { -9, -8, -7, -1, 1, 7, 8, 9 };
+            int[] kingOffsets = Constants.KingOffsets;
             foreach (int offset in kingOffsets)
             {
                 int target = kingSquare + offset;
@@ -275,6 +276,30 @@ namespace Chess.Tools
                 }
             }
             return targetSquares;
+        }
+        public static int GetMoveCount(Chessboard board)
+        {
+            int moveCount = 0;
+            LegalMoves moves = board.LegalMoves;
+            if (board.isWhiteTurn)
+            {
+                moveCount += moves.WhitePawnMoves.Count;
+                moveCount += moves.WhiteKnightMoves.Count;
+                moveCount += moves.WhiteBishopMoves.Count;
+                moveCount += moves.WhiteRookMoves.Count;
+                moveCount += moves.WhiteQueenMoves.Count;
+                moveCount += moves.WhiteKingMoves.Count;
+            }
+            else
+            {
+                moveCount += moves.BlackPawnMoves.Count;
+                moveCount += moves.BlackKnightMoves.Count;
+                moveCount += moves.BlackBishopMoves.Count;
+                moveCount += moves.BlackRookMoves.Count;
+                moveCount += moves.BlackQueenMoves.Count;
+                moveCount += moves.BlackKingMoves.Count;
+            }
+            return moveCount;
         }
         #region Displaying the pieces
         public static char[] GetPieceArray(Chessboard board)

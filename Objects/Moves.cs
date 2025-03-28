@@ -111,8 +111,7 @@ namespace Chess.Objects
         private static bool ValidateMove(Chessboard board, Move move, bool isWhite)
         {
             Chessboard boardClone = board.Clone();
-            boardClone.MakeMove(move, false);
-            return true;
+            boardClone.MakeMove(move, true);
             return !Helpers.isKingInCheck(boardClone, isWhite);
         }
        

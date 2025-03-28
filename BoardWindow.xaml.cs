@@ -120,11 +120,19 @@ namespace Chess
                 return;
             }
 
+            var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
+
             double newLeft = targetColumn * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
             double newBottom = targetRow * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
 
             Canvas.SetLeft(selectedPiece, newLeft);
             Canvas.SetBottom(selectedPiece, newBottom);
+
+            if (PiecesDisplay[targetRow, targetColumn] != null && PiecesDisplay[targetRow, targetColumn] != selectedPiece)
+            {
+                parentCanvas.Children.Remove(PiecesDisplay[targetRow, targetColumn]);
+                PiecesDisplay[targetRow, targetColumn] = null;
+            }
 
             PiecesDisplay[targetRow, targetColumn] = (Rectangle)selectedPiece;
             PiecesDisplay[selectedRow, selectedColumn] = null;

@@ -84,6 +84,7 @@ namespace Chess.Objects
                 BlackBishops = this.BlackBishops,
                 BlackRooks = this.BlackRooks,
                 BlackQueens = this.BlackQueens,
+                EnPassantSquare = this.EnPassantSquare,
                 isWhiteTurn = this.isWhiteTurn,
                 LegalMoves = this.LegalMoves,
             };
@@ -92,7 +93,7 @@ namespace Chess.Objects
         {
             LegalMoves = Moves.GenerateLegalMoves(this);
         }
-        public void MakeMove(Move move, bool redoMoves = true)
+        public void MakeMove(Move move, bool isBoardClone = false)
         {
             ulong fromMask = 1UL << move.From;
             ulong toMask = 1UL << move.To;
@@ -166,8 +167,17 @@ namespace Chess.Objects
                 CapturePiece(move.To);
             }
             isWhiteTurn = !isWhiteTurn;
-            if (redoMoves)
+            if (!isBoardClone)
                 UpdateMoves();
+
+            if (Helpers.GetMoveCount(this) == 0 && !isBoardClone)
+            {
+                if (Helpers.isKingInCheck(this, isWhiteTurn))
+                    MessageBox.Show("Checkmate!");
+                else
+                    MessageBox.Show("Stalemate!");
+            }
+                    
         }
         public void CapturePiece(int square)
         {
