@@ -98,9 +98,17 @@ namespace Chess.Tools
 
             if (isWhite && !board.WhiteKingMoved)
             {
+                if (board.WhiteKingMoved)
+                    return [false, false];
+                    
                 int[] rookPositions = { 0, 7 };
                 for (int i = 0; i < 2; i++)
                 {
+                    if (board.RooksMoved[i])
+                    { 
+                        valid[i] = false;
+                        continue;
+                    }
                     int dir = castlingDirections[i];
                     int targetSquare = kingSquare;
                     while (true)
@@ -114,9 +122,7 @@ namespace Chess.Tools
                             valid[i] = false;
                             break;
                         }
-                        Chessboard clone = board.Clone();
-                        clone.MakeMove(new Move(kingSquare, targetSquare), isWhite);
-                        if (isKingInCheck(board, isWhite))
+                        if (!Moves.ValidateMove(board, new Move(kingSquare, targetSquare), isWhite))
                         {
                             valid[i] = false;
                             break;
@@ -126,9 +132,17 @@ namespace Chess.Tools
             }
             else
             {
+                if (board.BlackKingMoved)
+                    return [false, false];
+
                 int[] rookPositions = { 56, 63 };
                 for (int i = 0; i < 2; i++)
                 {
+                    if (board.RooksMoved[i + 2])
+                    {
+                        valid[i] = false;
+                        continue;
+                    }
                     int dir = castlingDirections[i];
                     int targetSquare = kingSquare;
                     while (true)
@@ -142,9 +156,7 @@ namespace Chess.Tools
                             valid[i] = false;
                             break;
                         }
-                        Chessboard clone = board.Clone();
-                        clone.MakeMove(new Move(kingSquare, targetSquare), isWhite);
-                        if (isKingInCheck(board, isWhite))
+                        if (!Moves.ValidateMove(board, new Move(kingSquare, targetSquare), isWhite))
                         {
                             valid[i] = false;
                             break;

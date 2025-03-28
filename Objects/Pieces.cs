@@ -56,5 +56,15 @@ namespace Chess.Objects
 
         public const string DefaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
+        public static char GetPieceNotation(int piece, bool isWhite)
+        {
+            int pieceValue = isWhite ? piece | White : piece | Black;
+            foreach (KeyValuePair<char, int> pair in PieceNotation)
+            {
+                if (pair.Value == pieceValue)
+                    return pair.Key;
+            }
+            return default;
+        }
     }
 }

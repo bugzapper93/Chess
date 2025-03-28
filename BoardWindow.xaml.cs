@@ -97,7 +97,7 @@ namespace Chess
                 display.Children.Add(piece);
             }
         }
-        private void RepositionPiece(Move move, bool validMove = true, bool enPassant = false, bool castling = false)
+        private void RepositionPiece(Move move, bool validMove = true)
         {
             int selectedRow = move.From / 8;
             int selectedColumn = move.From % 8;
@@ -173,14 +173,38 @@ namespace Chess
             {
                 if (board.EnPassantSquare != null && (board.BlackPawns & fromMask) != 0 && ((1UL << board.EnPassantSquare) & toMask) != 0)
                 {
-                    RemovePiece(endSquare - 8);
+                    RemovePiece(endSquare + 8);
+                }
+            }
+
+            // Castling
+            ulong kingMask = board.isWhiteTurn ? board.WhiteKing : board.BlackKing;
+            if ((kingMask & fromMask) != 0 && Math.Abs(move.From - move.To) == 2)
+            {
+                if (move.To - move.From == 2)
+                {
+                    RepositionPiece(new Move(7, move.To - 1));
+                }
+                else if (move.To - move.From == -2)
+                {
+                    RepositionPiece(new Move(0, move.To + 1));
                 }
             }
 
             if (possibleMoves.Contains(endSquare))
             {
                 RepositionPiece(move);
-                board.MakeMove(move);
+                MoveData moveData = board.MakeMove(move);
+                string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
+                MessageBox.Show(moveNotation);
+                board.UpdateMoves();
+                if (Helpers.GetMoveCount(board) == 0)
+                {
+                    if (Helpers.isKingInCheck(board, board.isWhiteTurn))
+                        MessageBox.Show("Checkmate!");
+                    else
+                        MessageBox.Show("Stalemate!");
+                }
             }
             else
             {

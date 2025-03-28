@@ -24,6 +24,27 @@ namespace Chess.Objects
         public List<Move> BlackRookMoves = new List<Move>();
         public List<Move> BlackQueenMoves = new List<Move>();
         public List<Move> BlackKingMoves = new List<Move>();
+        public LegalMoves Clone()
+        {
+            LegalMoves clone = new LegalMoves
+            {
+                WhitePawnMoves = new List<Move>(this.WhitePawnMoves),
+                WhiteKnightMoves = new List<Move>(this.WhiteKnightMoves),
+                WhiteBishopMoves = new List<Move>(this.WhiteBishopMoves),
+                WhiteRookMoves = new List<Move>(this.WhiteRookMoves),
+                WhiteQueenMoves = new List<Move>(this.WhiteQueenMoves),
+                WhiteKingMoves = new List<Move>(this.WhiteKingMoves),
+
+                BlackPawnMoves = new List<Move>(this.BlackPawnMoves),
+                BlackKnightMoves = new List<Move>(this.BlackKnightMoves),
+                BlackBishopMoves = new List<Move>(this.BlackBishopMoves),
+                BlackRookMoves = new List<Move>(this.BlackRookMoves),
+                BlackQueenMoves = new List<Move>(this.BlackQueenMoves),
+                BlackKingMoves = new List<Move>(this.BlackKingMoves)
+            };
+
+            return clone;
+        }
     }
     public class Chessboard
     {
@@ -43,6 +64,8 @@ namespace Chess.Objects
 
         public int? EnPassantSquare;
 
+        // Indices 0 and 1 for the leftmost and rightmost white rooks,
+        // similarly indices 2 and 3 for the leftmost and rightmost black rooks.
         public bool[] RooksMoved;
         public bool WhiteKingMoved;
         public bool BlackKingMoved;
@@ -66,7 +89,7 @@ namespace Chess.Objects
             BlackQueens = Constants.DefaultBlackQueens;
             BlackKing = Constants.DefaultBlackKing;
 
-            RooksMoved = new bool[4];
+            RooksMoved = [false, false, false, false];
             WhiteKingMoved = false;
             BlackKingMoved = false;
 
@@ -93,28 +116,38 @@ namespace Chess.Objects
                 BlackRooks = this.BlackRooks,
                 BlackQueens = this.BlackQueens,
                 EnPassantSquare = this.EnPassantSquare,
-                RooksMoved = this.RooksMoved,
+                RooksMoved = (bool[])this.RooksMoved.Clone(),
                 WhiteKingMoved = this.WhiteKingMoved,
                 BlackKingMoved = this.BlackKingMoved,
                 isWhiteTurn = this.isWhiteTurn,
-                LegalMoves = this.LegalMoves,
+                LegalMoves = this.LegalMoves.Clone(),
             };
         }
         public void UpdateMoves()
         {
             LegalMoves = Moves.GenerateLegalMoves(this);
         }
-        public void MakeMove(Move move, bool isBoardClone = false)
+        public MoveData MakeMove(Move move, bool isBoardClone = false)
         {
+            MoveData moveData = new MoveData
+            {
+                move = move,
+                piece = 0,
+                isWhite = isWhiteTurn,
+                capture = false,
+                enPassant = false
+            };
+
             ulong fromMask = 1UL << move.From;
             ulong toMask = 1UL << move.To;
             bool EnPassant = false;
             EnPassantSquare = null;
-            
+
             if (isWhiteTurn)
             {
                 if ((WhitePawns & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Pawn;
                     if (move.To - move.From == 16)
                     {
                         EnPassantSquare = move.From + 8;
@@ -125,36 +158,67 @@ namespace Chess.Objects
                 }
                 else if ((WhiteKnights & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Knight;
                     WhiteKnights &= ~fromMask;
                     WhiteKnights |= toMask;
                 }
                 else if ((WhiteBishops & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Bishop;
                     WhiteBishops &= ~fromMask;
                     WhiteBishops |= toMask;
                 }
                 else if ((WhiteRooks & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Rook;
+                    // Update status for castling
+                    if (move.From == 0 && !RooksMoved[0])
+                        RooksMoved[0] = true;
+                    else if (move.From == 7 && !RooksMoved[1])
+                        RooksMoved[1] = true;
+
                     WhiteRooks &= ~fromMask;
                     WhiteRooks |= toMask;
                 }
                 else if ((WhiteQueens & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Queen;
                     WhiteQueens &= ~fromMask;
                     WhiteQueens |= toMask;
                 }
                 else if ((WhiteKing & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.King;
+                    // Handle castling - move the rook
+                    // Kingside
+                    if (move.To - move.From == 2)
+                    {
+                        WhiteRooks &= ~(1UL << 7);
+                        WhiteRooks |= (1UL << (move.To - 1));
+                        WhiteKingMoved = true;
+                    }
+                    // Queenside
+                    else if (move.To - move.From == -2)
+                    {
+                        WhiteRooks &= ~(1UL << 0);
+                        WhiteRooks |= (1UL << (move.To + 1));
+                        WhiteKingMoved = true;
+                    }
                     WhiteKing &= ~fromMask;
                     WhiteKing |= toMask;
                 }
                 if ((AllBlackPieces & toMask) != 0)
+                {
+                    moveData.capture = true;
+                    moveData.enPassant = EnPassant;
                     CapturePiece(move.To, EnPassant);
+                }
             }
             else
             {
                 if ((BlackPawns & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Pawn;
                     if (move.To - move.From == -16)
                     {
                         EnPassantSquare = move.From - 8;
@@ -165,45 +229,64 @@ namespace Chess.Objects
                 }
                 else if ((BlackKnights & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Knight;
                     BlackKnights &= ~fromMask;
                     BlackKnights |= toMask;
                 }
                 else if ((BlackBishops & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Bishop;
                     BlackBishops &= ~fromMask;
                     BlackBishops |= toMask;
                 }
                 else if ((BlackRooks & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Rook;
+                    // Update status for castling
+                    if (move.From == 56 && !RooksMoved[2])
+                        RooksMoved[2] = true;
+                    else if (move.From == 63 && !RooksMoved[3])
+                        RooksMoved[3] = true;
+
                     BlackRooks &= ~fromMask;
                     BlackRooks |= toMask;
                 }
                 else if ((BlackQueens & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.Queen;
                     BlackQueens &= ~fromMask;
                     BlackQueens |= toMask;
                 }
                 else if ((BlackKing & fromMask) != 0)
                 {
+                    moveData.piece = Pieces.King;
+                    // Handle castling - move the rook
+                    // Kingside
+                    if (move.To - move.From == 2)
+                    {
+                        BlackRooks &= ~(1UL << 63);
+                        BlackRooks |= (1UL << (move.To - 1));
+                        BlackKingMoved = true;
+                    }
+                    // Queenside
+                    else if (move.To - move.From == -2)
+                    {
+                        BlackRooks &= ~(1UL << 56);
+                        BlackRooks |= (1UL << (move.To + 1));
+                        BlackKingMoved = true;
+                    }
                     BlackKing &= ~fromMask;
                     BlackKing |= toMask;
                 }
                 if ((AllWhitePieces & toMask) != 0)
+                {
+                    moveData.capture = true;
+                    moveData.enPassant = EnPassant;
                     CapturePiece(move.To, EnPassant);
+                }
             }
-
             isWhiteTurn = !isWhiteTurn;
-            if (!isBoardClone)
-                UpdateMoves();
-
-            if (Helpers.GetMoveCount(this) == 0 && !isBoardClone)
-            {
-                if (Helpers.isKingInCheck(this, isWhiteTurn))
-                    MessageBox.Show("Checkmate!");
-                else
-                    MessageBox.Show("Stalemate!");
-            }
-                    
+            return moveData;
         }
         public void CapturePiece(int square, bool enPassant = false)
         {

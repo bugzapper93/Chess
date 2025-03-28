@@ -108,7 +108,7 @@ namespace Chess.Objects
             return legalMoves;
         }
 
-        private static bool ValidateMove(Chessboard board, Move move, bool isWhite)
+        public static bool ValidateMove(Chessboard board, Move move, bool isWhite)
         {
             Chessboard boardClone = board.Clone();
             boardClone.MakeMove(move, true);
@@ -286,7 +286,7 @@ namespace Chess.Objects
             }
             return moves;
         }
-        public static List<Move> GenerateQueenMoves(Chessboard board, bool isWhite)
+        private static List<Move> GenerateQueenMoves(Chessboard board, bool isWhite)
         {
             List<Move> moves = new List<Move>();
             ulong queens = isWhite ? board.WhiteQueens : board.BlackQueens;
