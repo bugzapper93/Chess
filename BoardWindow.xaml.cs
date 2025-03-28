@@ -158,9 +158,16 @@ namespace Chess
             int endSquare = move.To;
 
             ulong toMask = 1UL << endSquare;
-            ulong fromMask = 1UL << startSquare;
+            ulong fromMask = 1UL << startSquare;            
 
+            if (!possibleMoves.Contains(endSquare))
+            {
+                RepositionPiece(new Move(startSquare, startSquare), false);
+                return false;
+            }
+                
             // Special cases
+
             if (board.isWhiteTurn)
             {
                 // En passant
@@ -181,34 +188,30 @@ namespace Chess
             ulong kingMask = board.isWhiteTurn ? board.WhiteKing : board.BlackKing;
             if ((kingMask & fromMask) != 0 && Math.Abs(move.From - move.To) == 2)
             {
+                int rightRookSquare = board.isWhiteTurn ? 7 : 63;
+                int leftRookSquare = board.isWhiteTurn ? 0 : 56;
+
                 if (move.To - move.From == 2)
                 {
-                    RepositionPiece(new Move(7, move.To - 1));
+                    RepositionPiece(new Move(rightRookSquare, move.To - 1));
                 }
                 else if (move.To - move.From == -2)
                 {
-                    RepositionPiece(new Move(0, move.To + 1));
+                    RepositionPiece(new Move(leftRookSquare, move.To + 1));
                 }
             }
 
-            if (possibleMoves.Contains(endSquare))
+            RepositionPiece(move);
+            MoveData moveData = board.MakeMove(move);
+            string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
+            MessageBox.Show(moveNotation);
+            board.UpdateMoves();
+            if (Helpers.GetMoveCount(board) == 0)
             {
-                RepositionPiece(move);
-                MoveData moveData = board.MakeMove(move);
-                string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
-                MessageBox.Show(moveNotation);
-                board.UpdateMoves();
-                if (Helpers.GetMoveCount(board) == 0)
-                {
-                    if (Helpers.isKingInCheck(board, board.isWhiteTurn))
-                        MessageBox.Show("Checkmate!");
-                    else
-                        MessageBox.Show("Stalemate!");
-                }
-            }
-            else
-            {
-                RepositionPiece(new Move(startSquare, startSquare), false);
+                if (Helpers.isKingInCheck(board, board.isWhiteTurn))
+                    MessageBox.Show("Checkmate!");
+                else
+                    MessageBox.Show("Stalemate!");
             }
             return true;
         }

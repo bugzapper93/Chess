@@ -84,14 +84,23 @@ namespace Chess.Objects
             bool isCapture = move.capture;
             bool isEnpassant = move.enPassant;
 
+            int start = move.move.From;
+            int end = move.move.To;
+
             char pieceNotation = Pieces.GetPieceNotation(move.piece, move.isWhite);
-            string startSquare = Move.SquareToString(move.move.From);
-            string endSquare = Move.SquareToString(move.move.To);
+            string startSquare = Move.SquareToString(start);
+            string endSquare = Move.SquareToString(end);
             char columnStart = startSquare[0];
             char columnEnd = endSquare[0];
             char rowEnd = endSquare[1];
 
             string notation = "";
+
+            if (move.piece == Pieces.King && end - start == 2)
+                return "O-O";
+            else if (move.piece == Pieces.King && end - start == -2)
+                return "O-O-O";
+
             if (isPawnMove)
             {
                 if (isCapture)

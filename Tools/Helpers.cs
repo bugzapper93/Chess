@@ -96,6 +96,9 @@ namespace Chess.Tools
             int[] castlingDirections = { -1, 1 };
             int kingSquare = isWhite ? BitScan(board.WhiteKing) : BitScan(board.BlackKing);
 
+            if (isKingInCheck(board, isWhite))
+                return [false, false];
+
             if (isWhite && !board.WhiteKingMoved)
             {
                 if (board.WhiteKingMoved)
