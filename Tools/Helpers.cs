@@ -83,6 +83,77 @@ namespace Chess.Tools
         {
             return square >= 0 && square < 64;
         }
+        /// <summary>
+        /// Checks whether castling is valid.
+        /// </summary>
+        /// <param name="board"></param>
+        /// <param name="isWhite"></param>
+        /// <returns>A boolean pair, with index 0 being queenside castling, and 1 being kingside castling.</returns>
+        public static bool[] isCastlingValid(Chessboard board)
+        {
+            bool isWhite = board.isWhiteTurn;
+            bool[] valid = { true, true };
+            int[] castlingDirections = { -1, 1 };
+            int kingSquare = isWhite ? BitScan(board.WhiteKing) : BitScan(board.BlackKing);
+
+            if (isWhite && !board.WhiteKingMoved)
+            {
+                int[] rookPositions = { 0, 7 };
+                for (int i = 0; i < 2; i++)
+                {
+                    int dir = castlingDirections[i];
+                    int targetSquare = kingSquare;
+                    while (true)
+                    {
+                        targetSquare += dir;
+                        if (targetSquare == rookPositions[i])
+                            break;
+                        ulong mask = 1UL << targetSquare;
+                        if ((board.AllPieces & mask) != 0)
+                        {
+                            valid[i] = false;
+                            break;
+                        }
+                        Chessboard clone = board.Clone();
+                        clone.MakeMove(new Move(kingSquare, targetSquare), isWhite);
+                        if (isKingInCheck(board, isWhite))
+                        {
+                            valid[i] = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                int[] rookPositions = { 56, 63 };
+                for (int i = 0; i < 2; i++)
+                {
+                    int dir = castlingDirections[i];
+                    int targetSquare = kingSquare;
+                    while (true)
+                    {
+                        targetSquare += dir;
+                        if (targetSquare == rookPositions[i])
+                            break;
+                        ulong mask = 1UL << targetSquare;
+                        if ((board.AllPieces & mask) != 0 && kingSquare != rookPositions[i])
+                        {
+                            valid[i] = false;
+                            break;
+                        }
+                        Chessboard clone = board.Clone();
+                        clone.MakeMove(new Move(kingSquare, targetSquare), isWhite);
+                        if (isKingInCheck(board, isWhite))
+                        {
+                            valid[i] = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            return valid;
+        }
         public static bool isKingInCheck(Chessboard board, bool isWhite)
         {
             int kingSquare = BitScan(isWhite ? board.WhiteKing : board.BlackKing);

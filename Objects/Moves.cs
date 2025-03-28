@@ -154,7 +154,7 @@ namespace Chess.Objects
                             {
                                 moves.Add(new Move(fromSquare, captureSquare));
                             }
-                            if (board.EnPassantSquare != null)
+                            if (board.EnPassantSquare != null && captureSquare == board.EnPassantSquare)
                             {
                                 if ((allPieces & (1UL << captureSquare)) == 0)
                                     moves.Add(new Move(fromSquare, captureSquare));
@@ -192,7 +192,7 @@ namespace Chess.Objects
                             {
                                 moves.Add(new Move(fromSquare, captureSquare));
                             }
-                            if (board.EnPassantSquare != null)
+                            if (board.EnPassantSquare != null && captureSquare == board.EnPassantSquare)
                             {
                                 if ((allPieces & (1UL << captureSquare)) == 0)
                                     moves.Add(new Move(fromSquare, captureSquare));
@@ -226,6 +226,12 @@ namespace Chess.Objects
 
                 moves.Add(new Move(kingSquare, target));
             }
+
+            bool[] castling = Helpers.isCastlingValid(board);
+            if (castling[0])
+                moves.Add(new Move(kingSquare, kingSquare - 2));
+            if (castling[1])
+                moves.Add(new Move(kingSquare, kingSquare + 2));
             return moves;
         }
         private static List<Move> GenerateKnightMoves(Chessboard board, bool isWhite)

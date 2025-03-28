@@ -41,7 +41,11 @@ namespace Chess.Objects
         public ulong BlackQueens;
         public ulong BlackKing;
 
-        public ulong? EnPassantSquare;
+        public int? EnPassantSquare;
+
+        public bool[] RooksMoved;
+        public bool WhiteKingMoved;
+        public bool BlackKingMoved;
 
         public bool isWhiteTurn;
         public LegalMoves LegalMoves;
@@ -61,6 +65,10 @@ namespace Chess.Objects
             BlackRooks = Constants.DefaultBlackRooks;
             BlackQueens = Constants.DefaultBlackQueens;
             BlackKing = Constants.DefaultBlackKing;
+
+            RooksMoved = new bool[4];
+            WhiteKingMoved = false;
+            BlackKingMoved = false;
 
             isWhiteTurn = true;
             LegalMoves = new LegalMoves();
@@ -85,6 +93,9 @@ namespace Chess.Objects
                 BlackRooks = this.BlackRooks,
                 BlackQueens = this.BlackQueens,
                 EnPassantSquare = this.EnPassantSquare,
+                RooksMoved = this.RooksMoved,
+                WhiteKingMoved = this.WhiteKingMoved,
+                BlackKingMoved = this.BlackKingMoved,
                 isWhiteTurn = this.isWhiteTurn,
                 LegalMoves = this.LegalMoves,
             };
@@ -97,11 +108,18 @@ namespace Chess.Objects
         {
             ulong fromMask = 1UL << move.From;
             ulong toMask = 1UL << move.To;
-
+            bool EnPassant = false;
+            EnPassantSquare = null;
+            
             if (isWhiteTurn)
             {
                 if ((WhitePawns & fromMask) != 0)
                 {
+                    if (move.To - move.From == 16)
+                    {
+                        EnPassantSquare = move.From + 8;
+                        EnPassant = true;
+                    }
                     WhitePawns &= ~fromMask;
                     WhitePawns |= toMask;
                 }
@@ -130,12 +148,18 @@ namespace Chess.Objects
                     WhiteKing &= ~fromMask;
                     WhiteKing |= toMask;
                 }
-                CapturePiece(move.To);
+                if ((AllBlackPieces & toMask) != 0)
+                    CapturePiece(move.To, EnPassant);
             }
             else
             {
                 if ((BlackPawns & fromMask) != 0)
                 {
+                    if (move.To - move.From == -16)
+                    {
+                        EnPassantSquare = move.From - 8;
+                        EnPassant = true;
+                    }
                     BlackPawns &= ~fromMask;
                     BlackPawns |= toMask;
                 }
@@ -164,8 +188,10 @@ namespace Chess.Objects
                     BlackKing &= ~fromMask;
                     BlackKing |= toMask;
                 }
-                CapturePiece(move.To);
+                if ((AllWhitePieces & toMask) != 0)
+                    CapturePiece(move.To, EnPassant);
             }
+
             isWhiteTurn = !isWhiteTurn;
             if (!isBoardClone)
                 UpdateMoves();
@@ -179,12 +205,15 @@ namespace Chess.Objects
             }
                     
         }
-        public void CapturePiece(int square)
+        public void CapturePiece(int square, bool enPassant = false)
         {
             bool captureWhite = isWhiteTurn ? false : true;
             ulong mask = 1UL << square;
+
             if (captureWhite)
             {
+                if (enPassant)
+                    mask = 1UL << (square + 8);
                 WhitePawns &= ~mask;
                 WhiteKnights &= ~mask;
                 WhiteBishops &= ~mask;
@@ -194,6 +223,8 @@ namespace Chess.Objects
             }
             else
             {
+                if (enPassant)
+                    mask = 1UL << (square - 8);
                 BlackPawns &= ~mask;
                 BlackKnights &= ~mask;
                 BlackBishops &= ~mask;

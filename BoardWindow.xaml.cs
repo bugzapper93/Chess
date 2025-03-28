@@ -97,7 +97,7 @@ namespace Chess
                 display.Children.Add(piece);
             }
         }
-        private void RepositionPiece(Move move, bool validMove = true)
+        private void RepositionPiece(Move move, bool validMove = true, bool enPassant = false, bool castling = false)
         {
             int selectedRow = move.From / 8;
             int selectedColumn = move.From % 8;
@@ -120,8 +120,6 @@ namespace Chess
                 return;
             }
 
-            var parentCanvas = VisualTreeHelper.GetParent(selectedPiece) as Canvas;
-
             double newLeft = targetColumn * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
             double newBottom = targetRow * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
 
@@ -130,12 +128,23 @@ namespace Chess
 
             if (PiecesDisplay[targetRow, targetColumn] != null && PiecesDisplay[targetRow, targetColumn] != selectedPiece)
             {
-                parentCanvas.Children.Remove(PiecesDisplay[targetRow, targetColumn]);
-                PiecesDisplay[targetRow, targetColumn] = null;
+                RemovePiece(move.To);
             }
 
             PiecesDisplay[targetRow, targetColumn] = (Rectangle)selectedPiece;
             PiecesDisplay[selectedRow, selectedColumn] = null;
+        }
+        private void RemovePiece(int square)
+        {
+            int targetRow = square / 8;
+            int targetColumn = square % 8;
+
+            UIElement targetPiece = PiecesDisplay[targetRow, targetColumn];
+            var parentCanvas = VisualTreeHelper.GetParent(targetPiece) as Canvas;
+            if (parentCanvas == null)
+                return;
+            parentCanvas.Children.Remove(targetPiece);
+            PiecesDisplay[targetRow, targetColumn] = null;
         }
         private bool MovePiece(Move move)
         {
@@ -147,6 +156,26 @@ namespace Chess
 
             int startSquare = move.From;
             int endSquare = move.To;
+
+            ulong toMask = 1UL << endSquare;
+            ulong fromMask = 1UL << startSquare;
+
+            // Special cases
+            if (board.isWhiteTurn)
+            {
+                // En passant
+                if (board.EnPassantSquare != null && (board.WhitePawns & fromMask) != 0 && ((1UL << board.EnPassantSquare) & toMask) != 0)
+                {
+                    RemovePiece(endSquare - 8);
+                }
+            }
+            else
+            {
+                if (board.EnPassantSquare != null && (board.BlackPawns & fromMask) != 0 && ((1UL << board.EnPassantSquare) & toMask) != 0)
+                {
+                    RemovePiece(endSquare - 8);
+                }
+            }
 
             if (possibleMoves.Contains(endSquare))
             {
