@@ -342,5 +342,43 @@ namespace Chess.Objects
             }
             return moves;
         }
+        public static string GetNextMove(string currentMoves, List<string> grandmasterMoves)
+        {
+            int index = grandmasterMoves.FindIndex(move => move.Contains(currentMoves));
+
+            List<string> fullMoveList = grandmasterMoves[index].Split(',').ToList();
+            List<string> currentMoveList = currentMoves.Split(',').ToList();
+
+            int startIndex = -1;
+            for (int i = 0; i <= fullMoveList.Count - currentMoveList.Count; i++)
+            {
+                if (fullMoveList.Skip(i).Take(currentMoveList.Count).SequenceEqual(currentMoveList))
+                {
+                    startIndex = i;
+                    break;
+                }
+            }
+            if (startIndex != -1 && startIndex + currentMoveList.Count < fullMoveList.Count)
+            {
+                return fullMoveList[startIndex + currentMoveList.Count];
+            }
+            else
+            {
+                return "none";
+            }
+        }
+
+        public static Move GetMoveFromNotation(string notation)
+        {
+            char[] pieces = ['N', 'B', 'R', 'Q', 'K'];
+            string target = notation.Replace("x", "").Replace("#", "").Replace("+", "");
+            if (pieces.Contains(pieces[0]))
+            {
+
+            }
+
+
+            return new Move();
+        }
     }
 }

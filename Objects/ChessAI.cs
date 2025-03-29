@@ -20,13 +20,18 @@ namespace Chess.Objects
             MaxDepth = searchDepth;
             GrandmasterMode = grandmaster;
             FutilityMargin = futilityMargin;
-            GameRecords = Helpers.GetPlayerRecords(grandmasterName, playerColor);
+            if (GrandmasterMode)
+                GameRecords = Helpers.GetPlayerRecords(grandmasterName, playerColor);
         }
         public async Task<Move> GetBestMove(Chessboard board, int aiColor)
         {
             if (GrandmasterMode)
             {
-                
+                string move = Moves.GetNextMove(board.CurrentMoves, GameRecords);
+                if (move != "none")
+                {
+
+                }
             }
 
             int bestValue = int.MinValue;

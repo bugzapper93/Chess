@@ -45,6 +45,8 @@ namespace Chess
             PlacePieces();
             board.UpdateMoves();
 
+            Moves.GetMoveFromNotation("Nxf3");
+
             bot = new ChessAI(5, playerColor);
         }
         private void DrawChessboard()
@@ -210,7 +212,14 @@ namespace Chess
             RepositionPiece(move);
             MoveData moveData = board.MakeMove(move);
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
-            board.CurrentMoves += $"{moveNotation}";
+            board.CurrentMoves += board.CurrentMoves == "" ? $"{moveNotation}" : $",{moveNotation}";
+
+            // Tutaj np dajessz wywolanie funkcji, wyskakuje okienko
+
+            // piece = promotePiece()
+            
+            // board.Promote(move.To, piece)
+
             if (Helpers.GetMoveCount(board) == 0)
             {
                 if (Helpers.isKingInCheck(board, board.isWhiteTurn))

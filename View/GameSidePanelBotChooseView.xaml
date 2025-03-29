@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="Chess.MVVM.View.GameSidePanelBotChooseView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Chess.MVVM.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="833">
+    <Grid>
+        <Label FontWeight="Bold" Foreground="White" FontSize="25" Content="difficulty level" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="543,51,0,0" />
+        <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="25" Content="AI" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="508,51,0,0"/>
+
+        <RadioButton HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="58" Margin="518,112,0,0">
+            <Label Content="Easy" FontSize="20" Foreground="White"  Margin="0,-12,0,0" Width="214"/>
+        </RadioButton>
+        <Label FontSize="35" Foreground="#444" Content="-" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="586,83,0,0"/>
+        <Label FontSize="20" Foreground="White" Content="depth" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="612,176,0,0"/>
+        <Label FontSize="20" Foreground="#49c3d8" Content="2" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="667,99,0,0"/>
+
+        <RadioButton IsChecked="true" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="518,149,0,0">
+            <Label Content="Medium" FontSize="20" Foreground="White"  Margin="0,-12,0,0" Width="214"/>
+        </RadioButton>
+        <Label FontSize="35" Foreground="#444" Content="-" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="623,120,0,0"/>
+        <Label FontSize="20" Foreground="White" Content="depth" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="646,136,0,0"/>
+        <Label FontSize="20" Foreground="#49c3d8" Content="5" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="703,136,0,0" RenderTransformOrigin="0.581,0.501"/>
+
+        <RadioButton HorizontalAlignment="Left" VerticalAlignment="Top" Margin="518,189,0,0">
+            <Label Content="Hard" FontSize="20" Foreground="White"  Margin="0,-12,0,0" Width="214"/>
+        </RadioButton>
+        <Label FontSize="35" Foreground="#444" Content="-" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="590,160,0,0"/>
+        <Label FontSize="20" Foreground="White" Content="depth" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="608,99,0,0"/>
+        <Label FontSize="20" Foreground="#49c3d8" Content="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="669,176,0,0"/>
+
+
+
+        <Label FontWeight="Bold" Foreground="White" FontSize="25" Content="Time" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="612,215,0,0"/>
+        <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="25" Content="Game" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="534,215,0,0" />
+
+        <CheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="546,267,0,0">
+            <Label Content=" 5" FontSize="20" Foreground="#49c3d8"  Margin="0,-12,0,0" Width="214"/>
+        </CheckBox>
+        <Label FontSize="20" Foreground="White" Content="minutes" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="592,283,0,0" />
+
+
+        <CheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="546,296,0,0">
+            <Label Content="10" FontSize="20" Foreground="#49c3d8"  Margin="0,-12,0,0" Width="214"/>
+        </CheckBox>
+        <Label FontSize="20" Foreground="White" Content="minutes" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="592,254,0,0" />
+    </Grid>
+</UserControl>
