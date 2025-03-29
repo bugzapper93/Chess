@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
@@ -29,6 +30,7 @@ namespace Chess.Tools
             }
             return -1;
         }
+        #region Getting piece and move data
         public static int GetPiece(Chessboard board, int square)
         {
             ulong mask = 1UL << square;
@@ -55,6 +57,38 @@ namespace Chess.Tools
                 return Pieces.Black;
             return 0;
         }
+        public static bool IsMoveCapture(Chessboard board, Move move)
+        {
+            ulong mask = 1UL << move.To;
+            if ((board.AllPieces & mask) != 0)
+                return true;
+            return false;
+        }
+        private static int BitScanForward(ulong bitboard)
+        {
+            if (bitboard == 0) return -1;
+            int index = 0;
+            while ((bitboard & 1) != 0)
+            {
+                bitboard >>= 1;
+                index++;
+            }
+            return index;
+        }
+        public static ulong ComputePieceHash(ulong bitboard, int index)
+        {
+            ulong hash = 0;
+            ulong bitboardCopy = bitboard;
+            while (bitboardCopy != 0)
+            {
+                int square = BitScanForward(bitboardCopy);
+                hash ^= Constants.ZobristTable[index, square];
+                bitboardCopy &= bitboardCopy - 1;
+            }
+            return hash;
+        }
+        #endregion
+        #region Move validation
         public static bool isPawnCaptureValid(int fromSquare, int toSquare, bool enemyIsWhite = false)
         {
             if (!isOnBoard(toSquare))
@@ -109,6 +143,7 @@ namespace Chess.Tools
         {
             return square >= 0 && square < 64;
         }
+        
         /// <summary>
         /// Checks whether castling is valid.
         /// </summary>
@@ -320,6 +355,7 @@ namespace Chess.Tools
 
             return false;
         }
+        #endregion
         public static List<int> GetPieceMoves(Chessboard board, int startSquare, bool isWhite)
         {
             List<int> targetSquares = new List<int>();
@@ -466,6 +502,46 @@ namespace Chess.Tools
                 piece.Height = Constants.SquareSize;
                 return piece;
             }
+        }
+        #endregion
+        #region Grandmaster mode helpers
+        /// <summary>
+        /// Function for getting all the game records of a chosen grandmaster
+        /// </summary>
+        /// <param name="grandmasterName"></param>
+        /// <returns></returns>
+        public static List<Move> GetPlayerRecords(string grandmasterName, int playerColor)
+        {
+            string path = Constants.Grandmasters[grandmasterName];
+            string json = File.ReadAllText(path);
+            var games = JsonSerializer.Deserialize<List<GameRecord>>(json);
+
+            string[] temp = grandmasterName.Split(" ");
+            string grandmasterNameFormatted = $"{temp[1]}, {temp[0]}";
+            string grandmasterColorString = playerColor == Pieces.White ? "black" : "white";
+
+            List<Move> wonGames = new List<Move>();
+            List<Move> lostGames = new List<Move>();
+            List<Move> stalemates = new List<Move>();
+            
+            for (int i = 0; i < games.Count; i++)
+            {
+                var game = games[i];
+                if (playerColor == Pieces.Black && game.white == grandmasterNameFormatted)
+                {
+
+                }
+                else if (playerColor == Pieces.White && game.black == grandmasterNameFormatted)
+                {
+
+                }
+            }
+
+            List<Move> allMoves = new List<Move>();
+            allMoves.AddRange(wonGames);
+            allMoves.AddRange(stalemates);
+            allMoves.AddRange(lostGames);
+            return allMoves;
         }
         #endregion
     }

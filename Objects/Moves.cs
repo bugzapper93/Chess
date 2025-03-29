@@ -32,6 +32,13 @@ namespace Chess.Objects
             return $"{(char)('a' + file)}{rank + 1}";
         }
     }
+    public class GameRecord
+    {
+        public string white;
+        public string black;
+        public string result;
+        public List<string> moves;
+    }
     public static class Moves
     {
         public static LegalMoves GenerateLegalMoves(Chessboard board)
@@ -111,7 +118,9 @@ namespace Chess.Objects
         public static bool ValidateMove(Chessboard board, Move move, bool isWhite)
         {
             Chessboard boardClone = board.Clone();
-            boardClone.MakeMove(move, true);
+            boardClone.ValidatingMove = true;
+            boardClone.MakeMove(move);
+            boardClone.ValidatingMove = false;
             return !Helpers.isKingInCheck(boardClone, isWhite);
         }
        

@@ -64,6 +64,15 @@ namespace Chess.Objects
 
             return allMoves;
         }
+        public List<Move> GetAllCaptureMoves(Chessboard board)
+        {
+            List<Move> allMoves = GetAllMoves();
+            List<Move> captureMoves = new List<Move>();
+            foreach (Move move in allMoves)
+                if (Helpers.IsMoveCapture(board, move))
+                    captureMoves.Add(move);
+            return captureMoves;
+        }
     }
     public class Chessboard
     {
@@ -88,6 +97,8 @@ namespace Chess.Objects
         public bool[] RooksMoved;
         public bool WhiteKingMoved;
         public bool BlackKingMoved;
+
+        public bool ValidatingMove = false;
 
         public bool isWhiteTurn;
         public LegalMoves LegalMoves;
@@ -142,11 +153,32 @@ namespace Chess.Objects
                 LegalMoves = this.LegalMoves.Clone(),
             };
         }
+        public ulong ComputeHash()
+        {
+            ulong hash = 0;
+
+            hash ^= Helpers.ComputePieceHash(WhitePawns, 0);
+            hash ^= Helpers.ComputePieceHash(WhiteKnights, 1);
+            hash ^= Helpers.ComputePieceHash(WhiteBishops, 2);
+            hash ^= Helpers.ComputePieceHash(WhiteRooks, 3);
+            hash ^= Helpers.ComputePieceHash(WhiteQueens, 4);
+            hash ^= Helpers.ComputePieceHash(WhiteKing, 5);
+
+            hash ^= Helpers.ComputePieceHash(BlackPawns, 6);
+            hash ^= Helpers.ComputePieceHash(BlackKnights, 7);
+            hash ^= Helpers.ComputePieceHash(BlackBishops, 8);
+            hash ^= Helpers.ComputePieceHash(BlackRooks, 9);
+            hash ^= Helpers.ComputePieceHash(BlackQueens, 10);
+            hash ^= Helpers.ComputePieceHash(BlackKing, 11);
+
+            return hash;
+        }
         public void UpdateMoves()
         {
             LegalMoves = Moves.GenerateLegalMoves(this);
         }
-        public MoveData MakeMove(Move move, bool isBoardClone = false)
+        
+        public MoveData MakeMove(Move move)
         {
             MoveData moveData = new MoveData
             {
@@ -305,6 +337,8 @@ namespace Chess.Objects
                 }
             }
             isWhiteTurn = !isWhiteTurn;
+            if (!ValidatingMove)
+                UpdateMoves();
             return moveData;
         }
         public void CapturePiece(int square, bool enPassant = false)
@@ -333,6 +367,143 @@ namespace Chess.Objects
                 BlackRooks &= ~mask;
                 BlackQueens &= ~mask;
                 BlackKing &= ~mask;
+            }
+        }
+        public void UnmakeMove(MoveData moveData)
+        {
+            ulong fromMask = 1UL << moveData.move.From;
+            ulong toMask = 1UL << moveData.move.To;
+
+            if (moveData.isWhite)
+            {
+                switch (moveData.piece)
+                {
+                    case Pieces.Pawn:
+                        WhitePawns &= ~toMask;
+                        WhitePawns |= fromMask;
+                        break;
+                    case Pieces.Knight:
+                        WhiteKnights &= ~toMask;
+                        WhiteKnights |= fromMask;
+                        break;
+                    case Pieces.Bishop:
+                        WhiteBishops &= ~toMask;
+                        WhiteBishops |= fromMask;
+                        break;
+                    case Pieces.Rook:
+                        WhiteRooks &= ~toMask;
+                        WhiteRooks |= fromMask;
+                        if (moveData.move.From == 0)
+                            RooksMoved[0] = false;
+                        else if (moveData.move.From == 7)
+                            RooksMoved[1] = false;
+                        break;
+                    case Pieces.Queen:
+                        WhiteQueens &= ~toMask;
+                        WhiteQueens |= fromMask;
+                        break;
+                    case Pieces.King:
+                        WhiteKing &= ~toMask;
+                        WhiteKing |= fromMask;
+                        if (moveData.move.To - moveData.move.From == 2)
+                        {
+                            WhiteRooks &= ~(1UL << (moveData.move.To - 1));
+                            WhiteRooks |= (1UL << 7);
+                            WhiteKingMoved = false;
+                        }
+                        else if (moveData.move.To - moveData.move.From == -2)
+                        {
+                            WhiteRooks &= ~(1UL << (moveData.move.To + 1));
+                            WhiteRooks |= (1UL << 0);
+                            WhiteKingMoved = false;
+                        }
+                        break;
+                }
+                if (moveData.capture)
+                {
+                    UncapturePiece(moveData.move.To, moveData.enPassant);
+                }
+            }
+            else
+            {
+                switch (moveData.piece)
+                {
+                    case Pieces.Pawn:
+                        BlackPawns &= ~toMask;
+                        BlackPawns |= fromMask;
+                        break;
+                    case Pieces.Knight:
+                        BlackKnights &= ~toMask;
+                        BlackKnights |= fromMask;
+                        break;
+                    case Pieces.Bishop:
+                        BlackBishops &= ~toMask;
+                        BlackBishops |= fromMask;
+                        break;
+                    case Pieces.Rook:
+                        BlackRooks &= ~toMask;
+                        BlackRooks |= fromMask;
+                        if (moveData.move.From == 56)
+                            RooksMoved[2] = false;
+                        else if (moveData.move.From == 63)
+                            RooksMoved[3] = false;
+                        break;
+                    case Pieces.Queen:
+                        BlackQueens &= ~toMask;
+                        BlackQueens |= fromMask;
+                        break;
+                    case Pieces.King:
+                        BlackKing &= ~toMask;
+                        BlackKing |= fromMask;
+                        if (moveData.move.To - moveData.move.From == 2)
+                        {
+                            BlackRooks &= ~(1UL << (moveData.move.To - 1));
+                            BlackRooks |= (1UL << 63);
+                            BlackKingMoved = false;
+                        }
+                        else if (moveData.move.To - moveData.move.From == -2)
+                        {
+                            BlackRooks &= ~(1UL << (moveData.move.To + 1));
+                            BlackRooks |= (1UL << 56);
+                            BlackKingMoved = false;
+                        }
+                        break;
+                }
+                if (moveData.capture)
+                {
+                    UncapturePiece(moveData.move.To, moveData.enPassant);
+                }
+            }
+            isWhiteTurn = !isWhiteTurn;
+            EnPassantSquare = null;
+        }
+
+        private void UncapturePiece(int square, bool enPassant = false)
+        {
+            bool captureWhite = isWhiteTurn ? true : false;
+            ulong mask = 1UL << square;
+
+            if (captureWhite)
+            {
+                if (enPassant)
+                    mask = 1UL << (square - 8);
+                WhitePawns |= mask;
+                WhiteKnights |= mask;
+                WhiteBishops |= mask;
+                WhiteRooks |= mask;
+                WhiteQueens |= mask;
+                WhiteKing |= mask;
+            }
+            else
+            {
+                if (enPassant)
+                    mask = 1UL << (square + 8);
+                BlackPawns |= mask;
+                BlackKnights |= mask;
+                BlackBishops |= mask;
+                BlackRooks |= mask;
+                BlackQueens |= mask;
+                BlackKing |= mask;
             }
         }
     }

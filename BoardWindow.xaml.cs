@@ -35,7 +35,7 @@ namespace Chess
         int playerColor = Pieces.White;
 
         ChessAI bot = new ChessAI(5);
-
+        
         List<int> possibleMoves = new List<int>();
         public BoardWindow()
         {
@@ -231,6 +231,9 @@ namespace Chess
         }
         private void PieceMouseDown(object sender, MouseEventArgs e)
         {
+            int currentColorTurn = board.isWhiteTurn ? Pieces.White : Pieces.Black;
+            if (currentColorTurn != playerColor)
+                return;
             if (sender is Rectangle rect)
             {
                 Rectangle piece = (Rectangle)sender;
@@ -287,7 +290,7 @@ namespace Chess
                 if (MovePiece(new Move(selectedSquare, targetSquare)))
                 {
                     int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
-                    Move move = await bot.GetBestMove(board, botColor);
+                    Move move = await bot.GetBestMove(board.Clone(), botColor);
                     MovePiece(move, false);
                 }
             }
