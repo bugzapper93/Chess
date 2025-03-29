@@ -343,6 +343,49 @@ namespace Chess.Objects
                 UpdateMoves();
             return moveData;
         }
+        public void PromotePawn(int square, int pieceToPromoteTo = Pieces.Queen)
+        {
+            ulong targetMask = 1UL << square;
+            
+            if (square / 8 == 7)
+            {
+                WhitePawns &= ~targetMask;
+                switch (pieceToPromoteTo)
+                {
+                    case Pieces.Queen:
+                        WhiteQueens |= targetMask;
+                        break;
+                    case Pieces.Bishop:
+                        WhiteBishops |= targetMask;
+                        break;
+                    case Pieces.Rook:
+                        WhiteRooks |= targetMask;
+                        break;
+                    case Pieces.Knight:
+                        WhiteKnights |= targetMask;
+                        break;
+                }
+            }
+            else if (square / 8 == 0)
+            {
+                BlackPawns &= ~targetMask;
+                switch (pieceToPromoteTo)
+                {
+                    case Pieces.Queen:
+                        BlackQueens |= targetMask;
+                        break;
+                    case Pieces.Bishop:
+                        BlackBishops |= targetMask;
+                        break;
+                    case Pieces.Rook:
+                        BlackRooks |= targetMask;
+                        break;
+                    case Pieces.Knight:
+                        BlackKnights |= targetMask;
+                        break;
+                }
+            }
+        }
         public void CapturePiece(int square, bool enPassant = false)
         {
             bool captureWhite = isWhiteTurn ? false : true;

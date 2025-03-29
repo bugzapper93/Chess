@@ -35,8 +35,7 @@ namespace Chess.View
         int playerColor;
 
         private bool enableAI;
-        private bool grandmasterMode;
-        private string grandmasterName;
+
         ChessAI bot;
         
         List<int> possibleMoves = new List<int>();
@@ -54,6 +53,7 @@ namespace Chess.View
         }
         public void InitializeGame(int playerColor, bool AI, int depth, bool grandmaster, string grandmasterName = "")
         {
+            enableAI = AI;
             if (AI)
             {
                 bot = new ChessAI(depth, playerColor, grandmaster, grandmasterName);
@@ -243,11 +243,36 @@ namespace Chess.View
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
             board.CurrentMoves += board.CurrentMoves == "" ? $"{moveNotation}" : $",{moveNotation}";
 
-            // Tutaj np dajessz wywolanie funkcji, wyskakuje okienko
+            // Pawn promotion
+            // No need for differentiating between black and white pawns, because pawns can't move backwards
+            if (Helpers.GetPiece(board, endSquare) == Pieces.Pawn)
+            {
+                board.PromotePawn(endSquare);
+                RemovePiece(endSquare);
 
-            // piece = promotePiece()
-            
-            // board.Promote(move.To, piece)
+                char pieceChar = Helpers.GetPieceArray(board)[endSquare];
+
+                Rectangle piece = Helpers.GeneratePiece(pieceChar);
+
+                int row = endSquare / 8;
+                int col = endSquare % 8;
+
+                int displayRow = row;
+                int displayCol = col;
+
+                double pieceLeft = displayCol * Constants.SquareSize + (Constants.SquareSize - piece.Width) / 2;
+                double pieceBottom = displayRow * Constants.SquareSize + (Constants.SquareSize - piece.Height) / 2;
+
+                Canvas.SetLeft(piece, pieceLeft);
+                Canvas.SetBottom(piece, pieceBottom);
+
+                piece.MouseDown += PieceMouseDown;
+                piece.MouseMove += PieceMouseMove;
+                piece.MouseUp += PieceMouseUp;
+
+                PiecesDisplay[row, col] = piece;
+                display.Children.Add(piece);
+            }
 
             if (Helpers.GetMoveCount(board) == 0)
             {
@@ -271,8 +296,8 @@ namespace Chess.View
         private void PieceMouseDown(object sender, MouseEventArgs e)
         {
             int currentColorTurn = board.isWhiteTurn ? Pieces.White : Pieces.Black;
-            if (currentColorTurn != playerColor || !started)
-                return;
+            //if (currentColorTurn != playerColor || !started)
+            //    return;
             if (sender is Rectangle rect)
             {
                 Rectangle piece = (Rectangle)sender;
@@ -326,7 +351,7 @@ namespace Chess.View
                 isDragging = false;
                 ResetBoardView();
 
-                if (MovePiece(new Move(selectedSquare, targetSquare)))
+                if (MovePiece(new Move(selectedSquare, targetSquare)) && enableAI)
                 {
                     MakeAIMove();
                 }
