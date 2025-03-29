@@ -34,7 +34,7 @@ namespace Chess
         int selectedSquare;
         int playerColor = Pieces.White;
 
-        ChessAI bot = new ChessAI(5);
+        ChessAI bot;
         
         List<int> possibleMoves = new List<int>();
         public BoardWindow()
@@ -44,6 +44,8 @@ namespace Chess
             DrawChessboard();
             PlacePieces();
             board.UpdateMoves();
+
+            bot = new ChessAI(5, playerColor);
         }
         private void DrawChessboard()
         {
@@ -208,8 +210,7 @@ namespace Chess
             RepositionPiece(move);
             MoveData moveData = board.MakeMove(move);
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
-            //MessageBox.Show(moveNotation);
-            board.UpdateMoves();
+            board.CurrentMoves += $"{moveNotation}";
             if (Helpers.GetMoveCount(board) == 0)
             {
                 if (Helpers.isKingInCheck(board, board.isWhiteTurn))

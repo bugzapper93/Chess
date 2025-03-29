@@ -100,6 +100,8 @@ namespace Chess.Objects
 
         public bool ValidatingMove = false;
 
+        public string CurrentMoves = "";
+
         public bool isWhiteTurn;
         public LegalMoves LegalMoves;
 

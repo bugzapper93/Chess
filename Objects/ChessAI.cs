@@ -14,18 +14,19 @@ namespace Chess.Objects
         private int MaxDepth;
         private int FutilityMargin;
         private bool GrandmasterMode;
-        private List<GameRecord> GameRecords;
-        public ChessAI(int searchDepth, bool grandmaster, int futilityMargin = 100)
+        private List<string> GameRecords;
+        public ChessAI(int searchDepth, int playerColor, bool grandmaster = false, string grandmasterName = "", int futilityMargin = 100)
         {
             MaxDepth = searchDepth;
             GrandmasterMode = grandmaster;
             FutilityMargin = futilityMargin;
+            GameRecords = Helpers.GetPlayerRecords(grandmasterName, playerColor);
         }
         public async Task<Move> GetBestMove(Chessboard board, int aiColor)
         {
             if (GrandmasterMode)
             {
-
+                
             }
 
             int bestValue = int.MinValue;

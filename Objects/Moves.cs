@@ -39,6 +39,10 @@ namespace Chess.Objects
         public string result;
         public List<string> moves;
     }
+    public struct GrandmasterMoveset
+    {
+        public List<List<Move>> moves;
+    }
     public static class Moves
     {
         public static LegalMoves GenerateLegalMoves(Chessboard board)

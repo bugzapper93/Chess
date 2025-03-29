@@ -510,34 +510,47 @@ namespace Chess.Tools
         /// </summary>
         /// <param name="grandmasterName"></param>
         /// <returns></returns>
-        public static List<Move> GetPlayerRecords(string grandmasterName, int playerColor)
+        public static List<string> GetPlayerRecords(string grandmasterName, int playerColor)
         {
             string path = Constants.Grandmasters[grandmasterName];
             string json = File.ReadAllText(path);
             var games = JsonSerializer.Deserialize<List<GameRecord>>(json);
 
+            if (games == null)
+                return new List<string>();
+
             string[] temp = grandmasterName.Split(" ");
             string grandmasterNameFormatted = $"{temp[1]}, {temp[0]}";
             string grandmasterColorString = playerColor == Pieces.White ? "black" : "white";
 
-            List<Move> wonGames = new List<Move>();
-            List<Move> lostGames = new List<Move>();
-            List<Move> stalemates = new List<Move>();
-            
+            List<string> wonGames = new List<string>();
+            List<string> lostGames = new List<string>();
+            List<string> stalemates = new List<string>();
+
             for (int i = 0; i < games.Count; i++)
             {
                 var game = games[i];
                 if (playerColor == Pieces.Black && game.white == grandmasterNameFormatted)
                 {
-
+                    if (game.result == "1-0")
+                        wonGames.Add(string.Join("", game.moves));
+                    else if (game.result == "1-1")
+                        stalemates.Add(string.Join("", game.moves));
+                    else
+                        lostGames.Add(string.Join("", game.moves));
                 }
                 else if (playerColor == Pieces.White && game.black == grandmasterNameFormatted)
                 {
-
+                    if (game.result == "0-1")
+                        wonGames.Add(string.Join("", game.moves));
+                    else if (game.result == "1-1")
+                        stalemates.Add(string.Join("", game.moves));
+                    else
+                        lostGames.Add(string.Join("", game.moves));
                 }
             }
 
-            List<Move> allMoves = new List<Move>();
+            List<string> allMoves = new List<string>();
             allMoves.AddRange(wonGames);
             allMoves.AddRange(stalemates);
             allMoves.AddRange(lostGames);
