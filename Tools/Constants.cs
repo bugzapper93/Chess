@@ -13,7 +13,11 @@ namespace Chess.Tools
     {
         public static readonly Dictionary<string, string> Grandmasters = new Dictionary<string, string>
         {
-            { "Magnus Carlsen",  "magnus-carlsen.json"}
+            { "Magnus Carlsen",  "magnus-carlsen.json"},
+            { "Alireza Firouzja", "alireza-firouzja.json" },
+            { "Andrew Tang", "andrew-tang.json"},
+            { "Jan Krzysztof Duda","jan-krzysztof-duda.json" },
+            { "Wesley So", "wesley-so.json" }
         };
 
         public static readonly ulong DefaultWhitePawns      = 0x000000000000FF00;
