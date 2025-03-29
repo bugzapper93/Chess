@@ -48,7 +48,7 @@ namespace Chess.View
             if (can_forfeit == false)
             {
                 Board.started = true;
-                Board.InitializeGame(Pieces.White, true, 5, true, "Magnus Carlsen");
+                Board.InitializeGame(Pieces.White, true, 5, true, "Alireza Firouzja");
 
                 play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
                 play_forfeit.Content = "Forfeit";

@@ -535,7 +535,7 @@ namespace Chess.Tools
         /// <returns></returns>
         public static List<string> GetPlayerRecords(string grandmasterName, int playerColor)
         {
-            string path = Constants.Grandmasters[grandmasterName];
+            string path = "Resources/Grandmasters/" + Constants.Grandmasters[grandmasterName];
             string json = File.ReadAllText(path);
 
             var games = JsonSerializer.Deserialize<List<GameRecord>>(json);

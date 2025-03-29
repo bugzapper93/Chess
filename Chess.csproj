@@ -38,4 +38,22 @@
     <EmbeddedResource Include="Resources\Images\rook_white.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Resources\Grandmasters\alireza-firouzja.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Grandmasters\andrew-tang.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Grandmasters\jan-krzysztof-duda.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Grandmasters\magnus-carlsen.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Grandmasters\wesley-so.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
