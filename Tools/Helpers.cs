@@ -57,6 +57,29 @@ namespace Chess.Tools
                 return Pieces.Black;
             return 0;
         }
+        public static char GetPieceAt(int square, Chessboard board)
+        {
+            ulong mask = 1UL << square;
+            if (board.isWhiteTurn)
+            {
+                if ((board.WhitePawns & mask) != 0) return 'P';
+                if ((board.WhiteKnights & mask) != 0) return 'N';
+                if ((board.WhiteBishops & mask) != 0) return 'B';
+                if ((board.WhiteRooks & mask) != 0) return 'R';
+                if ((board.WhiteQueens & mask) != 0) return 'Q';
+                if ((board.WhiteKing & mask) != 0) return 'K';
+            }
+            else
+            {
+                if ((board.BlackPawns & mask) != 0) return 'P';
+                if ((board.BlackKnights & mask) != 0) return 'N';
+                if ((board.BlackBishops & mask) != 0) return 'B';
+                if ((board.BlackRooks & mask) != 0) return 'R';
+                if ((board.BlackQueens & mask) != 0) return 'Q';
+                if ((board.BlackKing & mask) != 0) return 'K';
+            }
+            return ' ';
+        }
         public static bool IsMoveCapture(Chessboard board, Move move)
         {
             ulong mask = 1UL << move.To;
@@ -514,6 +537,10 @@ namespace Chess.Tools
         {
             string path = Constants.Grandmasters[grandmasterName];
             string json = File.ReadAllText(path);
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true
+            };
             var games = JsonSerializer.Deserialize<List<GameRecord>>(json);
 
             if (games == null)
@@ -521,7 +548,6 @@ namespace Chess.Tools
 
             string[] temp = grandmasterName.Split(" ");
             string grandmasterNameFormatted = $"{temp[1]}, {temp[0]}";
-            string grandmasterColorString = playerColor == Pieces.White ? "black" : "white";
 
             List<string> wonGames = new List<string>();
             List<string> lostGames = new List<string>();
@@ -530,6 +556,7 @@ namespace Chess.Tools
             for (int i = 0; i < games.Count; i++)
             {
                 var game = games[i];
+                
                 if (playerColor == Pieces.Black && game.white == grandmasterNameFormatted)
                 {
                     if (game.result == "1-0")

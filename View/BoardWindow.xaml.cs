@@ -48,7 +48,6 @@ namespace Chess.View
 
             DrawChessboard();
             PlacePieces();
-
             board.UpdateMoves();
         }
         public void InitializeGame(int playerColor, bool AI, int depth, bool grandmaster, string grandmasterName = "")

@@ -31,13 +31,19 @@ namespace Chess.Objects
             int rank = square / 8;
             return $"{(char)('a' + file)}{rank + 1}";
         }
+        public static int SquareStringToIndex(string square)
+        {
+            int file = square[0] - 'a';
+            int rank = square[1] - '1';
+            return rank * 8 + file;
+        }
     }
     public class GameRecord
     {
-        public string white;
-        public string black;
-        public string result;
-        public List<string> moves;
+        public string white { get; set; }
+        public string black { get; set; }
+        public string result { get; set; }
+        public List<string> moves { get; set; }
     }
     public struct GrandmasterMoveset
     {
@@ -346,8 +352,15 @@ namespace Chess.Objects
         {
             int index = grandmasterMoves.FindIndex(move => move.Contains(currentMoves));
 
+            MessageBox.Show(index.ToString());
+
+            MessageBox.Show(currentMoves);
+            MessageBox.Show($"{grandmasterMoves[index]}");
+
             List<string> fullMoveList = grandmasterMoves[index].Split(',').ToList();
             List<string> currentMoveList = currentMoves.Split(',').ToList();
+
+            //MessageBox.Show($"{currentMoves} {grandmasterMoves}");
 
             int startIndex = -1;
             for (int i = 0; i <= fullMoveList.Count - currentMoveList.Count; i++)
@@ -368,17 +381,51 @@ namespace Chess.Objects
             }
         }
 
-        public static Move GetMoveFromNotation(string notation)
+        public static Move GetMoveFromNotation(string notation, Chessboard board)
         {
-            char[] pieces = ['N', 'B', 'R', 'Q', 'K'];
-            string target = notation.Replace("x", "").Replace("#", "").Replace("+", "");
-            if (pieces.Contains(pieces[0]))
-            {
+            notation = notation.Replace("+", "").Replace("#", "");
 
+            char pieceChar = 'P';
+            int pos = 0;
+            if (notation.Length > 0 && "NBRQK".Contains(notation[0]))
+            {
+                pieceChar = notation[0];
+                pos = 1;
             }
 
+            string destSquareStr = notation.Substring(notation.Length - 2);
+            int destSquare = Move.SquareStringToIndex(destSquareStr);
 
-            return new Move();
+            string disambiguation = notation.Substring(pos, notation.Length - pos - 2);
+
+            List<Move> allMoves = board.LegalMoves.GetAllMoves();
+            List<Move> candidates = new List<Move>();
+            foreach (var move in allMoves)
+            {
+                if (move.To == destSquare)
+                {
+                    if (Helpers.GetPieceAt(move.From, board) == pieceChar)
+                    {
+                        string fromSquareStr = Move.SquareToString(move.From);
+                        if (string.IsNullOrEmpty(disambiguation) || fromSquareStr.Contains(disambiguation))
+                        {
+                            candidates.Add(move);
+                        }
+                    }
+                }
+            }
+            if (candidates.Count == 1)
+            {
+                return candidates[0];
+            }
+            else if (candidates.Count == 0)
+            {
+                throw new Exception("No legal move found for notation: " + notation);
+            }
+            else
+            {
+                throw new Exception("Ambiguous move notation: " + notation);
+            }
         }
     }
 }

@@ -36,12 +36,12 @@
 //            UpdateUI(); // Initial UI update
 //        }
 
-//        public async Task SendMoveAsync(Position start, Position end)
+//        public async Task SendMoveAsync(Move move)
 //        {
 //            if (_networkManager.IsConnected || _networkManager.IsHosting)
 //            {
 //                _nickname = _chessMainWindow.txtNick.Text.Trim();
-//                string moveMessage = $"MOVE|{start.row},{start.column}|{end.row},{end.column}";
+//                string moveMessage = $"MOVE|{move.From}|{move.To}";
 //                await _networkManager.SendChatMessageAsync(_nickname, moveMessage);
 //            }
 //        }
@@ -282,7 +282,7 @@
 //                newList.ForEach(networkManager.ConnectedPlayers.Add);
 //                networkManager.UpdatePlayerList([.. networkManager.ConnectedPlayers]);
 
-//                // Check if the leaving player is the host and this is a client
+//                Check if the leaving player is the host and this is a client
 //                if (!networkManager.IsHosting && leavingNick == networkManager._hostNickname)
 //                {
 //                    await networkManager.LeaveAsync(networkManager._clientNickname);

@@ -153,6 +153,7 @@ namespace Chess.Objects
                 BlackKingMoved = this.BlackKingMoved,
                 isWhiteTurn = this.isWhiteTurn,
                 LegalMoves = this.LegalMoves.Clone(),
+                CurrentMoves = (string)this.CurrentMoves.Clone()
             };
         }
         public ulong ComputeHash()
