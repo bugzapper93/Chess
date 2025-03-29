@@ -29,6 +29,32 @@ namespace Chess.Tools
             }
             return -1;
         }
+        public static int GetPiece(Chessboard board, int square)
+        {
+            ulong mask = 1UL << square;
+            if (((board.WhitePawns | board.BlackPawns) & mask) != 0)
+                return Pieces.Pawn;
+            if (((board.WhiteKnights | board.BlackKnights) & mask) != 0)
+                return Pieces.Knight;
+            if (((board.WhiteBishops | board.BlackBishops) & mask) != 0)
+                return Pieces.Bishop;
+            if (((board.WhiteRooks | board.BlackRooks) & mask) != 0)
+                return Pieces.Rook;
+            if (((board.WhiteQueens | board.BlackQueens) & mask) != 0)
+                return Pieces.Queen;
+            if (((board.WhiteKing | board.BlackKing) & mask) != 0)
+                return Pieces.King;
+            return 0;
+        }
+        public static int GetPieceColor(Chessboard board, int square)
+        {
+            ulong mask = 1UL << square;
+            if ((board.AllWhitePieces & mask) != 0)
+                return Pieces.White;
+            else if ((board.AllBlackPieces & mask) != 0)
+                return Pieces.Black;
+            return 0;
+        }
         public static bool isPawnCaptureValid(int fromSquare, int toSquare, bool enemyIsWhite = false)
         {
             if (!isOnBoard(toSquare))

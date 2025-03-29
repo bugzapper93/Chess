@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,8 +43,26 @@ namespace Chess.Objects
                 BlackQueenMoves = new List<Move>(this.BlackQueenMoves),
                 BlackKingMoves = new List<Move>(this.BlackKingMoves)
             };
-
             return clone;
+        }
+        public List<Move> GetAllMoves()
+        {
+            List<Move> allMoves = new List<Move>();
+            allMoves.AddRange(WhitePawnMoves);
+            allMoves.AddRange(WhiteKnightMoves);
+            allMoves.AddRange(WhiteBishopMoves);
+            allMoves.AddRange(WhiteRookMoves);
+            allMoves.AddRange(WhiteQueenMoves);
+            allMoves.AddRange(WhiteKingMoves);
+
+            allMoves.AddRange(BlackPawnMoves);
+            allMoves.AddRange(BlackKnightMoves);
+            allMoves.AddRange(BlackBishopMoves);
+            allMoves.AddRange(BlackRookMoves);
+            allMoves.AddRange(BlackQueenMoves);
+            allMoves.AddRange(BlackKingMoves);
+
+            return allMoves;
         }
     }
     public class Chessboard

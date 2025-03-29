@@ -32,6 +32,10 @@ namespace Chess
         private bool isDragging = false;
         private UIElement? selectedPiece;
         int selectedSquare;
+        int playerColor = Pieces.White;
+
+        ChessAI bot = new ChessAI(5);
+
         List<int> possibleMoves = new List<int>();
         public BoardWindow()
         {
@@ -146,7 +150,7 @@ namespace Chess
             parentCanvas.Children.Remove(targetPiece);
             PiecesDisplay[targetRow, targetColumn] = null;
         }
-        private bool MovePiece(Move move)
+        private bool MovePiece(Move move, bool checkIfValid = true)
         {
             int selectedRow = move.From / 8;
             int selectedColumn = move.From % 8;
@@ -160,7 +164,7 @@ namespace Chess
             ulong toMask = 1UL << endSquare;
             ulong fromMask = 1UL << startSquare;            
 
-            if (!possibleMoves.Contains(endSquare))
+            if (!possibleMoves.Contains(endSquare) && checkIfValid)
             {
                 RepositionPiece(new Move(startSquare, startSquare), false);
                 return false;
@@ -204,7 +208,7 @@ namespace Chess
             RepositionPiece(move);
             MoveData moveData = board.MakeMove(move);
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
-            MessageBox.Show(moveNotation);
+            //MessageBox.Show(moveNotation);
             board.UpdateMoves();
             if (Helpers.GetMoveCount(board) == 0)
             {
@@ -276,10 +280,16 @@ namespace Chess
 
                 int targetSquare = row * 8 + col;
 
-                MovePiece(new Move(selectedSquare, targetSquare));
                 selectedPiece = null;
                 isDragging = false;
                 ResetBoardView();
+
+                if (MovePiece(new Move(selectedSquare, targetSquare)))
+                {
+                    int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
+                    Move move = await bot.GetBestMove(board, botColor);
+                    MovePiece(move, false);
+                }
             }
         }
         private void ResetBoardView()
