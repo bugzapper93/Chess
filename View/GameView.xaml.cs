@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chess.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,6 @@ namespace Chess.View
         public GameView()
         {
             InitializeComponent();
-            
         }
 
         bool can_forfeit = false;
@@ -47,10 +47,14 @@ namespace Chess.View
         {
             if (can_forfeit == false)
             {
+                Board.started = true;
+                Board.InitializeGame(Pieces.Black, true, 5, false);
+
                 play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
                 play_forfeit.Content = "Forfeit";
                 GameSidePanelPlayingView();
                 can_forfeit = true;
+
                 return;
             }
             else

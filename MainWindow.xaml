@@ -21,8 +21,8 @@
             <Setter Property="TextAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
-    <Grid x:Name="gameWindow" Background="DimGray">
-        <controls:BoardWindow></controls:BoardWindow>
-        <controls:GameView Visibility="Hidden" />
+    <Grid Background="DimGray">
+        <controls:GameView x:Name="GameView" Visibility="Hidden" />
+        <controls:HomeView x:Name="HomeView" />
     </Grid>
 </Window>  

@@ -32,22 +32,52 @@ namespace Chess.View
         private bool isDragging = false;
         private UIElement? selectedPiece;
         int selectedSquare;
-        int playerColor = Pieces.White;
+        int playerColor;
 
+        private bool enableAI;
+        private bool grandmasterMode;
+        private string grandmasterName;
         ChessAI bot;
         
         List<int> possibleMoves = new List<int>();
+
+        public bool started = false;
+
         public BoardWindow()
         {
             InitializeComponent();
 
             DrawChessboard();
             PlacePieces();
+
             board.UpdateMoves();
-
-            Moves.GetMoveFromNotation("Nxf3");
-
-            bot = new ChessAI(5, playerColor);
+        }
+        public void InitializeGame(int playerColor, bool AI, int depth, bool grandmaster, string grandmasterName = "")
+        {
+            if (AI)
+            {
+                bot = new ChessAI(depth, playerColor, grandmaster, grandmasterName);
+            }
+            if (playerColor == Pieces.White)
+            {
+                started = true;
+                this.playerColor = Pieces.White;
+            }
+            else
+            {
+                started = true;
+                this.playerColor = Pieces.Black;
+                if (AI)
+                {
+                    MakeAIMove();
+                }
+            }
+        }
+        private async void MakeAIMove()
+        {
+            int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
+            Move move = await bot.GetBestMove(board.Clone(), botColor);
+            MovePiece(move, false);
         }
         private void DrawChessboard()
         {
@@ -241,7 +271,7 @@ namespace Chess.View
         private void PieceMouseDown(object sender, MouseEventArgs e)
         {
             int currentColorTurn = board.isWhiteTurn ? Pieces.White : Pieces.Black;
-            if (currentColorTurn != playerColor)
+            if (currentColorTurn != playerColor || !started)
                 return;
             if (sender is Rectangle rect)
             {
@@ -298,9 +328,7 @@ namespace Chess.View
 
                 if (MovePiece(new Move(selectedSquare, targetSquare)))
                 {
-                    int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
-                    Move move = await bot.GetBestMove(board.Clone(), botColor);
-                    MovePiece(move, false);
+                    MakeAIMove();
                 }
             }
         }

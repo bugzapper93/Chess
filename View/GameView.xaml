@@ -81,8 +81,8 @@
         </Style>
     </UserControl.Resources>
     <Grid Background="#252525">
-        <ContentControl x:Name="CC"/>
-        
-        <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="505,346,0,0" VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
+        <ContentControl x:Name="CC" Margin="529,0,10,0"/>
+        <controls:BoardWindow x:Name="Board" Margin="27,-27,-27,27"/>
+        <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="567,382,0,0" VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
     </Grid>
 </UserControl>

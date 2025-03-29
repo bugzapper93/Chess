@@ -81,9 +81,8 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-
         <Button FontWeight="Bold" FontSize="30" Foreground="White" Background="#49c3d8" Command="{Binding NavigateToMpPanelViewCommand}" Content="MultiPlayer" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="480,53,0,0" VerticalAlignment="Top" Height="85" Width="261"/>
-        <Button FontWeight="Bold" FontSize="30" Foreground="White" Background="#444" Command="{Binding NavigateToGameViewCommand}" Content="Bot" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="480,150,0,0" VerticalAlignment="Top" Height="85" Width="261"/>
+        <Button x:Name="BotGame" FontWeight="Bold" FontSize="30" Foreground="White" Background="#444" Content="Bot" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="480,150,0,0" VerticalAlignment="Top" Height="85" Width="261"/>
         <Button FontWeight="Bold" FontSize="25" Foreground="White" Background="#49c3d8" Command="{Binding NavigateToCreditsViewCommand}" Content="Credits" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="480,245,0,0" VerticalAlignment="Top" Height="72" Width="167"/>
         <Button FontWeight="Bold" FontSize="25" Foreground="White" Background="#444" Command="{Binding NavigateToSettingsViewCommand}" Content="🛠" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="656,245,0,0" VerticalAlignment="Top" Height="72" Width="85"/>
         <Button FontWeight="Bold" FontSize="23" Foreground="White" Background="#444" Content="Exit" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="480,326,0,0" VerticalAlignment="Top" Height="53" Width="261"/>
