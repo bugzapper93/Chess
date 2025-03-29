@@ -12,7 +12,7 @@ namespace Chess.Tools
     class Constants
     {
         public static readonly int Margin = 10;
-        public static readonly int Square_Size = 50;
+        public static readonly int Square_Size = 40;
         public static Brush Primary = Brushes.LightBlue;
         public static Brush Secondary = Brushes.CadetBlue;
         public static readonly Position[] Directions =

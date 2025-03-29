@@ -38,6 +38,7 @@
             <RadioButton x:Name="RookChoose" GroupName="PromotionCheck" Content="Rook" Grid.Column="0" Grid.Row="1"  VerticalAlignment="Center" HorizontalAlignment="Left" Checked="RadioButtons_Checked"></RadioButton>
             <RadioButton x:Name="BishopChoose" GroupName="PromotionCheck" Content="Bishop" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Checked="RadioButtons_Checked"></RadioButton>
             <RadioButton x:Name="QueenChoose" GroupName="PromotionCheck" Content="Queen" Grid.Column="0" Grid.Row="3"  VerticalAlignment="Center" HorizontalAlignment="Left"  Checked="RadioButtons_Checked"></RadioButton>
+
         </Grid>
         <StackPanel Orientation="Vertical" Margin="10">
             <StackPanel x:Name="timers" Orientation="Horizontal" Margin="580,0,0,5">
@@ -60,7 +61,6 @@
               Margin="650,10,0,0"
               Checked="notationType_Checked"
               Unchecked="notationType_Unchecked" />
-
             <ScrollViewer x:Name="NotationGridScrollView"
                        MaxHeight="300"
                   HorizontalScrollBarVisibility="Disabled"
@@ -82,7 +82,7 @@
                 </Grid>
             </ScrollViewer>
         </StackPanel>
-
+        <Button x:Name="nerdViewBtn" Content="View for nerds" Height="50" Margin="20,197,689,107" Click="nerdViewBtn_Click" />
         <Grid x:Name="MainMenu">
             <Button x:Name="startBTN" Content="START" Click="startBTN_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Padding="50,10,50,10" UseLayoutRounding="False" Margin="0,100,0,0" FontWeight="Bold" FontFamily="Consolas" Width="150" Height="45"/>
             <Button x:Name="settingsBtn" Content="SETTINGS" Click="settingsBtn_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Padding="40,10,40,10" UseLayoutRounding="True" Margin="0,165,0,0" FontWeight="Bold" FontFamily="Consolas" Width="150" Height="45"/>
@@ -149,7 +149,7 @@
                 <LineBreak />
                 <Run Text="- Patryk Pietrzyk (programmer)" />
                 <LineBreak />
-                <Run Text="- Marcel Zasada (graphic/sound designer)" /> 
+                <Run Text="- Marcel Zasada (graphic/sound designer)" />
             </TextBlock>
         </Grid>
         <Grid x:Name="SettingsMenu" HorizontalAlignment="Center" VerticalAlignment="Center">

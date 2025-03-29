@@ -119,7 +119,10 @@ namespace Chess.Objects
                 }
             });
         }
-
+        public void InformationForNerdsLAN()
+        {
+            MessageBox.Show($"Local IP Adress: {P2PNetworkManager.GetLocalIPAddress()}\nHost Nickname: {_networkManager._hostNickname}\nClient Nickname: {_networkManager._clientNickname}", "View For Nerds", MessageBoxButton.OK);
+        }
         private void ShowErrorMessage(string message)
         {
             _chessMainWindow.Dispatcher.Invoke(() => MessageBox.Show(message));
@@ -137,10 +140,6 @@ namespace Chess.Objects
         }
         public class UIManager(MainWindow window)
         {
-            public void UpdateButtonStates()
-            {
-
-            }
 
             public static string? ValidateNickname(string? input)
             {

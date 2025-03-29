@@ -26,6 +26,7 @@ public partial class MainWindow : Window
     private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
     private Rectangle[,] Squares = new Rectangle[8, 8];
     public Chessboard Board = new Chessboard();
+    private int topMargin = 40;
 
     // Mouse piece movement
     private Position selectedPosition;
@@ -141,7 +142,7 @@ public partial class MainWindow : Window
                 int displayRow = isBoardFlipped ? 7 - row : row;
                 int displayCol = isBoardFlipped ? 7 - col : col;
                 Canvas.SetLeft(square, displayCol * SquareSize);
-                Canvas.SetTop(square, displayRow * SquareSize + 5);
+                Canvas.SetTop(square, displayRow * SquareSize + topMargin);
                 Squares[row, col] = square;
                 display.Children.Add(square);
             }
@@ -163,7 +164,7 @@ public partial class MainWindow : Window
                     int displayCol = isBoardFlipped ? 7 - col : col;
 
                     double pieceLeft = displayCol * SquareSize + (SquareSize - piece.Width) / 2;
-                    double pieceTop = (displayRow * SquareSize + (SquareSize - piece.Height) / 2) + 5;
+                    double pieceTop = (displayRow * SquareSize + (SquareSize - piece.Height) / 2) + topMargin;
 
                     Canvas.SetLeft(piece, pieceLeft);
                     Canvas.SetTop(piece, pieceTop);
@@ -317,7 +318,7 @@ public partial class MainWindow : Window
         int displayEndCol = isBoardFlipped ? 7 - positionEnd.column : positionEnd.column;
 
         Canvas.SetLeft(selectedPiece, displayEndCol * SquareSize);
-        Canvas.SetTop(selectedPiece, displayEndRow * SquareSize + 5);
+        Canvas.SetTop(selectedPiece, displayEndRow * SquareSize + topMargin);
 
 
         PiecesDisplay[positionEnd.row, positionEnd.column] = (Rectangle)selectedPiece;
@@ -361,7 +362,7 @@ public partial class MainWindow : Window
         int displayStartCol = isBoardFlipped ? 7 - position.column : position.column;
 
         double pieceLeft = displayStartCol * SquareSize + (SquareSize - piece.RenderSize.Width) / 2;
-        double pieceTop = (displayStartRow * SquareSize + (SquareSize - piece.RenderSize.Height) / 2) + 5;
+        double pieceTop = (displayStartRow * SquareSize + (SquareSize - piece.RenderSize.Height) / 2) + topMargin;
 
         Canvas.SetLeft(piece, pieceLeft);
         Canvas.SetTop(piece, pieceTop);
@@ -411,6 +412,7 @@ public partial class MainWindow : Window
     private void CheckVisibility()
     {
         promotionMenu.Visibility = Visibility.Hidden;
+        nerdViewBtn.Visibility = Visibility.Hidden;
         if (display.Visibility == Visibility.Visible)
         {
             display.Visibility = Visibility.Hidden;
@@ -422,6 +424,7 @@ public partial class MainWindow : Window
             ModeMenu.Visibility = Visibility.Hidden;
             AuthorsMenu.Visibility = Visibility.Hidden;
             SettingsMenu.Visibility = Visibility.Hidden;
+            nerdViewBtn.Visibility = Visibility.Hidden;
         }
         else
         {
@@ -446,6 +449,10 @@ public partial class MainWindow : Window
                 ModeMenu.Visibility = Visibility.Hidden;
                 AuthorsMenu.Visibility = Visibility.Hidden;
                 SettingsMenu.Visibility = Visibility.Hidden;
+                if(aiModeON)
+                {
+                    nerdViewBtn.Visibility = Visibility.Visible;
+                }
             }
         }
     }
@@ -460,11 +467,15 @@ public partial class MainWindow : Window
         startTimer();
         if (onlineModeON)
         {
-            isBoardFlipped = (playerColor == Pieces.Black); // Black sees board flipped (black at bottom)
+            isBoardFlipped = (playerColor == Pieces.Black);
         }
         else
         {
             isBoardFlipped = false;
+        }
+        if (aiModeON)
+        {
+            nerdViewBtn.Visibility = Visibility.Visible;
         }
         ResetGame();
     }
@@ -901,4 +912,18 @@ public partial class MainWindow : Window
     }
     #endregion
 
+
+    private void nerdViewBtn_Click(object sender, RoutedEventArgs e)
+    {
+        if(aiModeON)
+        {
+            int aiColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
+
+            AI.InformationForNerdAI(Board, aiColor);
+        }
+        if(onlineModeON)
+        {
+            _chessOnline.InformationForNerdsLAN();
+        }
+    }
 }

@@ -15,6 +15,7 @@ namespace Chess.Objects
         public bool isWhiteTurn;
         public bool isCheckMate;
         public bool isStaleMate;
+        public bool IsCheck => moveset.checks.Count > 0;
         public Moveset moveset = new Moveset
         {
             moves = new List<Move>(),

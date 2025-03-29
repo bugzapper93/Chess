@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls.Primitives;
 
 namespace Chess.Objects
 {
@@ -22,6 +24,7 @@ namespace Chess.Objects
             object lockObj = new object();
 
             Moveset moveset = board.moveset;
+            var orderedMoves = moveset.moves.OrderByDescending(move => MoveOrderingScore(board, move)).ToList();
 
             var tasks = moveset.moves.Select(async move =>
             {
@@ -51,6 +54,7 @@ namespace Chess.Objects
                 return EvaluateBoard(board, aiColor);
 
             Moveset moveset = board.moveset;
+            var orderedMoves = moveset.moves.OrderByDescending(move => MoveOrderingScore(board, move)).ToList();
             if (maximizingPlayer)
             {
                 int maxEval = int.MinValue;
@@ -82,7 +86,33 @@ namespace Chess.Objects
                 return minEval;
             }
         }
-
+        private int MoveOrderingScore(Chessboard board, Move move)
+        {
+            Chessboard clone = board.Clone();
+            clone.MakeMove(move);
+            int score = 0;
+            if (move.capture)
+            {
+                score += 1000;
+            }
+            if (move.piece == Pieces.Pawn && (move.targetPosition.row == 0 || move.targetPosition.column == 7))
+            {
+                score += 900;
+            }
+            if (clone.IsCheck)
+            {
+                score += 500;
+            }
+            return score;
+        }
+        private int GetPositionalBonus(Piece piece, int row, int col)
+        {
+            int pieceType = piece.value & 7;
+            if (pieceType == Pieces.Pawn && (col == 3 || col == 4)) return 10;
+            if (pieceType == Pieces.Knight && (col == 3 || col == 4) && (row == 3 || row == 4)) return 30;
+            if (pieceType == Pieces.King && (row < 2 || row > 5)) return -50;
+            return 0;
+        }
         private int EvaluateBoard(Chessboard board, int aiColor)
         {
             int evaluation = 0;
@@ -130,22 +160,21 @@ namespace Chess.Objects
                         }
 
                         if (pieceColor == aiColor)
+                        {
                             evaluation += pieceValue;
+                            evaluation += GetPositionalBonus(piece, row, col);
+                        }                                                  
                         else
+                        {
                             evaluation -= pieceValue;
+                            evaluation -= GetPositionalBonus(piece, row, col);
+                        }                          
                     }
                 }
             }
             if (board.isCheckMate)
             {
-                if ((board.isWhiteTurn ? Pieces.White : Pieces.Black) == aiColor)
-                {
-                    evaluation += CheckMateValue;
-                }
-                else
-                {
-                    evaluation -= CheckMateValue;
-                }
+                evaluation += (board.isWhiteTurn ? Pieces.White : Pieces.Black) == aiColor ? CheckMateValue : -CheckMateValue;
             }
             else if (board.isStaleMate)
             {
@@ -153,5 +182,12 @@ namespace Chess.Objects
             }
             return evaluation;
         }
+        public void InformationForNerdAI(Chessboard board, int aiColor)
+        {
+            int evaluationScore = EvaluateBoard(board, aiColor);
+            string aiColorStr = aiColor == 16 ? "Black" : "White";
+            MessageBox.Show($"Evaluation Score: {evaluationScore}\nAI Color: {aiColorStr}\nCheck? : {board.IsCheck}\nCheckmate? {board.isCheckMate}\nStalemate: {board.isStaleMate}", "View for nerds (AI)", MessageBoxButton.OK);
+        }
+
     }
 }
