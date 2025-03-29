@@ -537,10 +537,7 @@ namespace Chess.Tools
         {
             string path = Constants.Grandmasters[grandmasterName];
             string json = File.ReadAllText(path);
-            var options = new JsonSerializerOptions
-            {
-                IncludeFields = true
-            };
+
             var games = JsonSerializer.Deserialize<List<GameRecord>>(json);
 
             if (games == null)
@@ -560,20 +557,20 @@ namespace Chess.Tools
                 if (playerColor == Pieces.Black && game.white == grandmasterNameFormatted)
                 {
                     if (game.result == "1-0")
-                        wonGames.Add(string.Join("", game.moves));
+                        wonGames.Add(string.Join(",", game.moves));
                     else if (game.result == "1-1")
-                        stalemates.Add(string.Join("", game.moves));
+                        stalemates.Add(string.Join(",", game.moves));
                     else
-                        lostGames.Add(string.Join("", game.moves));
+                        lostGames.Add(string.Join(",", game.moves));
                 }
                 else if (playerColor == Pieces.White && game.black == grandmasterNameFormatted)
                 {
                     if (game.result == "0-1")
-                        wonGames.Add(string.Join("", game.moves));
+                        wonGames.Add(string.Join(",", game.moves));
                     else if (game.result == "1-1")
-                        stalemates.Add(string.Join("", game.moves));
+                        stalemates.Add(string.Join(",", game.moves));
                     else
-                        lostGames.Add(string.Join("", game.moves));
+                        lostGames.Add(string.Join(",", game.moves));
                 }
             }
 

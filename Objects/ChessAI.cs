@@ -30,7 +30,6 @@ namespace Chess.Objects
                 string move = Moves.GetNextMove(board.CurrentMoves, GameRecords);
                 if (move != "none")
                 {
-                    MessageBox.Show(move);
                     Move targetMove = Moves.GetMoveFromNotation(move, board);
                     return targetMove;
                 }

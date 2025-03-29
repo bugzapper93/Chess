@@ -350,17 +350,12 @@ namespace Chess.Objects
         }
         public static string GetNextMove(string currentMoves, List<string> grandmasterMoves)
         {
-            int index = grandmasterMoves.FindIndex(move => move.Contains(currentMoves));
-
-            MessageBox.Show(index.ToString());
-
-            MessageBox.Show(currentMoves);
-            MessageBox.Show($"{grandmasterMoves[index]}");
+            int index = grandmasterMoves.FindIndex(move => move.StartsWith(currentMoves));
+            if (index == -1)
+                return "none";
 
             List<string> fullMoveList = grandmasterMoves[index].Split(',').ToList();
             List<string> currentMoveList = currentMoves.Split(',').ToList();
-
-            //MessageBox.Show($"{currentMoves} {grandmasterMoves}");
 
             int startIndex = -1;
             for (int i = 0; i <= fullMoveList.Count - currentMoveList.Count; i++)
@@ -371,6 +366,7 @@ namespace Chess.Objects
                     break;
                 }
             }
+
             if (startIndex != -1 && startIndex + currentMoveList.Count < fullMoveList.Count)
             {
                 return fullMoveList[startIndex + currentMoveList.Count];
@@ -399,6 +395,7 @@ namespace Chess.Objects
             string disambiguation = notation.Substring(pos, notation.Length - pos - 2);
 
             List<Move> allMoves = board.LegalMoves.GetAllMoves();
+
             List<Move> candidates = new List<Move>();
             foreach (var move in allMoves)
             {
@@ -407,13 +404,14 @@ namespace Chess.Objects
                     if (Helpers.GetPieceAt(move.From, board) == pieceChar)
                     {
                         string fromSquareStr = Move.SquareToString(move.From);
-                        if (string.IsNullOrEmpty(disambiguation) || fromSquareStr.Contains(disambiguation))
+                        if (string.IsNullOrEmpty(disambiguation) || fromSquareStr.StartsWith(disambiguation))
                         {
                             candidates.Add(move);
                         }
                     }
                 }
             }
+
             if (candidates.Count == 1)
             {
                 return candidates[0];

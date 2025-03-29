@@ -295,8 +295,8 @@ namespace Chess.View
         private void PieceMouseDown(object sender, MouseEventArgs e)
         {
             int currentColorTurn = board.isWhiteTurn ? Pieces.White : Pieces.Black;
-            //if (currentColorTurn != playerColor || !started)
-            //    return;
+            if (currentColorTurn != playerColor || !started)
+                return;
             if (sender is Rectangle rect)
             {
                 Rectangle piece = (Rectangle)sender;
