@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Chess.MVVM.View
+namespace Chess.View
 {
     /// <summary>
     /// Logika interakcji dla klasy HomeView.xaml

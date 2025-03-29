@@ -16,7 +16,7 @@ using System.Windows.Shapes;
 using Chess.Objects;
 using Chess.Tools;
 
-namespace Chess
+namespace Chess.View
 {
     public partial class BoardWindow : UserControl
     {
@@ -73,7 +73,6 @@ namespace Chess
             }
             ResetBoardView();
         }
-
         private void PlacePieces()
         {
             char[] pieces = Helpers.GetPieceArray(board);

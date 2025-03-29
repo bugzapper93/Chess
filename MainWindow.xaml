@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chess"
         xmlns:objects="clr-namespace:Chess.Objects"
+        xmlns:controls="clr-namespace:Chess.View"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="833">
     <Window.Resources>
@@ -21,7 +22,7 @@
         </Style>
     </Window.Resources>
     <Grid x:Name="gameWindow" Background="DimGray">
-        <local:BoardWindow></local:BoardWindow>
-        
+        <controls:BoardWindow></controls:BoardWindow>
+        <controls:GameView Visibility="Hidden" />
     </Grid>
-</Window>
+</Window>  
