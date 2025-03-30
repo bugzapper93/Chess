@@ -4,9 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Chess.View"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="833"
-             Background="#252525">
+             mc:Ignorable="d" d:DesignWidth="833"
+             Background="#252525" Height="500">
     <UserControl.Resources>
         <!-- BLUE BUTTON STYLE -->
         <Style x:Key="BlueButtonStyle" TargetType="Button">
@@ -144,7 +143,7 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    <Grid>
+    <Grid Margin="0,0,0,425">
         <Button Style="{StaticResource GrayButtonStyle}" 
     x:Name="Home"
     HorizontalAlignment="Left"
@@ -165,26 +164,93 @@
 
         <Canvas Background="#1e1e1e " Margin="78,14,15,388">
             <Label FontSize="25" Foreground="White" FontWeight="Bold" Content="Nick:" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Top="2"/>
-            <TextBox BorderThickness="0" FontSize="15" Foreground="White" TextAlignment="center" VerticalContentAlignment="Center" Background="#444" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="204" Height="36" Canvas.Left="76" Canvas.Top="6"/>
-            <Button Style="{StaticResource BlueButtonStyle}" Content="Host Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="294" Canvas.Top="6"/>
-            <Button Style="{StaticResource GreenButtonStyle}" Content="Join Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="444" Canvas.Top="6"/>
-            <Button Style="{StaticResource GrayButtonStyle}" Content="Leave Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="592" Canvas.Top="6"/>
+            <TextBox x:Name="txtNick" BorderThickness="0" FontSize="15" Foreground="White" TextAlignment="center" VerticalContentAlignment="Center" Background="#444" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Enter your nick..." VerticalAlignment="Top" Width="204" Height="36" Canvas.Left="76" Canvas.Top="6"/>
+            <Button x:Name="btnHost" Style="{StaticResource BlueButtonStyle}" Content="Host Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="294" Canvas.Top="6" Click="btnHost_Click"/>
+            <Button x:Name="btnJoin" Style="{StaticResource GreenButtonStyle}" Content="Join Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="444" Canvas.Top="6" Click="btnJoin_Click"/>
+            <Button x:Name="btnLeave" Style="{StaticResource GrayButtonStyle}" Content="Leave Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="592" Canvas.Top="6" Click="btnLeave_Click"/>
         </Canvas>
         <Canvas Background="#1e1e1e " Margin="14,79,628,16">
             <Label FontSize="20" Foreground="White" FontWeight="Bold" Content="Player list (     ):" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="5"/>
             <Label FontSize="20" Foreground="#49c3d8" HorizontalContentAlignment="Center" FontWeight="Bold" Content="0" HorizontalAlignment="Center" VerticalAlignment="Center" Canvas.Left="101" Width="56" Canvas.Top="1"/>
-            <TextBox IsEnabled="false" BorderThickness="0" FontSize="15" Foreground="White" TextAlignment="center" VerticalContentAlignment="Center" Background="#444" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="171" Height="303" Canvas.Left="10" Canvas.Top="40"/>
+            <GroupBox x:Name="playersGroupBox" Grid.Row="1" Grid.Column="2" VerticalAlignment="Top"
+          Foreground="White" FontSize="20" FontWeight="Bold" Background="#1e1e1e" BorderBrush="#444" HorizontalAlignment="Center" Canvas.Top="43" Width="191" Height="303">
+                <ListBox x:Name="lstGracze" Height="290" FontSize="12" 
+             Background="#444" Foreground="White" BorderThickness="0"
+             HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                        <Border Background="{TemplateBinding Background}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="2">
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#555"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#666"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </GroupBox>
         </Canvas>
 
         <Canvas Background="#1e1e1e " Margin="602,79,15,16">
             <Label FontSize="20" Foreground="White" FontWeight="Bold" Content="Chat:" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Top="3" Canvas.Left="4"/>
-            <TextBox IsEnabled="false" BorderThickness="0" FontSize="15" Foreground="White" TextAlignment="center" VerticalContentAlignment="Center" Background="#444" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="196" Height="261" Canvas.Left="10" Canvas.Top="40"/>
-            <Button Style="{StaticResource GrayButtonStyle}" Content="Send" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center" Height="36" Width="52" Canvas.Left="154" Canvas.Top="309"/>
-            <TextBox BorderThickness="0" FontSize="10" Foreground="White" TextAlignment="Left" VerticalContentAlignment="Center" Background="#252525" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="139" Height="36" Canvas.Left="10" Canvas.Top="309"/>
+            <ScrollViewer Height="255" VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Disabled"
+                      Background="#252525" HorizontalAlignment="Center" VerticalAlignment="Center" Width="216" Canvas.Top="40">
+                <ListBox x:Name="lstChatMessages" FontSize="12" 
+                    Background="#444" Foreground="White"
+                    BorderThickness="0" Height="245" Width="206">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Background" Value="#252525"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                        <Border Background="{TemplateBinding Background}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            Padding="2">
+                                            <ContentPresenter />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#333"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#444"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </ScrollViewer>
+
+            <Button x:Name="btnSendMessage" Style="{StaticResource GrayButtonStyle}" Content="Send" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center" Height="36" Width="52" Canvas.Left="154" Canvas.Top="309" Click="btnSendMessage_Click"/>
+            <TextBox x:Name="txtChatInput" BorderThickness="0" FontSize="10" Foreground="White" TextAlignment="Left" VerticalContentAlignment="Center" Background="#252525" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="139" Height="36" Canvas.Left="10" Canvas.Top="309" KeyDown="txtChatInput_KeyDown"/>
         </Canvas>
         <Canvas Background="#1e1e1e " Margin="224,79,250,77">
             <Label FontSize="20" Foreground="White" FontWeight="Bold" Content="Available hosts:" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Top="3" Canvas.Left="5"/>
-            <Button Style="{StaticResource OrangeButtonStyle}" Content="Refresh" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center" Height="26" Width="103" Canvas.Left="246" Canvas.Top="6" RenderTransformOrigin="0.5,0.5">
+            <Button x:Name="btnRefresh" Style="{StaticResource OrangeButtonStyle}" Content="Refresh" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center" Height="26" Width="103" Canvas.Left="246" Canvas.Top="6" RenderTransformOrigin="0.5,0.5" Click="btnRefresh_Click">
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -194,11 +260,108 @@
                     </TransformGroup>
                 </Button.RenderTransform>
             </Button>
-            <TextBox IsEnabled="false" BorderThickness="0" FontSize="15" Foreground="White" TextAlignment="center" VerticalContentAlignment="Center" Background="#444" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="342" Height="244" Canvas.Left="10" Canvas.Top="40"/>
+            <ListView x:Name="lvwHosts" Height="245" Width="344" HorizontalAlignment="Left" FontSize="12"
+          Background="#444" Foreground="White" BorderThickness="0"
+          ScrollViewer.HorizontalScrollBarVisibility="Disabled" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Center" Canvas.Top="45" Canvas.Left="5">
+                <ListView.Resources>
+                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                        <Setter Property="Background" Value="#444"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="5"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+                                    <Grid>
+                                        <Border Background="{TemplateBinding Background}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        </Border>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="Background" Value="#444"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                    <Border Background="{TemplateBinding Background}" 
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                                        <GridViewRowPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#555"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#666"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.Resources>
+                <ListView.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform AngleX="0"/>
+                        <RotateTransform/>
+                        <TranslateTransform X="0"/>
+                    </TransformGroup>
+                </ListView.RenderTransform>
+
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Host Name" 
+                          Width="170"
+                          DisplayMemberBinding="{Binding Path=Nickname}"/>
+                        <GridViewColumn Header="IP Address" 
+                          Width="170"
+                          DisplayMemberBinding="{Binding Path=IP}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Canvas>
 
         <Canvas Background="#1e1e1e " Margin="224,385,250,16">
-            <Button Style="{StaticResource BlueButtonStyle}" Command="{Binding NavigateToGameViewCommand}" Content="Start Game" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Center" Height="36" Width="339" Canvas.Left="10" Canvas.Top="6"/>
+            <Button x:Name="btnStartGame" Style="{StaticResource BlueButtonStyle}" Command="{Binding NavigateToGameViewCommand}" Content="Start Game" FontSize="20  " HorizontalAlignment="Center" VerticalAlignment="Center" Height="32" Width="339" Canvas.Left="10" Click="btnStartGame_Click"/>
         </Canvas>
+        <StatusBar Background="#252525" Foreground="White" 
+           FontFamily="Consolas" FontSize="7" Padding="8,5" BorderThickness="0" Margin="1,429,-1,-425">
+            <StatusBar.Resources>
+                <Style TargetType="Separator">
+                    <Setter Property="Background" Value="#444"/>
+                    <Setter Property="Margin" Value="10,0"/>
+                    <Setter Property="Width" Value="1"/>
+                </Style>
+            </StatusBar.Resources>
+
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="●" Foreground="#49c3d8" FontWeight="Bold" 
+                   VerticalAlignment="Center" Padding="0,0,5,0"/>
+                    <TextBlock x:Name="toolStripStatusLabel1" Text="Status: Disconnected" 
+                       VerticalAlignment="Center" FontWeight="SemiBold"/>
+                </StackPanel>
+            </StatusBarItem>
+
+            <StatusBarItem HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="●" Foreground="#dd8a1c" FontWeight="Bold" 
+                   VerticalAlignment="Center" Padding="0,0,5,0"/>
+                    <TextBlock x:Name="toolStripStatusLabelIP" Text="Local IP: " 
+                       VerticalAlignment="Center" FontWeight="SemiBold"/>
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </UserControl>
