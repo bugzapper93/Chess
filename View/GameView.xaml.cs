@@ -22,25 +22,17 @@ namespace Chess.View
     {       
         //Timer - variables
         private bool isSlowGame;
-        private TimeSpan timePlayerWhite;
-        private TimeSpan timePlayerBlack;
-        private TimeSpan elapsedWhite = TimeSpan.Zero;
-        private TimeSpan elapsedBlack = TimeSpan.Zero;
-        private Stopwatch turnClock = new Stopwatch();
-        private DispatcherTimer timer;
         private bool isWhiteLast;
         private BoardWindow boardWindow;
-        private Chessboard board;
         private GameSidePanelBotChooseView botChooseView;
 
         private bool canForfeit = false;
         public GameView()
         {
             InitializeComponent();
-            SetupTimer();
 
-            board = new Chessboard();
-            UpdateTimerDisplays();
+            Board.TimerUpdate += UpdateTimerDisplays;
+
         }
         public void GameSidePanelBotChooseView()
         {
@@ -57,12 +49,7 @@ namespace Chess.View
         {
             CC.Content = new GameSidePanelPlayingView();
         }
-        private void SetupTimer()
-        {
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(100);
-            timer.Tick += Timer_Tick;
-        }
+        
 
         private void play_forfeit_Click(object sender, RoutedEventArgs e)
         {
@@ -74,87 +61,24 @@ namespace Chess.View
                 play_forfeit.Content = "Forfeit";
                 GameSidePanelPlayingView();
                 canForfeit = true;
-                InitializeTimers(botChooseView.GetSelectedTime());
-                isWhiteLast = board.isWhiteTurn;
-                turnClock.Restart();
-                timer.Start();
+                isWhiteLast = Board.whiteTurn;
             }
             else
             {
-                timer.Stop();
                 MessageBox.Show("Gra zakończona przez forfeit");
             }
         }
-
-        private void Timer_Tick(object? sender, EventArgs? e)
+        private void UpdateTimerDisplays(int whiteTime, int blackTime)
         {
-            if (!Board.started) return;
-
-            if (board.isWhiteTurn != isWhiteLast)
-            {
-                var elapsed = turnClock.Elapsed;
-                if (isWhiteLast)
-                    elapsedWhite += elapsed;
-                else
-                    elapsedBlack += elapsed;
-
-                isWhiteLast = board.isWhiteTurn;
-                turnClock.Restart();
-            }
-
-            UpdateTimerDisplays();
-
-            if (board.isWhiteTurn)
-            {
-                var remaining = timePlayerWhite - elapsedWhite - turnClock.Elapsed;
-                if (remaining <= TimeSpan.Zero)
-                {
-                    EndGameByTimeout(Pieces.White);
-                    return;
-                }
-            }
-            else
-            {
-                var remaining = timePlayerBlack - elapsedBlack - turnClock.Elapsed;
-                if (remaining <= TimeSpan.Zero)
-                {
-                    EndGameByTimeout(Pieces.Black);
-                    return;
-                }
-            }
-        }
-
-        private void UpdateTimerDisplays()
-        {
-            if (board.isWhiteTurn)
-            {
-                var remaining = timePlayerWhite - elapsedWhite - turnClock.Elapsed;
-                WhiteTimerText.Text = remaining.ToString(@"mm\:ss");
-                BlackTimerText.Text = (timePlayerBlack - elapsedBlack).ToString(@"mm\:ss");
-            }
-            else
-            {
-                var remaining = timePlayerBlack - elapsedBlack - turnClock.Elapsed;
-                BlackTimerText.Text = remaining.ToString(@"mm\:ss");
-                WhiteTimerText.Text = (timePlayerWhite - elapsedWhite).ToString(@"mm\:ss");
-            }
+            WhiteTimerText.Text = TimeSpan.FromSeconds(whiteTime).ToString(@"mm\:ss");
+            BlackTimerText.Text = TimeSpan.FromSeconds(blackTime).ToString(@"mm\:ss");
         }
 
         private void EndGameByTimeout(int losingColor)
         {
-            timer.Stop();
             Board.started = false;
             string winner = losingColor == Pieces.White ? "CZARNE" : "BIAŁE";
             MessageBox.Show($"Czas upłynął! Wygrywają {winner} przez przekroczenie czasu.");
-        }
-
-        public void InitializeTimers(TimeSpan timeForBothPlayers)
-        {
-            timePlayerWhite = timeForBothPlayers;
-            timePlayerBlack = timeForBothPlayers;
-            elapsedWhite = TimeSpan.Zero;
-            elapsedBlack = TimeSpan.Zero;
-            UpdateTimerDisplays();
         }
     }
 }

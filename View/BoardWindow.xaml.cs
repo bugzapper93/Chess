@@ -22,7 +22,12 @@ namespace Chess.View
 {
     public partial class BoardWindow : UserControl
     {
-        private TimeControlType timeControl;
+        private DispatcherTimer timer;
+
+        public bool timerStarted = false;
+        public int whiteTime = 300;
+        public int blackTime = 300;
+
         public bool isBoardFlipped = false;
 
         // Board variables
@@ -44,17 +49,42 @@ namespace Chess.View
         List<int> possibleMoves = new List<int>();
 
         public bool started = false;
-        private NotationPanelManager notationPanelManager;
+        public bool whiteTurn = true;
 
         public BoardWindow()
         {
             InitializeComponent();
             DrawChessboard();
             PlacePieces();
-            board.UpdateMoves();
         }
+        private void InitializeTimer()
+        {
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += TimerTick;
+            timer.Start();
+        }
+        private void TimerTick(object sender, EventArgs e)
+        {
+            if (!timerStarted)
+                return;
+
+            if (board.isWhiteTurn)
+            {
+                whiteTime--;
+            }
+            else
+            {
+                blackTime--;
+            }
+            TimerUpdate?.Invoke(whiteTime, blackTime);
+        }
+        public event Action<int, int>? TimerUpdate;
         public void InitializeGame(int playerColor, bool AI, int depth, bool grandmaster, string grandmasterName = "")
         {
+            timerStarted = true;
+            board.UpdateMoves();
+            InitializeTimer();
             enableAI = AI;
             if (AI)
             {
@@ -75,10 +105,6 @@ namespace Chess.View
                 }
             }
         }
-/*        public void InitializeNotationManager(Grid notationGrid)
-        {
-            notationPanelManager = new NotationPanelManager(notationGrid);
-        }*/
         private async void MakeAIMove()
         {
             int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
@@ -246,8 +272,8 @@ namespace Chess.View
 
             RepositionPiece(move);
             MoveData moveData = board.MakeMove(move);
+            whiteTurn = board.isWhiteTurn;
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
-        //    notationPanelManager.AddRowToTable(moveNotation, board.isWhiteTurn);
             board.CurrentMoves += board.CurrentMoves == "" ? $"{moveNotation}" : $",{moveNotation}";
 
             // Pawn promotion
