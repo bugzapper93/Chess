@@ -43,7 +43,8 @@ namespace Chess.View
         int playerColor;
 
         private bool enableAI;
-
+        private bool pvpLAN;
+        private bool pvpLocal;
         ChessAI bot;
         
         List<int> possibleMoves = new List<int>();
@@ -80,16 +81,21 @@ namespace Chess.View
             TimerUpdate?.Invoke(whiteTime, blackTime);
         }
         public event Action<int, int>? TimerUpdate;
-        public void InitializeGame(int playerColor, bool AI, int depth, bool grandmaster, string grandmasterName = "")
+        public void InitializeGame(int playerColor, bool AI, bool LAN, bool pvp, int depth = 0, bool grandmaster = false, string grandmasterName = "")
         {
             timerStarted = true;
             board.UpdateMoves();
             InitializeTimer();
+
             enableAI = AI;
+            pvpLAN = LAN;
+            pvpLocal = pvp;
+
             if (AI)
             {
                 bot = new ChessAI(depth, playerColor, grandmaster, grandmasterName);
             }
+
             if (playerColor == Pieces.White)
             {
                 started = true;
@@ -329,7 +335,7 @@ namespace Chess.View
         private void PieceMouseDown(object sender, MouseEventArgs e)
         {
             int currentColorTurn = board.isWhiteTurn ? Pieces.White : Pieces.Black;
-            if (currentColorTurn != playerColor || !started)
+            if ((currentColorTurn != playerColor && !pvpLocal) || !started)
                 return;
             if (sender is Rectangle rect)
             {

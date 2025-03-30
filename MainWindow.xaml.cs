@@ -84,7 +84,12 @@ public partial class MainWindow : Window
     {
         homeView.Visibility = Visibility.Collapsed;
         gameView.Visibility = Visibility.Visible;
-        gameView.GameSidePanelBotChooseView();
+
+        gameView.AIGame = true;
+        gameView.pvpLocal = false;
+        gameView.pvpLAN = false;
+
+        gameView.Initialize();
     }
 
     private void ShowSettingsClick(object sender, RoutedEventArgs e)
@@ -121,14 +126,25 @@ public partial class MainWindow : Window
     }
     private void ShowPvPClick(object sender, RoutedEventArgs e)
     {
-        //wczytywanie 1 v 1 na tym samym kompie trzeba zrobic 
         multiplayerView.Visibility = Visibility.Collapsed;
-       // gameView.Visibility = Visibility.Visible; -> bo to do AI przerzuca
+        gameView.Visibility = Visibility.Visible;
+
+        gameView.AIGame = false;
+        gameView.pvpLocal = true;
+        gameView.pvpLAN = false;
+
+        gameView.Initialize();
     }
     private void ShowPvPLanClick(object sender, RoutedEventArgs e)
     {
         multiplayerView.Visibility = Visibility.Collapsed;
         mpPanelView.Visibility = Visibility.Visible;
+
+        gameView.AIGame = false;
+        gameView.pvpLocal = false;
+        gameView.pvpLAN = true;
+
+        gameView.Initialize();
     }
     private void Exit(object sender, RoutedEventArgs e)
     {

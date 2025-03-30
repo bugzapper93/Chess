@@ -23,16 +23,27 @@ namespace Chess.View
         //Timer - variables
         private bool isSlowGame;
         private bool isWhiteLast;
-        private BoardWindow boardWindow;
         private GameSidePanelBotChooseView botChooseView;
+
+        public bool pvpLAN = false;
+        public bool pvpLocal = false;
+        public bool AIGame = false;
 
         private bool canForfeit = false;
         public GameView()
         {
             InitializeComponent();
 
-            Board.TimerUpdate += UpdateTimerDisplays;
+            // Board = new BoardWindow();
 
+            Board.TimerUpdate += UpdateTimerDisplays;
+        }
+        public void Initialize()
+        {
+            if (AIGame)
+                GameSidePanelBotChooseView();
+            else if (pvpLocal)
+                GameSidePanelPlayerChooseView();
         }
         public void GameSidePanelBotChooseView()
         {
@@ -55,13 +66,18 @@ namespace Chess.View
         {
             if (!canForfeit)
             {
-                int depth = botChooseView.SelectedDepth;
-                Board.InitializeGame(Pieces.White, true, depth, true, "Alireza Firouzja");
+                int depth = 0;
+                if (AIGame)
+                    depth = botChooseView.SelectedDepth;
+
+                Board.InitializeGame(Pieces.White, AIGame, pvpLAN, pvpLocal);
+                canForfeit = true;
+
                 play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
                 play_forfeit.Content = "Forfeit";
+
                 GameSidePanelPlayingView();
-                canForfeit = true;
-                isWhiteLast = Board.whiteTurn;
+
             }
             else
             {
