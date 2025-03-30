@@ -156,14 +156,14 @@ namespace Chess.Objects
             evaluation += EvaluatePiecePositions(board.WhiteBishops, Constants.WhiteBishopTable);
             evaluation += EvaluatePiecePositions(board.WhiteRooks, Constants.WhiteRookTable);
             evaluation += EvaluatePiecePositions(board.WhiteQueens, Constants.WhiteQueenTable);
-            evaluation += EvaluatePiecePositions(board.WhiteKing, Constants.WhiteKingTable); 
+            evaluation += EvaluatePiecePositions(board.WhiteKing, Constants.WhiteKingTable);
 
             evaluation -= EvaluatePiecePositions(board.BlackPawns, Constants.BlackPawnTable);
             evaluation -= EvaluatePiecePositions(board.BlackKnights, Constants.BlackKnightTable);
             evaluation -= EvaluatePiecePositions(board.BlackBishops, Constants.BlackBishopTable);
             evaluation -= EvaluatePiecePositions(board.BlackRooks, Constants.BlackRookTable);
             evaluation -= EvaluatePiecePositions(board.BlackQueens, Constants.BlackQueenTable);
-            evaluation -= EvaluatePiecePositions(board.BlackKing, Constants.BlackKingTable); 
+            evaluation -= EvaluatePiecePositions(board.BlackKing, Constants.BlackKingTable);
 
             evaluation += EvaluateCenterControl(board, aiColor) * CenterControlBonus;
             evaluation += EvaluateKingSafety(board, aiColor) * KingSafetyBonus;
@@ -226,124 +226,86 @@ namespace Chess.Objects
             }
             return evaluation;
         }
-        private int EvaluatePawnStructure(ulong pawns)
-        {
-            int score = 0;
-            int[] files = new int[8]; 
-
-            for (int i = 0; i < 64; i++)
-            {
-                if ((pawns & (1UL << i)) != 0)
-                {
-                    files[i % 8]++;
-                }
-            }
-
-            for (int file = 0; file < 8; file++)
-            {
-                if (files[file] == 0) continue;
-
-                if (files[file] > 1)
-                {
-                    score -= 10 * (files[file] - 1);
-                }
-
-                if (file > 0 && files[file - 1] > 0)
-                {
-                    score += 5;
-                }
-                if (file < 7 && files[file + 1] > 0)
-                {
-                    score += 5;
-                }
-            }
-
-            return score;
-        }
-        private int[] GetPawnShieldSquares(int kingSquare, bool isWhite)
-        {
-            int rank = kingSquare / 8;
-            int file = kingSquare % 8;
-
-            if (isWhite)
-            {
-                if (rank <= 1) return Array.Empty<int>(); 
-
-                List<int> squares = new List<int>();
-                if (file > 0) squares.Add((rank - 1) * 8 + (file - 1));
-                squares.Add((rank - 1) * 8 + file);
-                if (file < 7) squares.Add((rank - 1) * 8 + (file + 1));
-
-                return squares.ToArray();
-            }
-            else
-            {
-                if (rank >= 6) return Array.Empty<int>(); 
-
-                List<int> squares = new List<int>();
-                if (file > 0) squares.Add((rank + 1) * 8 + (file - 1));
-                squares.Add((rank + 1) * 8 + file);
-                if (file < 7) squares.Add((rank + 1) * 8 + (file + 1));
-
-                return squares.ToArray();
-            }
-        }
-        private int KingShield(Chessboard board, int kingSquare, bool isWhite)
-        {
-            int shield = 0;
-            int[] pawnShieldSquares = GetPawnShieldSquares(kingSquare, isWhite);
-
-            foreach (int square in pawnShieldSquares)
-            {
-                if (((isWhite ? board.WhitePawns : board.BlackPawns) & (1UL << square)) != 0)
-                {
-                    shield += 10; 
-                }
-            }
-
-            return shield;
-        }
-
         private int EvaluateCenterControl(Chessboard board, int aiColor)
         {
-            int[] centerSquares = { 27, 28, 35, 36 };
-            int control = 0;
+            const ulong CenterMask = (1UL << 27) | (1UL << 28) | (1UL << 35) | (1UL << 36);
 
-            foreach (int square in centerSquares)
-            {
-                if ((board.WhitePawns & (1UL << square)) != 0 ||
-                    (board.WhiteKnights & (1UL << square)) != 0 ||
-                    (board.WhiteBishops & (1UL << square)) != 0 ||
-                    (board.WhiteRooks & (1UL << square)) != 0 ||
-                    (board.WhiteQueens & (1UL << square)) != 0)
-                {
-                    control++;
-                }
+            int whiteControl = BitOperations.PopCount(
+                (board.WhitePawns | board.WhiteKnights | board.WhiteBishops |
+                 board.WhiteRooks | board.WhiteQueens) & CenterMask);
 
-                if ((board.BlackPawns & (1UL << square)) != 0 ||
-                    (board.BlackKnights & (1UL << square)) != 0 ||
-                    (board.BlackBishops & (1UL << square)) != 0 ||
-                    (board.BlackRooks & (1UL << square)) != 0 ||
-                    (board.BlackQueens & (1UL << square)) != 0)
-                {
-                    control--;
-                }
-            }
+            int blackControl = BitOperations.PopCount(
+                (board.BlackPawns | board.BlackKnights | board.BlackBishops |
+                 board.BlackRooks | board.BlackQueens) & CenterMask);
 
+            int control = whiteControl - blackControl;
             return aiColor == Pieces.White ? control : -control;
         }
 
+        // Optimized king safety evaluation with cached king positions
         private int EvaluateKingSafety(Chessboard board, int aiColor)
         {
             int safety = 0;
 
-            int whiteKingSquare = BitOperations.TrailingZeroCount(board.WhiteKing);
-            safety += KingShield(board, whiteKingSquare, true);
+            // Cache king positions
+            int whiteKingPos = BitOperations.TrailingZeroCount(board.WhiteKing);
+            int blackKingPos = BitOperations.TrailingZeroCount(board.BlackKing);
 
-            int blackKingSquare = BitOperations.TrailingZeroCount(board.BlackKing);
-            safety -= KingShield(board, blackKingSquare, false);
+            // Precompute pawn shields
+            safety += KingShieldOptimized(board.WhitePawns, whiteKingPos, true);
+            safety -= KingShieldOptimized(board.BlackPawns, blackKingPos, false);
 
             return aiColor == Pieces.White ? safety : -safety;
+        }
+
+        // Optimized pawn shield calculation
+        private int KingShieldOptimized(ulong pawns, int kingPos, bool isWhite)
+        {
+            int rank = kingPos / 8;
+            int file = kingPos % 8;
+
+            if ((isWhite && rank <= 1) || (!isWhite && rank >= 6))
+                return 0;
+
+            int shieldRank = isWhite ? rank - 1 : rank + 1;
+            ulong shieldMask = 0UL;
+
+            if (file > 0) shieldMask |= 1UL << (shieldRank * 8 + (file - 1));
+            shieldMask |= 1UL << (shieldRank * 8 + file);
+            if (file < 7) shieldMask |= 1UL << (shieldRank * 8 + (file + 1));
+
+            return BitOperations.PopCount(pawns & shieldMask) * 10;
+        }
+
+        // Optimized pawn structure evaluation using file counts
+        private int EvaluatePawnStructure(ulong pawns)
+        {
+            Span<int> files = stackalloc int[8]; // Stack allocation for performance
+
+            // Count pawns per file using bitwise operations
+            ulong remainingPawns = pawns;
+            while (remainingPawns != 0)
+            {
+                int pos = BitOperations.TrailingZeroCount(remainingPawns);
+                files[pos % 8]++;
+                remainingPawns &= remainingPawns - 1; // Clear least significant set bit
+            }
+
+            int score = 0;
+            for (int file = 0; file < 8; file++)
+            {
+                int count = files[file];
+                if (count == 0) continue;
+
+                // Penalize doubled pawns
+                if (count > 1) score -= 10 * (count - 1);
+
+                // Reward connected pawns
+                if (file > 0 && files[file - 1] > 0) score += 5;
+                if (file < 7 && files[file + 1] > 0) score += 5;
+            }
+
+            return score;
         }
     }
 }
