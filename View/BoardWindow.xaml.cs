@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Chess.Objects;
 using Chess.Tools;
 
@@ -20,6 +22,7 @@ namespace Chess.View
 {
     public partial class BoardWindow : UserControl
     {
+        private TimeControlType timeControl;
         public bool isBoardFlipped = false;
 
         // Board variables
@@ -41,11 +44,11 @@ namespace Chess.View
         List<int> possibleMoves = new List<int>();
 
         public bool started = false;
+        private NotationPanelManager notationPanelManager;
 
         public BoardWindow()
         {
             InitializeComponent();
-
             DrawChessboard();
             PlacePieces();
             board.UpdateMoves();
@@ -72,6 +75,10 @@ namespace Chess.View
                 }
             }
         }
+/*        public void InitializeNotationManager(Grid notationGrid)
+        {
+            notationPanelManager = new NotationPanelManager(notationGrid);
+        }*/
         private async void MakeAIMove()
         {
             int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
@@ -240,6 +247,7 @@ namespace Chess.View
             RepositionPiece(move);
             MoveData moveData = board.MakeMove(move);
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
+        //    notationPanelManager.AddRowToTable(moveNotation, board.isWhiteTurn);
             board.CurrentMoves += board.CurrentMoves == "" ? $"{moveNotation}" : $",{moveNotation}";
 
             // Pawn promotion
@@ -366,6 +374,7 @@ namespace Chess.View
                 Squares[row, column].Fill = (((row + column) % 2) == 0) ? Constants.Primary : Constants.Secondary;
             }
         }
+      
     }
 }
 

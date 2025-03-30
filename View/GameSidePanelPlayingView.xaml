@@ -6,8 +6,66 @@
              xmlns:local="clr-namespace:Chess.View"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="833">
+    <UserControl.Resources>
+        <Style x:Key="NotationCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="600,10,0,0"/>
+    </Style>
+
+    <Style x:Key="NotationScrollViewerStyle" TargetType="ScrollViewer">
+        <Setter Property="Background" Value="#333"/>
+        <Setter Property="BorderBrush" Value="#49c3d8"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Margin" Value="600,35,30,35"/>
+        <Setter Property="MaxHeight" Value="300"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="Padding" Value="5"/>
+    </Style>
+
+    <Style x:Key="NotationHeaderTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="5"/>
+        <Setter Property="Padding" Value="5,2"/>
+        <Setter Property="Background" Value="#444"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    </UserControl.Resources>
     <Grid>
-        <Label FontSize="30" Foreground="White" Content="tabelka z ruchami" HorizontalAlignment="Left" Margin="504,91,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="notationType" Content="Long notation" 
+          Style="{StaticResource NotationCheckBoxStyle}"
+          IsChecked="False"
+          Checked="notationType_Checked"
+          Unchecked="notationType_Unchecked" Margin="592,54,0,0" VerticalAlignment="Top"/>
+        <ScrollViewer x:Name="NotationGridScrollView"
+              Style="{StaticResource NotationScrollViewerStyle}" Margin="529,26,54,95">
+            <Grid x:Name="NotationGrid" Background="Transparent" Width="227">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="90"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.RowSpan="2">
+                    <TextBlock Text="Move" Style="{StaticResource NotationHeaderTextBlockStyle}"/>
+                </Border>
+                <Border Grid.Column="1" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.RowSpan="2">
+                    <TextBlock Text="White" Style="{StaticResource NotationHeaderTextBlockStyle}"/>
+                </Border>
+                <Border Grid.Column="2" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.RowSpan="2">
+                    <TextBlock Text="Black" Style="{StaticResource NotationHeaderTextBlockStyle}"/>
+                </Border>
+            </Grid>
+        </ScrollViewer>
 
     </Grid>
 </UserControl>

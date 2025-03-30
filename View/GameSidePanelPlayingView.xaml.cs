@@ -15,14 +15,26 @@ using System.Windows.Shapes;
 
 namespace Chess.View
 {
-    /// <summary>
-    /// Logika interakcji dla klasy GameSidePanelPlayingView.xaml
-    /// </summary>
     public partial class GameSidePanelPlayingView : UserControl
     {
         public GameSidePanelPlayingView()
         {
             InitializeComponent();
+        }
+        private void notationType_Checked(object sender, RoutedEventArgs e)
+        {
+            if (notationType.IsChecked == true)
+            {
+                // notationPanelManager.SetNotationType(true, board);
+            }
+        }
+
+        private void notationType_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (notationType.IsChecked == false)
+            {
+                // notationPanelManager.SetNotationType(false, board);
+            }
         }
     }
 }

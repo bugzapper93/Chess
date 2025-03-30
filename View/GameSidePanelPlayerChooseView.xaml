@@ -10,15 +10,15 @@
         <Label FontWeight="Bold" Foreground="White" FontSize="25" Content="Time" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="612,132,0,0"/>
         <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="25" Content="Game" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="534,132,0,0" />
 
-        <CheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="546,184,0,0">
+        <RadioButton GroupName="timeForGame" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="546,184,0,0">
             <Label Content=" 5" FontSize="20" Foreground="#49c3d8"  Margin="0,-12,0,0" Width="214"/>
-        </CheckBox>
+        </RadioButton>
         <Label FontSize="20" Foreground="White" Content="minutes" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="592,200,0,0" />
 
 
-        <CheckBox HorizontalAlignment="Left" VerticalAlignment="Center" Margin="546,0,0,0">
+        <RadioButton GroupName="timeForGame" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="546,0,0,0">
             <Label Content="10" FontSize="20" Foreground="#49c3d8"  Margin="0,-12,0,0" Width="214"/>
-        </CheckBox>
+        </RadioButton>
         <Label FontSize="20" Foreground="White" Content="minutes" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="592,171,0,0" />
     </Grid>
 </UserControl>

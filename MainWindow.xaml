@@ -7,7 +7,7 @@
         xmlns:objects="clr-namespace:Chess.Objects"
         xmlns:controls="clr-namespace:Chess.View"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="833">
+        Title="MainWindow" Height="550" Width="833">
     <Window.Resources>
         <Style x:Key="NotationTextBlockStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />

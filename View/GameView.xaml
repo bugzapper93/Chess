@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Chess.View"
              xmlns:controls="clr-namespace:Chess.View"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="833">
+             d:DesignHeight="550" d:DesignWidth="833">
     <UserControl.Resources>
         <!-- BLUE BUTTON STYLE -->
         <Style x:Key="BlueButtonStyle" TargetType="Button">
@@ -81,8 +81,44 @@
         </Style>
     </UserControl.Resources>
     <Grid Background="#252525">
-        <ContentControl x:Name="CC" Margin="529,0,10,0"/>
-        <controls:BoardWindow x:Name="Board" Margin="27,-27,-27,27"/>
-        <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="567,382,0,0" VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
+        <ContentControl x:Name="CC" Margin="529,0,10,57"/>
+        <controls:BoardWindow x:Name="Board" Margin="56,34,377,57"/>
+        <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="529,416,0,0" VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
+        <Border Background="#333" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                Margin="181,462,0,0" Padding="10, 4" Width="150" Height="40">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="WHITE:" FontSize="11" Foreground="White" FontWeight="Bold" Height="16" Width="43"/>
+                <Border BorderBrush="#49c3d8" BorderThickness="2" CornerRadius="8" Padding="10,2" Height="28">
+                    <TextBlock Text="00:00:00" FontSize="14" x:Name="WhiteTimerText" Foreground="White" 
+                               FontWeight="Bold" HorizontalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+        </Border>
+        <Border Background="#333" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top" 
+        Margin="181,10,0,0" Padding="10, 4" Width="150" Height="38">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="BLACK:" FontSize="11" Foreground="White" FontWeight="Bold" Height="16" Width="43"/>
+                <Border BorderBrush="#49c3d8" BorderThickness="2" CornerRadius="8" Padding="10,2" Height="28">
+                    <TextBlock Text="00:00:00" FontSize="14" x:Name="BlackTimerText" Foreground="White" 
+                       FontWeight="Bold" HorizontalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+        </Border>
+        <Button Style="{StaticResource GrayButtonStyle}" 
+     HorizontalAlignment="Left"
+     Margin="13,5,0,0" 
+     VerticalAlignment="Top" 
+     Height="43" 
+     Width="45"
+     Background="#444"
+     Command="{Binding  NavigateToHomeViewCommand}">
+            <Button.Content>
+                <Label Content="←"
+            FontSize="60"
+            Margin="0,-30,5,0"
+            FontWeight="UltraBold"
+            Foreground="White"/>
+            </Button.Content>
+        </Button>
     </Grid>
 </UserControl>

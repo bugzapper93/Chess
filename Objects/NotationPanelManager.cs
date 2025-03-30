@@ -21,7 +21,8 @@ namespace Chess.Objects
     {
         private int currentRow = 0;
         private Grid notationGrid;
-
+        private bool useLongNotation = false;
+        private List<(MoveData move, string sanNotation)> moveHistory = new List<(MoveData, string)>();
         public NotationPanelManager(Grid grid)
         {
             notationGrid = grid;
@@ -147,6 +148,62 @@ namespace Chess.Objects
             }
 
             currentRow = 0;
+        }
+        public void SetNotationType(bool useLong, Chessboard board)
+        {
+            useLongNotation = useLong;
+            UpdateNotations(board);
+        }
+        private void UpdateNotations(Chessboard Board)
+        {
+            int row = 1;
+            for (int i = 0; i < moveHistory.Count; i += 2)
+            {
+                string whiteNotation = useLongNotation ? GetLongNotation(moveHistory[i].move, Board) : moveHistory[i].sanNotation;
+                var whiteMoveLabel = notationGrid.Children
+                    .OfType<TextBlock>()
+                    .FirstOrDefault(tb => Grid.GetRow(tb) == row && Grid.GetColumn(tb) == 1);
+                if (whiteMoveLabel != null)
+                {
+                    whiteMoveLabel.Text = whiteNotation;
+                }
+
+                string blackNotation = (i + 1 < moveHistory.Count) ?
+                    (useLongNotation ? GetLongNotation(moveHistory[i + 1].move, Board) : moveHistory[i + 1].sanNotation) : "";
+                var blackMoveLabel = notationGrid.Children
+                    .OfType<TextBlock>()
+                    .FirstOrDefault(tb => Grid.GetRow(tb) == row && Grid.GetColumn(tb) == 2);
+                if (blackMoveLabel != null)
+                {
+                    blackMoveLabel.Text = blackNotation;
+                }
+
+                row++;
+            }
+        }
+        public string GetLongNotation(MoveData move, Chessboard board)
+        {
+            int start = move.move.From;
+            int end = move.move.To;
+            int pieceValue = move.piece;
+            int pieceType = pieceValue & 7; 
+            string pieceNotation = pieceType == Pieces.Pawn ? "" : Pieces.PieceValueToString(pieceValue);
+
+            string startSquare = Move.SquareToString(start);
+            string endSquare = Move.SquareToString(end);
+            char columnStart = startSquare[0];
+            char columnEnd = endSquare[0];
+            char rowEnd = endSquare[1];
+
+            string notation = pieceNotation + startSquare;
+
+            if (move.capture)
+            {
+                notation += "x";
+            }
+            notation += endSquare;
+
+            return notation;
         }
     }
 }

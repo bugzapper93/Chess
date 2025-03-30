@@ -12,17 +12,44 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Chess.Objects;
 
 namespace Chess.View
 {
-    /// <summary>
-    /// Logika interakcji dla klasy GameSidePanelBotChooseView.xaml
-    /// </summary>
     public partial class GameSidePanelBotChooseView : UserControl
     {
+        private int minutes;
         public GameSidePanelBotChooseView()
         {
             InitializeComponent();
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (slider != null && lblSlider != null)
+            {
+                lblSlider.Content = ((int)slider.Value).ToString();
+            }
+        }
+        public TimeSpan GetSelectedTime()
+        {
+            return TimeSpan.FromMinutes(minutes);
+        }
+
+        private void TenMinutesRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if(TenMinutesRadioButton.IsChecked == true)
+            {
+                minutes = 10;
+            }
+        }
+
+        private void FiveMinutesRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (FiveMinutesRadioButton.IsChecked == true)
+            {
+                minutes = 5;
+            }
         }
     }
 }
