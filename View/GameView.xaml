@@ -73,7 +73,7 @@
         </Style>
     </UserControl.Resources>
     <Grid Background="#252525">
-        <ContentControl x:Name="CC" Margin="529,0,10,57"/>
+        <ContentControl x:Name="CC" Margin="442,0,10,57"/>
         <controls:BoardWindow x:Name="Board" Margin="56,34,377,57"/>
         <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" 
                 Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="529,416,0,0" 

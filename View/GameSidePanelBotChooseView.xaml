@@ -5,27 +5,114 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Chess.View"
              mc:Ignorable="d" 
-             d:DesignHeight="450" Width="250">
-    <Grid>
-        <Label FontWeight="Bold" Foreground="White" FontSize="25" Content="difficulty level" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="56,10,0,0" Width="176" />
-        <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="25" Content="AI" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,10,0,0"/>
+             d:DesignHeight="450" Width="411">
+    <UserControl.Resources>
+        <!-- BLUE BUTTON STYLE -->
+        <Style x:Key="BlueButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#49c3d8"/>
+            <!-- Light Blue -->
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
 
-        <Slider x:Name="slider" Margin="6,94,50,335" Value="5" Minimum="1" Maximum="10" ValueChanged="Slider_ValueChanged"/>
-        <Label x:Name="lblSlider" FontWeight="Bold" Foreground="White" FontSize="20" Content="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="214,83,0,0"></Label>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <!-- Hover Effect for Blue Button -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#37a1b9"/>
+                                <!-- Darker Blue -->
+                            </Trigger>
+
+                            <!-- Click Effect for Blue Button -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#49c3d8"/>
+                                <!-- Even Darker Blue -->
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- GRAY BUTTON STYLE -->
+        <Style x:Key="GrayButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#444"/>
+            <!-- Dark Gray -->
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <!-- Hover Effect for Gray Button -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#333"/>
+                                <!-- Medium Gray -->
+                            </Trigger>
+
+                            <!-- Click Effect for Gray Button -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#444"/>
+                                <!-- Darkest Gray -->
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Grid Margin="39,0,0,0">
+        <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="difficulty level" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="183,10,0,0" Width="176" />
+        <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="20" Content="AI" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="155,10,0,0"/>
 
 
-        <Label FontWeight="Bold" Foreground="White" FontSize="25" Content="Time" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="104,132,0,0"/>
-        <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="25" Content="Game" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="26,132,0,0" />
-
-        <RadioButton x:Name="FiveMinutesRadioButton" GroupName="timeForGame" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38,184,0,0" Checked="FiveMinutesRadioButton_Checked" IsChecked="True">
-            <Label Content=" 5" FontSize="20" Foreground="#49c3d8"  Margin="0,-12,0,0" Width="214"/>
+        <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="time" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="73,10,0,0" Width="68" />
+        <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="20" Content="Game" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,10,0,0"/>
+        <Slider x:Name="slider" HorizontalAlignment="Left" Value="5" Minimum="1" Maximum="10" Margin="163,54,0,0" VerticalAlignment="Top" Width="152" ValueChanged="Slider_ValueChanged"/>
+        <Label x:Name="lblSlider" FontWeight="Bold" Foreground="White" FontSize="15" Content="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="220,70,0,0"></Label>
+        <RadioButton x:Name="FiveMinutesRadioButton" IsChecked="True" HorizontalAlignment="Left" Margin="6,70,0,0" VerticalAlignment="Top" Height="14" Checked="FiveMinutesRadioButton_Checked">
+            <RadioButton.Content>
+                <Label Content="5" Foreground="#49c3d8" FontSize="15" Margin="5,-11,0,0"></Label>
+            </RadioButton.Content>
         </RadioButton>
-        <Label FontSize="20" Foreground="White" Content="minutes" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="84,200,0,0" />
 
-
-        <RadioButton x:Name="TenMinutesRadioButton" GroupName="timeForGame" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="38,0,0,0" Checked="TenMinutesRadioButton_Checked">
-            <Label Content="10" FontSize="20" Foreground="#49c3d8"  Margin="0,-12,0,0" Width="214"/>
+        <RadioButton x:Name="TenMinutesRadioButton" HorizontalAlignment="Left" Margin="6,104,0,0" VerticalAlignment="Top" Checked="TenMinutesRadioButton_Checked">
+            <RadioButton.Content>
+                <Label Content="10" Foreground="#49c3d8" FontSize="15" Margin="0,-11,0,0"></Label>
+            </RadioButton.Content>
         </RadioButton>
-        <Label FontSize="20" Foreground="White" Content="minutes" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Margin="84,171,0,0" />
+        <Label Content="minutes" Foreground="#444" FontSize="15" HorizontalAlignment="Left" Margin="45,57,0,0" VerticalAlignment="Top"/>
+        <Label Content="minutes" Foreground="#444" FontSize="15" HorizontalAlignment="Left" Margin="45,92,0,0" VerticalAlignment="Top"/>
+        <ListBox Background="#252525" FontWeight="DemiBold" Foreground="White" x:Name="bots" Margin="11,176,230,165"/>
+
+        <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="Grandmasters" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6,139,0,0" Width="176" RenderTransformOrigin="0.483,0.532" />
+
+
+        <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="Choose" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="183,146,0,0" Width="176" />
+        <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="20" Content="Color" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="254,146,0,0"/>
+        <Button Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="186,188,0,0" VerticalAlignment="Top" Height="54" Width="55">
+            <Image Source="/Resources/Images/king_white.png" Width="40" Height="40"/>
+        </Button>
+        <Button Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="254,188,0,0" VerticalAlignment="Top" Height="54" Width="55">
+            <Image Source="/Resources/Images/king_black.png" Width="40" Height="40"/>
+        </Button>
     </Grid>
 </UserControl>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,15 @@ namespace Chess.View
         public GameSidePanelBotChooseView()
         {
             InitializeComponent();
+            string folderPath = "Resources/Grandmasters"; 
+            if (Directory.Exists(folderPath))
+            {
+                var fileNames = Directory.GetFiles(folderPath)
+                                         .Select(System.IO.Path.GetFileNameWithoutExtension) 
+                                         .ToList();
+
+                bots.ItemsSource = fileNames; 
+            }
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
