@@ -115,7 +115,7 @@ namespace Chess.Objects
             }
         }
 
-        private int EvaluateBoard(Chessboard board, int aiColor)
+        public int EvaluateBoard(Chessboard board, int aiColor)
         {
             int evaluation = 0;
 

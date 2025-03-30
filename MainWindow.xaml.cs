@@ -57,6 +57,8 @@ public partial class MainWindow : Window
         var botGameToHomeButton = (Button)gameView.FindName("Home");
         botGameToHomeButton.Click += ShowHomeClick;
 
+       // var botGameNerdButton = (Button)gameView.FindName();
+
         var exitButton = (Button)homeView.FindName("Exit");
         exitButton.Click += ShowExitClick;
 

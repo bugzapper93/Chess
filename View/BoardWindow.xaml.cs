@@ -17,6 +17,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Chess.Objects;
 using Chess.Tools;
+using static Chess.Objects.ChessOnline;
 
 namespace Chess.View
 {
@@ -137,6 +138,13 @@ namespace Chess.View
 
             notationManager?.ClearNotations(); 
         }
+        public void FlipBoard()
+        {
+            isBoardFlipped = !isBoardFlipped;
+            display.Children.Clear();
+            DrawChessboard();
+            PlacePieces();
+        }
         private async void MakeAIMove()
         {
             int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
@@ -156,8 +164,8 @@ namespace Chess.View
                 int row = square / 8;
                 int col = square % 8;
 
-                int displayRow = row;
-                int displayCol = col;
+                int displayRow = isBoardFlipped ? 7 - row : row;
+                int displayCol = isBoardFlipped ? 7 - col : col;
 
                 Canvas.SetLeft(backgroundPanel, displayCol * Constants.SquareSize);
                 Canvas.SetBottom(backgroundPanel, displayRow * Constants.SquareSize);
@@ -181,8 +189,8 @@ namespace Chess.View
                 int row = square / 8;
                 int col = square % 8;
 
-                int displayRow = row;
-                int displayCol = col;
+                int displayRow = isBoardFlipped ? 7 - row : row;
+                int displayCol = isBoardFlipped ? 7 - col : col;
 
                 double pieceLeft = displayCol * Constants.SquareSize + (Constants.SquareSize - piece.Width) / 2;
                 double pieceBottom = displayRow * Constants.SquareSize + (Constants.SquareSize - piece.Height) / 2;
@@ -221,8 +229,11 @@ namespace Chess.View
                 return;
             }
 
-            double newLeft = targetColumn * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
-            double newBottom = targetRow * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
+            double newLeft = (isBoardFlipped ? (7 - targetColumn) : targetColumn) * Constants.SquareSize +
+                 (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
+
+            double newBottom = (isBoardFlipped ? (7 - targetRow) : targetRow) * Constants.SquareSize +
+                               (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
 
             Canvas.SetLeft(selectedPiece, newLeft);
             Canvas.SetBottom(selectedPiece, newBottom);
@@ -331,11 +342,12 @@ namespace Chess.View
                 int row = endSquare / 8;
                 int col = endSquare % 8;
 
-                int displayRow = row;
-                int displayCol = col;
+                int displayRow = isBoardFlipped ? 7 - row : row;
+                int displayCol = isBoardFlipped ? 7 - col : col;
 
                 double pieceLeft = displayCol * Constants.SquareSize + (Constants.SquareSize - piece.Width) / 2;
                 double pieceBottom = displayRow * Constants.SquareSize + (Constants.SquareSize - piece.Height) / 2;
+
 
                 Canvas.SetLeft(piece, pieceLeft);
                 Canvas.SetBottom(piece, pieceBottom);
@@ -418,9 +430,12 @@ namespace Chess.View
 
                 int row = (int)((display.ActualHeight - mousePosition.Y) / Constants.SquareSize);
                 int col = (int)(mousePosition.X / Constants.SquareSize);
-
+                if (isBoardFlipped)
+                {
+                    row = 7 - row;
+                    col = 7 - col;
+                }
                 int targetSquare = row * 8 + col;
-
                 selectedPiece = null;
                 isDragging = false;
                 ResetBoardView();
@@ -432,6 +447,13 @@ namespace Chess.View
                 else if (pvpLAN)
                 {
                     await _chessOnline.SendMoveAsync(new Move(selectedSquare, targetSquare));
+                }
+                else
+                {
+                    if (board.isWhiteTurn == isBoardFlipped)
+                    {
+                        FlipBoard();
+                    }
                 }
             }
         }
@@ -465,6 +487,33 @@ namespace Chess.View
             }
             CheckmatePanel.Visibility = Visibility.Collapsed;
             StalematePanel.Visibility = Visibility.Collapsed;
+        }
+        public string GetInformationForNerdAI()
+        {
+            if (!enableAI || bot == null)
+            {
+                return "AI not initialized yet.";
+            }
+
+            int aiColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
+            int evaluationScore = bot.EvaluateBoard(board, aiColor); // Zakładam, że ChessAI ma EvaluateBoard
+            string aiColorStr = aiColor == Pieces.Black ? "Black" : "White";
+            return $"Evaluation Score: {evaluationScore}\n" +
+                   $"AI Color: {aiColorStr}\n" +
+                   $"Check?: {Helpers.isKingInCheck(board, board.isWhiteTurn)}\n" +
+                   $"Checkmate?: {board.isCheckMate(board)}\n" +
+                   $"Stalemate?: {board.isStaleMate(board)}";
+        }
+
+        public string GetInformationForNerdsLAN()
+        {
+            if (!pvpLAN || _chessOnline == null)
+            {
+                return "LAN mode active, but no network info available.";
+            }
+            return $"Local IP Address: {P2PNetworkManager.GetLocalIPAddress()}\n" +
+                   $"Host Nickname: {_chessOnline._networkManager._hostNickname}\n" +
+                   $"Client Nickname: {_chessOnline._networkManager._clientNickname}";
         }
     }
 }

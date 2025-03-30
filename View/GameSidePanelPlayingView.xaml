@@ -42,7 +42,7 @@
           Style="{StaticResource NotationCheckBoxStyle}"
           IsChecked="False"
           Checked="notationType_Checked"
-          Unchecked="notationType_Unchecked" Margin="597,18,0,0" VerticalAlignment="Top"/>
+          Unchecked="notationType_Unchecked" Margin="597,26,0,0" VerticalAlignment="Top"/>
         <ScrollViewer x:Name="NotationGridScrollView"
               Style="{StaticResource NotationScrollViewerStyle}" Margin="529,26,54,95">
             <Grid x:Name="NotationGrid" Background="Transparent" Width="227">

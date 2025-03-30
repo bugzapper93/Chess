@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using static Chess.Objects.ChessOnline;
 
 namespace Chess.View
 {
@@ -73,8 +74,23 @@ namespace Chess.View
             var playingView = new GameSidePanelPlayingView(Board);
             CC.Content = playingView;
         }
+        private void NerdViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AIGame)
+            {
+                NerdInfoLabel.Text = Board.GetInformationForNerdAI();
+            }
+            else if (pvpLAN)
+            {
+                NerdInfoLabel.Text = Board.GetInformationForNerdsLAN();
+            }
+            NerdViewPanel.Visibility = Visibility.Visible; 
+        }
 
-
+        private void NerdViewOKButton_Click(object sender, RoutedEventArgs e)
+        {
+            NerdViewPanel.Visibility = Visibility.Collapsed;
+        }
         private void play_forfeit_Click(object sender, RoutedEventArgs e)
         {
             if (!canForfeit)

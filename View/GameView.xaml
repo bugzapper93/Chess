@@ -78,6 +78,10 @@
         <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" 
                 Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="529,416,0,0" 
                 VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
+        <Button x:Name="NerdViewButton" Content="Nerd View" Style="{StaticResource BlueButtonStyle}" 
+                FontSize="16" Height="28" Width="104" 
+                HorizontalAlignment="Left" Margin="36,465,0,0" VerticalAlignment="Top" 
+                Click="NerdViewButton_Click"/>
         <Border Background="#333" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top" 
                 Margin="181,462,0,0" Padding="10, 4" Width="150" Height="40">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -88,6 +92,7 @@
                 </Border>
             </StackPanel>
         </Border>
+        <local:GameSidePanelPlayingView x:Name="NotationPanel" Margin="-24,0,0,0"/>
         <Border Background="#333" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top" 
                 Margin="181,10,0,0" Padding="10, 4" Width="150" Height="38">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -129,6 +134,18 @@
                 </Button>
             </StackPanel>
         </Border>
-        <local:GameSidePanelPlayingView x:Name="NotationPanel" Margin="-24,0,0,0"/>
+        <Border x:Name="NerdViewPanel" Style="{StaticResource GameOverPanelStyle}" 
+        HorizontalAlignment="Center" VerticalAlignment="Center" Width="350" Height="225">
+            <StackPanel>
+                <Label Content="Nerd View" Foreground="White" FontSize="30" FontWeight="Bold" 
+               HorizontalAlignment="Center"/>
+                <TextBlock x:Name="NerdInfoLabel" Foreground="White" FontSize="12" FontWeight="Bold" 
+                   HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="310"/>
+                <Button x:Name="NerdViewOKButton" Style="{StaticResource GrayButtonStyle}" 
+                Width="140" Height="27" Click="NerdViewOKButton_Click" Margin="0,10,0,0">
+                    <Label Content="OK" FontSize="12" FontWeight="UltraBold" Foreground="White" Height="41"/>
+                </Button>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

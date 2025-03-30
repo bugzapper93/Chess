@@ -101,7 +101,6 @@ namespace Chess.Objects
         public bool ValidatingMove = false;
 
         public string CurrentMoves = "";
-
         public bool isWhiteTurn;
         public LegalMoves LegalMoves;
 
@@ -551,6 +550,25 @@ namespace Chess.Objects
                 BlackQueens |= mask;
                 BlackKing |= mask;
             }
+        }
+        public bool isCheckMate(Chessboard board)
+        {
+            if (Helpers.GetMoveCount(board) == 0)
+            {
+                if (Helpers.isKingInCheck(board, board.isWhiteTurn))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool isStaleMate(Chessboard board)
+        {
+            if (Helpers.GetMoveCount(board) == 0 && !Helpers.isKingInCheck(board, board.isWhiteTurn))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
