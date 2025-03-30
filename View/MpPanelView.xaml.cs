@@ -14,7 +14,11 @@ namespace Chess.View
         public MpPanelView()
         {
             InitializeComponent();
-            _chessOnline = new ChessOnline(this);
+            if (mainWindow != null)
+            {
+                BoardWindow boardView = mainWindow.GetBoardView();
+                _chessOnline = new ChessOnline(this, boardView); 
+            }
         }
         private async void btnRefresh_Click(object sender, RoutedEventArgs e)
         {
@@ -145,7 +149,12 @@ namespace Chess.View
             {
                 if (mainWindow != null)
                 {
-                //    mainWindow.ShowBoard();
+                    mainWindow.ShowOnlineModeClick(sender, e); 
+                    var boardView = mainWindow.GetBoardView();
+                    if (boardView != null)
+                    {
+                        boardView.SetChessOnline(_chessOnline); 
+                    }
                 }
                 else
                 {
@@ -155,6 +164,23 @@ namespace Chess.View
             else
             {
                 MessageBox.Show("You must be connected to a lobby to start the game.");
+            }
+        }
+        private void TxtNick_GotFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+            if (tb.Text == "Enter your nick...")
+            {
+                tb.Text = "";
+            }
+        }
+
+        private void TxtNick_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+            if (string.IsNullOrWhiteSpace(tb.Text))
+            {
+                tb.Text = "Enter your nick...";
             }
         }
     }

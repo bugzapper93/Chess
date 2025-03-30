@@ -44,6 +44,10 @@ namespace Chess.View
                 GameSidePanelBotChooseView();
             else if (pvpLocal)
                 GameSidePanelPlayerChooseView();
+            else if (pvpLAN)
+            {
+                GameSidePanelPlayerChooseView();
+            }
         }
         public void GameSidePanelBotChooseView()
         {

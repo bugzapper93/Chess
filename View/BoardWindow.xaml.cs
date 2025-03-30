@@ -58,6 +58,13 @@ namespace Chess.View
             DrawChessboard();
             PlacePieces();
         }
+
+        private ChessOnline _chessOnline; 
+
+        public void SetChessOnline(ChessOnline chessOnline)
+        {
+            _chessOnline = chessOnline;
+        }
         private void InitializeTimer()
         {
             timer = new DispatcherTimer();
@@ -221,7 +228,7 @@ namespace Chess.View
             parentCanvas.Children.Remove(targetPiece);
             PiecesDisplay[targetRow, targetColumn] = null;
         }
-        private bool MovePiece(Move move, bool checkIfValid = true)
+        public bool MovePiece(Move move, bool checkIfValid = true)
         {
             int selectedRow = move.From / 8;
             int selectedColumn = move.From % 8;
@@ -389,10 +396,24 @@ namespace Chess.View
                 selectedPiece = null;
                 isDragging = false;
                 ResetBoardView();
-
-                if (MovePiece(new Move(selectedSquare, targetSquare)) && enableAI)
+                Move move = new Move(selectedSquare, targetSquare);
+                if (MovePiece(move))
                 {
-                    MakeAIMove();
+                    var gameView = (VisualTreeHelper.GetParent(this) as GameView) ??
+                                  (Application.Current.MainWindow as MainWindow)?.gameView;
+
+                    if (gameView != null)
+                    {
+                        if (gameView.pvpLAN && _chessOnline != null)
+                        {
+                            await _chessOnline.SendMoveAsync(move);
+                            Trace.WriteLine($"[PieceMouseUp] Sending move from {move.From} to {move.To}");
+                        }
+                        else if (gameView.AIGame && enableAI)
+                        {
+                            MakeAIMove();
+                        }
+                    }
                 }
             }
         }

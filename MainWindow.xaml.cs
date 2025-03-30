@@ -19,7 +19,7 @@ namespace Chess;
 public partial class MainWindow : Window
 {
     private HomeView homeView;
-    private GameView gameView;
+    public GameView gameView;
     private CreditsView creditsView;
     private SettingsView settingsView;
     private ExitView exitView;
@@ -78,6 +78,7 @@ public partial class MainWindow : Window
         var mpPanelViewHomeBtn = (Button)mpPanelView.FindName("Home");
         mpPanelViewHomeBtn.Click += ShowHomeClick;
 
+
     }
     #region Handling the UI
     private void ShowGameClick(object sender, RoutedEventArgs e)
@@ -91,7 +92,17 @@ public partial class MainWindow : Window
 
         gameView.Initialize();
     }
+    public void ShowOnlineModeClick(object sender, RoutedEventArgs e)
+    {
+        homeView.Visibility = Visibility.Collapsed;
+        gameView.Visibility = Visibility.Visible;
 
+        gameView.AIGame = false;
+        gameView.pvpLocal = false;
+        gameView.pvpLAN = true;
+
+        gameView.Initialize();
+    }
     private void ShowSettingsClick(object sender, RoutedEventArgs e)
     {
         homeView.Visibility = Visibility.Collapsed;
@@ -145,6 +156,10 @@ public partial class MainWindow : Window
         gameView.pvpLAN = true;
 
         gameView.Initialize();
+    }
+    public BoardWindow GetBoardView()
+    {
+        return gameView?.FindName("Board") as BoardWindow;
     }
     private void Exit(object sender, RoutedEventArgs e)
     {

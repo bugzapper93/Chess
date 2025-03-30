@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Chess.View"
              mc:Ignorable="d" d:DesignWidth="833"
-             Background="#252525" Height="500">
+             Background="#252525" Height="512">
     <UserControl.Resources>
         <!-- BLUE BUTTON STYLE -->
         <Style x:Key="BlueButtonStyle" TargetType="Button">
@@ -164,7 +164,23 @@
 
         <Canvas Background="#1e1e1e " Margin="78,14,15,388">
             <Label FontSize="25" Foreground="White" FontWeight="Bold" Content="Nick:" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Top="2"/>
-            <TextBox x:Name="txtNick" BorderThickness="0" FontSize="15" Foreground="White" TextAlignment="center" VerticalContentAlignment="Center" Background="#444" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Enter your nick..." VerticalAlignment="Top" Width="204" Height="36" Canvas.Left="76" Canvas.Top="6"/>
+            <TextBox x:Name="txtNick" 
+         BorderThickness="0" 
+         FontSize="15" 
+         Foreground="White" 
+         TextAlignment="Center" 
+         VerticalContentAlignment="Center" 
+         Background="#444" 
+         HorizontalAlignment="Left" 
+         TextWrapping="Wrap" 
+         Text="Enter your nick..." 
+         VerticalAlignment="Top" 
+         Width="204" 
+         Height="36" 
+         Canvas.Left="76" 
+         Canvas.Top="6"
+         GotFocus="TxtNick_GotFocus" 
+         LostFocus="TxtNick_LostFocus"/>
             <Button x:Name="btnHost" Style="{StaticResource BlueButtonStyle}" Content="Host Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="294" Canvas.Top="6" Click="btnHost_Click"/>
             <Button x:Name="btnJoin" Style="{StaticResource GreenButtonStyle}" Content="Join Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="444" Canvas.Top="6" Click="btnJoin_Click"/>
             <Button x:Name="btnLeave" Style="{StaticResource GrayButtonStyle}" Content="Leave Lobby" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="134" Canvas.Left="592" Canvas.Top="6" Click="btnLeave_Click"/>
@@ -246,7 +262,7 @@
             </ScrollViewer>
 
             <Button x:Name="btnSendMessage" Style="{StaticResource GrayButtonStyle}" Content="Send" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center" Height="36" Width="52" Canvas.Left="154" Canvas.Top="309" Click="btnSendMessage_Click"/>
-            <TextBox x:Name="txtChatInput" BorderThickness="0" FontSize="10" Foreground="White" TextAlignment="Left" VerticalContentAlignment="Center" Background="#252525" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="139" Height="36" Canvas.Left="10" Canvas.Top="309" KeyDown="txtChatInput_KeyDown"/>
+            <TextBox x:Name="txtChatInput" BorderThickness="0" FontSize="10" Foreground="White" TextAlignment="Left" VerticalContentAlignment="Center" Background="#444" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="139" Height="36" Canvas.Left="10" Canvas.Top="309" KeyDown="txtChatInput_KeyDown"/>
         </Canvas>
         <Canvas Background="#1e1e1e " Margin="224,79,250,77">
             <Label FontSize="20" Foreground="White" FontWeight="Bold" Content="Available hosts:" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Top="3" Canvas.Left="5"/>

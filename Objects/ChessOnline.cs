@@ -16,12 +16,14 @@ namespace Chess.Objects
     {
         public readonly P2PNetworkManager _networkManager;
         private readonly MpPanelView _chessMainWindow;
+        private readonly BoardWindow _boardView;
         private string _nickname;
         private int playerColor;
-        public ChessOnline(MpPanelView chessMainWindow)
+        public ChessOnline(MpPanelView chessMainWindow, BoardWindow boardView)
         {
             _networkManager = new P2PNetworkManager(NetworkConfig.MulticastGroup, NetworkConfig.Port);
             _chessMainWindow = chessMainWindow;
+            _boardView = boardView;
             _networkManager.OnChatMessageReceived += ReceiveMoveMessage;
             _networkManager.OnConnectionStateChanged += UpdateUI;
             _networkManager.OnPlayerListUpdated += UpdatePlayerList;
@@ -29,20 +31,14 @@ namespace Chess.Objects
             _networkManager.OnError += ShowErrorMessage;
         }
 
-        public void ShowServerPanel()
-        {
-/*            _chessMainWindow.ServerPanel.Visibility = Visibility.Visible;
-            _chessMainWindow.MainMenu.Visibility = Visibility.Hidden;
-            _chessMainWindow.HideBtn.Visibility = Visibility.Visible;*/
-            UpdateUI(); // Initial UI update
-        }
-
         public async Task SendMoveAsync(Move move)
         {
             if (_networkManager.IsConnected || _networkManager.IsHosting)
             {
-            //    _nickname = _chessMainWindow.txtNick.Text.Trim();
-                string moveMessage = $"MOVE|{move.From}|{move.To}";
+                _nickname = _chessMainWindow.txtNick.Text.Trim();
+                string fromStr = move.From < 10 ? $"0{move.From}" : move.From.ToString();
+                string toStr = move.To < 10 ? $"0{move.To}" : move.To.ToString();
+                string moveMessage = $"MOVE|{fromStr}|{toStr}";
                 await _networkManager.SendChatMessageAsync(_nickname, moveMessage);
             }
         }
@@ -54,28 +50,20 @@ namespace Chess.Objects
                 var parts = message.Split('|');
                 if (parts.Length == 3)
                 {
-                    var startParts = parts[1].Split(',');
-                    var endParts = parts[2].Split(',');
-                    if (startParts.Length == 2 && endParts.Length == 2)
+                    int from = int.Parse(parts[1]);
+                    int to = int.Parse(parts[2]);
+                    Move move = new Move(from, to);
+                    _chessMainWindow.Dispatcher.Invoke(() =>
                     {
-/*                        Position start = new Position(int.Parse(startParts[0]), int.Parse(startParts[1]));
-                        Position end = new Position(int.Parse(endParts[0]), int.Parse(endParts[1]));
-                        _chessMainWindow.Dispatcher.Invoke(() =>
-                        {
-                            _chessMainWindow.MovePiece(start, end, playerColor);
-                            if (_chessMainWindow.Board.isWhiteTurn == _chessMainWindow.isBoardFlipped)
-                            {
-                                _chessMainWindow.FlipBoard();
-                            }
-                        })*/;
-                    }
+                        _boardView.MovePiece(move, false); 
+                    });
                 }
             }
             else
             {
                 _chessMainWindow.Dispatcher.Invoke(() =>
                 {
-             //       _chessMainWindow.lstChatMessages.Items.Add($"{senderNick}: {message}");
+                    _chessMainWindow.lstChatMessages.Items.Add($"{senderNick}: {message}");
                 });
             }
         }
