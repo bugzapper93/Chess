@@ -8,16 +8,17 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using Chess.Objects;
+using Chess.View;
 
 namespace Chess.Objects
 {
     public class ChessOnline
     {
         public readonly P2PNetworkManager _networkManager;
-        private readonly MainWindow _chessMainWindow;
+        private readonly MpPanelView _chessMainWindow;
         private string _nickname;
         private int playerColor;
-        public ChessOnline(MainWindow chessMainWindow)
+        public ChessOnline(MpPanelView chessMainWindow)
         {
             _networkManager = new P2PNetworkManager(NetworkConfig.MulticastGroup, NetworkConfig.Port);
             _chessMainWindow = chessMainWindow;
@@ -83,21 +84,21 @@ namespace Chess.Objects
         {
             _chessMainWindow.Dispatcher.Invoke(() =>
             {
-/*                _chessMainWindow.btnHost.IsEnabled = !_networkManager.IsHosting && !_networkManager.IsConnected;
-                _chessMainWindow.btnDolacz.IsEnabled = !_networkManager.IsHosting && !_networkManager.IsConnected;
-                _chessMainWindow.btnWyjdz.IsEnabled = _networkManager.IsHosting || _networkManager.IsConnected;
+                _chessMainWindow.btnHost.IsEnabled = !_networkManager.IsHosting && !_networkManager.IsConnected;
+                _chessMainWindow.btnJoin.IsEnabled = !_networkManager.IsHosting && !_networkManager.IsConnected;
+                _chessMainWindow.btnLeave.IsEnabled = _networkManager.IsHosting || _networkManager.IsConnected;
                 _chessMainWindow.btnRefresh.IsEnabled = !_networkManager.IsHosting;
                 _chessMainWindow.btnSendMessage.IsEnabled = _networkManager.IsConnected;
                 _chessMainWindow.toolStripStatusLabel1.Text = _networkManager.IsHosting ? "Status: Hosting" :
                                                               _networkManager.IsConnected ? "Status: Connected" :
                                                               "Status: Disconnected";
-                _chessMainWindow.toolStripStatusLabelIP.Text = "Local IP: " + P2PNetworkManager.GetLocalIPAddress();*/
+                _chessMainWindow.toolStripStatusLabelIP.Text = "Local IP: " + P2PNetworkManager.GetLocalIPAddress();
             });
         }
 
         private void UpdatePlayerList(string[] players)
         {
-/*            _chessMainWindow.Dispatcher.Invoke(() =>
+            _chessMainWindow.Dispatcher.Invoke(() =>
             {
                 _chessMainWindow.lstGracze.Items.Clear();
                 string hostNick = _networkManager.IsHosting ? _nickname : _networkManager._hostNickname;
@@ -110,18 +111,18 @@ namespace Chess.Objects
                     }
                 }
                 _chessMainWindow.playersGroupBox.Header = $"Players ({players.Length})";
-            });*/
+            });
         }
 
         private void AddHostToList(string nickname, string ip)
         {
-    /*        _chessMainWindow.Dispatcher.Invoke(() =>
+            _chessMainWindow.Dispatcher.Invoke(() =>
             {
                 if (!_chessMainWindow.lvwHosts.Items.Cast<HostInfo>().Any(item => item.IP == ip))
                 {
                     _chessMainWindow.lvwHosts.Items.Add(new HostInfo { Nickname = nickname, IP = ip });
                 }
-            });*/
+            });
         }
 
         private void ShowErrorMessage(string message)

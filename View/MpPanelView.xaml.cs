@@ -8,14 +8,14 @@ namespace Chess.View
 {
     public partial class MpPanelView : UserControl
     {
-        public MpPanelView()
-        {
-            InitializeComponent();
-        }
         private ChessOnline _chessOnline;
         private int playerColor = Pieces.White;
         private MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
-
+        public MpPanelView()
+        {
+            InitializeComponent();
+            _chessOnline = new ChessOnline(this);
+        }
         private async void btnRefresh_Click(object sender, RoutedEventArgs e)
         {
             if (_chessOnline._networkManager.IsHosting) return;
