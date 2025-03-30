@@ -78,7 +78,8 @@ public partial class MainWindow : Window
         var mpPanelViewHomeBtn = (Button)mpPanelView.FindName("Home");
         mpPanelViewHomeBtn.Click += ShowHomeClick;
 
-
+        var mpPanelStartBtn = (Button)mpPanelView.FindName("btnStartGame");
+        mpPanelStartBtn.Click += ShowOnlineModeClick;
     }
     #region Handling the UI
     private void ShowGameClick(object sender, RoutedEventArgs e)
@@ -89,17 +90,19 @@ public partial class MainWindow : Window
         gameView.AIGame = true;
         gameView.pvpLocal = false;
         gameView.pvpLAN = false;
-
+        gameView.GMAI = true;
+        gameView.selectedGM = "Magnus Carlsen";
         gameView.Initialize();
     }
     public void ShowOnlineModeClick(object sender, RoutedEventArgs e)
     {
         homeView.Visibility = Visibility.Collapsed;
         gameView.Visibility = Visibility.Visible;
-
         gameView.AIGame = false;
         gameView.pvpLocal = false;
         gameView.pvpLAN = true;
+        gameView.GMAI = false;
+        gameView.selectedGM = "";
 
         gameView.Initialize();
     }
@@ -119,7 +122,7 @@ public partial class MainWindow : Window
         homeView.Visibility = Visibility.Collapsed;
         multiplayerView.Visibility = Visibility.Visible;
     }
-    private void ShowHomeClick(object sender, RoutedEventArgs e)
+    public void ShowHomeClick(object sender, RoutedEventArgs e)
     {
         homeView.Visibility = Visibility.Visible;
         creditsView.Visibility = Visibility.Collapsed;
@@ -143,6 +146,8 @@ public partial class MainWindow : Window
         gameView.AIGame = false;
         gameView.pvpLocal = true;
         gameView.pvpLAN = false;
+        gameView.GMAI = false;
+        gameView.selectedGM = "";
 
         gameView.Initialize();
     }
@@ -150,10 +155,6 @@ public partial class MainWindow : Window
     {
         multiplayerView.Visibility = Visibility.Collapsed;
         mpPanelView.Visibility = Visibility.Visible;
-
-        gameView.AIGame = false;
-        gameView.pvpLocal = false;
-        gameView.pvpLAN = true;
 
         gameView.Initialize();
     }

@@ -28,15 +28,23 @@ namespace Chess.View
         public bool pvpLAN = false;
         public bool pvpLocal = false;
         public bool AIGame = false;
-
+        public bool GMAI = false;
+        public string selectedGM = "Magnus Carlsen";
         private bool canForfeit = false;
+        private NotationPanelManager notationManager;
         public GameView()
         {
             InitializeComponent();
 
             // Board = new BoardWindow();
-
+            Board.GameTimeout += EndGameByTimeout;
             Board.TimerUpdate += UpdateTimerDisplays;
+            if (NotationPanel is GameSidePanelPlayingView notationPanel)
+            {
+                notationPanel.SetBoardWindow(Board);
+                notationManager = new NotationPanelManager(notationPanel.NotationGrid);
+            }
+            NotationPanel.Visibility = Visibility.Hidden;
         }
         public void Initialize()
         {
@@ -62,9 +70,10 @@ namespace Chess.View
 
         public void GameSidePanelPlayingView()
         {
-            CC.Content = new GameSidePanelPlayingView();
+            var playingView = new GameSidePanelPlayingView(Board);
+            CC.Content = playingView;
         }
-        
+
 
         private void play_forfeit_Click(object sender, RoutedEventArgs e)
         {
@@ -73,19 +82,26 @@ namespace Chess.View
                 int depth = 0;
                 if (AIGame)
                     depth = botChooseView.SelectedDepth;
+                Board.InitializeGame(
+                            Pieces.White,   
+                            AIGame,         
+                            pvpLAN,         
+                            pvpLocal,      
+                            depth,         
+                            GMAI,           
+                            selectedGM,    
+                            notationManager 
+                        );
 
-                Board.InitializeGame(Pieces.White, AIGame, pvpLAN, pvpLocal);
                 canForfeit = true;
-
+                GameSidePanelPlayingView();
                 play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
                 play_forfeit.Content = "Forfeit";
-
-                GameSidePanelPlayingView();
-
+                NotationPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                MessageBox.Show("Gra zakończona przez forfeit");
+                ForfeitPanel.Visibility = Visibility.Visible;
             }
         }
         private void UpdateTimerDisplays(int whiteTime, int blackTime)
@@ -93,12 +109,39 @@ namespace Chess.View
             WhiteTimerText.Text = TimeSpan.FromSeconds(whiteTime).ToString(@"mm\:ss");
             BlackTimerText.Text = TimeSpan.FromSeconds(blackTime).ToString(@"mm\:ss");
         }
-
+        private void ForfeitBackToMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Application.Current.MainWindow as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.ShowHomeClick(sender, e); 
+               // Board.ResetBoard(); 
+            }
+            ForfeitPanel.Visibility = Visibility.Collapsed; 
+            canForfeit = false; 
+            play_forfeit.Style = (Style)FindResource("BlueButtonStyle"); 
+            play_forfeit.Content = "Play";
+        }
         private void EndGameByTimeout(int losingColor)
         {
             Board.started = false;
             string winner = losingColor == Pieces.White ? "CZARNE" : "BIAŁE";
-            MessageBox.Show($"Czas upłynął! Wygrywają {winner} przez przekroczenie czasu.");
+            TimeoutLabel.Text = $"Czas upłynął! Wygrywają {winner} przez przekroczenie czasu.";
+            TimeoutPanel.Visibility = Visibility.Visible;
+        }
+
+        private void TimeoutBackToMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Application.Current.MainWindow as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.ShowHomeClick(sender, e);
+              //  Board.ResetBoard();
+            }
+            TimeoutPanel.Visibility = Visibility.Collapsed;
+            canForfeit = false;
+            play_forfeit.Style = (Style)FindResource("BlueButtonStyle");
+            play_forfeit.Content = "Play";
         }
     }
 }

@@ -42,12 +42,12 @@
           Style="{StaticResource NotationCheckBoxStyle}"
           IsChecked="False"
           Checked="notationType_Checked"
-          Unchecked="notationType_Unchecked" Margin="592,54,0,0" VerticalAlignment="Top"/>
+          Unchecked="notationType_Unchecked" Margin="597,18,0,0" VerticalAlignment="Top"/>
         <ScrollViewer x:Name="NotationGridScrollView"
               Style="{StaticResource NotationScrollViewerStyle}" Margin="529,26,54,95">
             <Grid x:Name="NotationGrid" Background="Transparent" Width="227">
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="60"/>
@@ -55,13 +55,13 @@
                     <ColumnDefinition Width="90"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.RowSpan="2">
+                <Border Grid.Column="0" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.Row="0">
                     <TextBlock Text="Move" Style="{StaticResource NotationHeaderTextBlockStyle}"/>
                 </Border>
-                <Border Grid.Column="1" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.RowSpan="2">
+                <Border Grid.Column="1" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.Row="0">
                     <TextBlock Text="White" Style="{StaticResource NotationHeaderTextBlockStyle}"/>
                 </Border>
-                <Border Grid.Column="2" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.RowSpan="2">
+                <Border Grid.Column="2" Background="#444" CornerRadius="3" Margin="2,2,2,2" Grid.Row="0">
                     <TextBlock Text="Black" Style="{StaticResource NotationHeaderTextBlockStyle}"/>
                 </Border>
             </Grid>

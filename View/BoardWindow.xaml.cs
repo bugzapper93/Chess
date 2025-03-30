@@ -34,7 +34,7 @@ namespace Chess.View
         private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
         private Rectangle[,] Squares = new Rectangle[8, 8];
 
-        private Chessboard board = new Chessboard();
+        public Chessboard board = new Chessboard();
 
         private Point originalMouseOffset;
         private bool isDragging = false;
@@ -51,12 +51,15 @@ namespace Chess.View
 
         public bool started = false;
         public bool whiteTurn = true;
+        private NotationPanelManager notationManager;
 
         public BoardWindow()
         {
             InitializeComponent();
             DrawChessboard();
             PlacePieces();
+            CheckmateBackToMenu.Click += BackToMenu_Click;
+            StalemateBackToMenu.Click += BackToMenu_Click;
         }
 
         private ChessOnline _chessOnline; 
@@ -72,6 +75,7 @@ namespace Chess.View
             timer.Tick += TimerTick;
             timer.Start();
         }
+        public event Action<int> GameTimeout;
         private void TimerTick(object sender, EventArgs e)
         {
             if (!timerStarted)
@@ -80,16 +84,30 @@ namespace Chess.View
             if (board.isWhiteTurn)
             {
                 whiteTime--;
+                if (whiteTime <= 0)
+                {
+                    timer.Stop();
+                    GameTimeout?.Invoke(Pieces.White);
+                    return;
+                }
             }
             else
             {
                 blackTime--;
+                if (blackTime <= 0)
+                {
+                    timer.Stop();
+                    GameTimeout?.Invoke(Pieces.Black);
+                    return;
+                }
             }
             TimerUpdate?.Invoke(whiteTime, blackTime);
         }
         public event Action<int, int>? TimerUpdate;
-        public void InitializeGame(int playerColor, bool AI, bool LAN, bool pvp, int depth = 0, bool grandmaster = false, string grandmasterName = "")
+        public void InitializeGame(int playerColor, bool AI, bool LAN, bool pvp, int depth = 0, bool grandmaster = false, string grandmasterName = "", NotationPanelManager notationManager = null)
         {
+            this.notationManager = notationManager; 
+
             timerStarted = true;
             board.UpdateMoves();
             InitializeTimer();
@@ -102,7 +120,6 @@ namespace Chess.View
             {
                 bot = new ChessAI(depth, playerColor, grandmaster, grandmasterName);
             }
-
             if (playerColor == Pieces.White)
             {
                 started = true;
@@ -117,6 +134,8 @@ namespace Chess.View
                     MakeAIMove();
                 }
             }
+
+            notationManager?.ClearNotations(); 
         }
         private async void MakeAIMove()
         {
@@ -216,6 +235,10 @@ namespace Chess.View
             PiecesDisplay[targetRow, targetColumn] = (Rectangle)selectedPiece;
             PiecesDisplay[selectedRow, selectedColumn] = null;
         }
+        public NotationPanelManager GetNotationManager()
+        {
+            return notationManager;
+        }
         private void RemovePiece(int square)
         {
             int targetRow = square / 8;
@@ -289,6 +312,11 @@ namespace Chess.View
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
             board.CurrentMoves += board.CurrentMoves == "" ? $"{moveNotation}" : $",{moveNotation}";
 
+            if (notationManager != null)
+            {
+                notationManager.AddRowToTable(moveData, board.isWhiteTurn); 
+            }
+
             // Pawn promotion
             // No need for differentiating between black and white pawns, because pawns can't move backwards
             if (Helpers.GetPiece(board, endSquare) == Pieces.Pawn)
@@ -323,9 +351,9 @@ namespace Chess.View
             if (Helpers.GetMoveCount(board) == 0)
             {
                 if (Helpers.isKingInCheck(board, board.isWhiteTurn))
-                    MessageBox.Show("Checkmate!");
+                    ShowCheckmatePanel();
                 else
-                    MessageBox.Show("Stalemate!");
+                    ShowStalematePanel();
             }
             return true;
         }
@@ -396,24 +424,14 @@ namespace Chess.View
                 selectedPiece = null;
                 isDragging = false;
                 ResetBoardView();
-                Move move = new Move(selectedSquare, targetSquare);
-                if (MovePiece(move))
-                {
-                    var gameView = (VisualTreeHelper.GetParent(this) as GameView) ??
-                                  (Application.Current.MainWindow as MainWindow)?.gameView;
 
-                    if (gameView != null)
-                    {
-                        if (gameView.pvpLAN && _chessOnline != null)
-                        {
-                            await _chessOnline.SendMoveAsync(move);
-                            Trace.WriteLine($"[PieceMouseUp] Sending move from {move.From} to {move.To}");
-                        }
-                        else if (gameView.AIGame && enableAI)
-                        {
-                            MakeAIMove();
-                        }
-                    }
+                if (MovePiece(new Move(selectedSquare, targetSquare)) && enableAI)
+                {
+                    MakeAIMove();
+                }
+                else if (pvpLAN)
+                {
+                    await _chessOnline.SendMoveAsync(new Move(selectedSquare, targetSquare));
                 }
             }
         }
@@ -426,6 +444,27 @@ namespace Chess.View
 
                 Squares[row, column].Fill = (((row + column) % 2) == 0) ? Constants.Primary : Constants.Secondary;
             }
+        }
+        private void ShowCheckmatePanel()
+        {
+            CheckmatePanel.Visibility = Visibility.Visible;
+            StalematePanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowStalematePanel()
+        {
+            CheckmatePanel.Visibility = Visibility.Collapsed;
+            StalematePanel.Visibility = Visibility.Visible;
+        }
+        private void BackToMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Application.Current.MainWindow as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.ShowHomeClick(sender, e); 
+            }
+            CheckmatePanel.Visibility = Visibility.Collapsed;
+            StalematePanel.Visibility = Visibility.Collapsed;
         }
     }
 }

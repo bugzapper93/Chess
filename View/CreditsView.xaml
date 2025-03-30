@@ -58,8 +58,10 @@
 
         <Label Content="Marta Błaszczyk" Foreground="white" FontWeight="Bold"  FontSize="30" HorizontalAlignment="Left" Margin="59,177,0,0" VerticalAlignment="Top"/>
         <Label Content="&lt;" Foreground="#444" FontWeight="Bold"  FontSize="40" HorizontalAlignment="Left" Margin="362,166,0,0" VerticalAlignment="Top"/>
-        <Label Content="Programmer" Foreground="White" FontWeight="Bold"  FontSize="30" HorizontalAlignment="Left" Margin="400,177,0,0" VerticalAlignment="Top"/>
-        <Label Content=">" Foreground="#444" FontWeight="Bold"  FontSize="40" HorizontalAlignment="Left" Margin="588,166,0,0" VerticalAlignment="Top"/>
+        <Label Content="Leader" Foreground="#49c3d8" FontWeight="Bold"  FontSize="30" HorizontalAlignment="Left" Margin="400,175,0,0" VerticalAlignment="Top"/>
+        <Label Content="," Foreground="#444" FontWeight="Bold"  FontSize="40" HorizontalAlignment="Left" Margin="507,162,0,0" VerticalAlignment="Top"/>
+        <Label Content="Programmer" Foreground="White" FontWeight="Bold"  FontSize="30" HorizontalAlignment="Left" Margin="528,171,0,0" VerticalAlignment="Top"/>
+        <Label Content=">" Foreground="#444" FontWeight="Bold"  FontSize="40" HorizontalAlignment="Left" Margin="716,164,0,0" VerticalAlignment="Top"/>
 
         <Label Content="Patryk Pietrzyk" Foreground="white" FontWeight="Bold"  FontSize="30" HorizontalAlignment="Left" Margin="59,225,0,0" VerticalAlignment="Top"/>
         <Label Content="&lt;" Foreground="#444" FontWeight="Bold"  FontSize="40" HorizontalAlignment="Left" Margin="362,214,0,0" VerticalAlignment="Top"/>

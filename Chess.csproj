@@ -21,6 +21,7 @@
     <None Remove="Resources\Images\queen_white.png" />
     <None Remove="Resources\Images\rook_black.png" />
     <None Remove="Resources\Images\rook_white.png" />
+    <None Remove="View\logo.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +37,10 @@
     <EmbeddedResource Include="Resources\Images\queen_white.png" />
     <EmbeddedResource Include="Resources\Images\rook_black.png" />
     <EmbeddedResource Include="Resources\Images\rook_white.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="View\logo.png" />
   </ItemGroup>
 
   <ItemGroup>

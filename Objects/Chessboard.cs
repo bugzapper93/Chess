@@ -552,24 +552,5 @@ namespace Chess.Objects
                 BlackKing |= mask;
             }
         }
-        public bool isCheckMate(Chessboard board)
-        {
-            if(Helpers.GetMoveCount(board) == 0)
-            {
-                if(Helpers.isKingInCheck(board, board.isWhiteTurn))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        public bool isStaleMate(Chessboard board)
-        {
-            if(Helpers.GetMoveCount(board) == 0 && !Helpers.isKingInCheck(board, board.isWhiteTurn))
-            {
-                return true;
-            }
-            return false;
-        }
     }
 }

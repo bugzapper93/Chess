@@ -11,32 +11,24 @@
         <!-- BLUE BUTTON STYLE -->
         <Style x:Key="BlueButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#49c3d8"/>
-            <!-- Light Blue -->
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="25"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="15">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-
                         <ControlTemplate.Triggers>
-                            <!-- Hover Effect for Blue Button -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#37a1b9"/>
-                                <!-- Darker Blue -->
                             </Trigger>
-
-                            <!-- Click Effect for Blue Button -->
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#49c3d8"/>
-                                <!-- Even Darker Blue -->
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -47,43 +39,45 @@
         <!-- GRAY BUTTON STYLE -->
         <Style x:Key="GrayButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#444"/>
-            <!-- Dark Gray -->
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="25"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="15">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-
                         <ControlTemplate.Triggers>
-                            <!-- Hover Effect for Gray Button -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#333"/>
-                                <!-- Medium Gray -->
                             </Trigger>
-
-                            <!-- Click Effect for Gray Button -->
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#444"/>
-                                <!-- Darkest Gray -->
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Styl dla paneli Forfeit i Timeout -->
+        <Style x:Key="GameOverPanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
     </UserControl.Resources>
     <Grid Background="#252525">
         <ContentControl x:Name="CC" Margin="529,0,10,57"/>
         <controls:BoardWindow x:Name="Board" Margin="56,34,377,57"/>
-        <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="529,416,0,0" VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
+        <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" 
+                Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="529,416,0,0" 
+                VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
         <Border Background="#333" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top" 
                 Margin="181,462,0,0" Padding="10, 4" Width="150" Height="40">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -95,31 +89,46 @@
             </StackPanel>
         </Border>
         <Border Background="#333" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top" 
-        Margin="181,10,0,0" Padding="10, 4" Width="150" Height="38">
+                Margin="181,10,0,0" Padding="10, 4" Width="150" Height="38">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock Text="BLACK:" FontSize="11" Foreground="White" FontWeight="Bold" Height="16" Width="43"/>
                 <Border BorderBrush="#49c3d8" BorderThickness="2" CornerRadius="8" Padding="10,2" Height="28">
                     <TextBlock Text="00:00:00" FontSize="14" x:Name="BlackTimerText" Foreground="White" 
-                       FontWeight="Bold" HorizontalAlignment="Center"/>
+                               FontWeight="Bold" HorizontalAlignment="Center"/>
                 </Border>
             </StackPanel>
         </Border>
         <Button Style="{StaticResource GrayButtonStyle}" 
-     x:Name="Home"
-                HorizontalAlignment="Left"
-     Margin="13,5,0,0" 
-     VerticalAlignment="Top" 
-     Height="43" 
-     Width="45"
-     Background="#444"
-     Command="{Binding  NavigateToHomeViewCommand}">
+                x:Name="Home" HorizontalAlignment="Left" Margin="13,5,0,0" VerticalAlignment="Top" 
+                Height="43" Width="45" Background="#444" Command="{Binding NavigateToHomeViewCommand}">
             <Button.Content>
-                <Label Content="←"
-            FontSize="60"
-            Margin="0,-30,5,0"
-            FontWeight="UltraBold"
-            Foreground="White"/>
+                <Label Content="←" FontSize="60" Margin="0,-30,5,0" FontWeight="UltraBold" Foreground="White"/>
             </Button.Content>
         </Button>
+        <Border x:Name="ForfeitPanel" Style="{StaticResource GameOverPanelStyle}" 
+                HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" Height="150">
+            <StackPanel>
+                <Label Content="Forfeit" Foreground="White" FontSize="30" FontWeight="Bold" 
+                       HorizontalAlignment="Center"/>
+                <Button x:Name="ForfeitBackToMenu" Style="{StaticResource GrayButtonStyle}" 
+                        Width="140" Height="27" Click="ForfeitBackToMenu_Click">
+                    <Label Content="Back To Menu" FontSize="12" FontWeight="UltraBold" 
+                           Foreground="White" Height="41"/>
+                </Button>
+            </StackPanel>
+        </Border>
+        <Border x:Name="TimeoutPanel" Style="{StaticResource GameOverPanelStyle}" 
+                HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" Height="150">
+            <StackPanel>
+                <TextBlock x:Name="TimeoutLabel" Foreground="White" FontSize="20" FontWeight="Bold" 
+                           HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="260"/>
+                <Button x:Name="TimeoutBackToMenu" Style="{StaticResource GrayButtonStyle}" 
+                        Width="140" Height="27" Click="TimeoutBackToMenu_Click">
+                    <Label Content="Back To Menu" FontSize="12" FontWeight="UltraBold" 
+                           Foreground="White" Height="41"/>
+                </Button>
+            </StackPanel>
+        </Border>
+        <local:GameSidePanelPlayingView x:Name="NotationPanel" Margin="-24,0,0,0"/>
     </Grid>
 </UserControl>

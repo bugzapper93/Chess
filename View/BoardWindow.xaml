@@ -6,7 +6,94 @@
              xmlns:local="clr-namespace:Chess.View"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+
+        <Style x:Key="BlueButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#49c3d8"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#37a1b9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#49c3d8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GrayButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#444"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#333"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#444"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GameOverPanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <Canvas x:Name="display"/>
+        <Border x:Name="CheckmatePanel" Style="{StaticResource GameOverPanelStyle}" 
+                HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" Height="150">
+            <StackPanel>
+                <Label Content="Checkmate" Foreground="White" FontSize="30" FontWeight="Bold" 
+                       HorizontalAlignment="Center"/>
+                <Button x:Name="CheckmateBackToMenu" Style="{StaticResource GrayButtonStyle}" Width="140" Height="27">
+                    <Label Content="Back To Menu" FontSize="12" FontWeight="UltraBold" 
+                       Foreground="White" Height="41"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="StalematePanel" Style="{StaticResource GameOverPanelStyle}" 
+                HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" Height="150">
+            <StackPanel>
+                <Label Content="Stalemate" Foreground="White" FontSize="30" FontWeight="Bold" 
+                       HorizontalAlignment="Center"/>
+                <Button x:Name="StalemateBackToMenu" Style="{StaticResource GrayButtonStyle}" Width="140" Height="27">
+                    <Label Content="Back To Menu" FontSize="12" FontWeight="UltraBold" 
+                               Foreground="White" Height="41"/>
+                </Button>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>
+

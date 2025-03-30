@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Annotations;
+using System.Windows.Documents;
 
 namespace Chess.Objects
 {
@@ -17,62 +19,72 @@ namespace Chess.Objects
         public bool capture;
         public bool enPassant;
     }
-    class NotationPanelManager
+    public class NotationPanelManager
     {
         private int currentRow = 0;
         private Grid notationGrid;
         private bool useLongNotation = false;
-        private List<(MoveData move, string sanNotation)> moveHistory = new List<(MoveData, string)>();
+        private List<(MoveData move, string sanNotation, string longNotation)> moveHistory =
+                new List<(MoveData, string, string)>();
         public NotationPanelManager(Grid grid)
         {
             notationGrid = grid;
         }
-        public void AddRowToTable(string moveNotation, bool isWhiteTurn)
+
+        public void AddRowToTable(MoveData moveData, bool isWhiteTurn)
         {
-            notationGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            if (!isWhiteTurn)
+            string sanNotation = GetAlgebraicNotation(moveData);
+            string longNotation = GetLongNotation(moveData);
+            moveHistory.Add((moveData, sanNotation, longNotation));
+
+            if (!isWhiteTurn) // White's move - new row
             {
+                notationGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                int rowIndex = currentRow + 1;
+
+                // Add move number
                 TextBlock indexLabel = new TextBlock
                 {
                     Text = (currentRow + 1).ToString() + ".",
-
                     Style = (Style)notationGrid.FindResource("NotationTextBlockStyle"),
                     Width = 52
                 };
-                Grid.SetRow(indexLabel, currentRow + 1);
+                Grid.SetRow(indexLabel, rowIndex);
                 Grid.SetColumn(indexLabel, 0);
                 notationGrid.Children.Add(indexLabel);
 
+                // Add white's move
                 TextBlock whiteMoveLabel = new TextBlock
                 {
-                    Text = moveNotation,
+                    Text = useLongNotation ? longNotation : sanNotation,
                     Style = (Style)notationGrid.FindResource("NotationTextBlockStyle"),
                     Width = 78
                 };
-
-                Grid.SetRow(whiteMoveLabel, currentRow + 1);
+                Grid.SetRow(whiteMoveLabel, rowIndex);
                 Grid.SetColumn(whiteMoveLabel, 1);
                 notationGrid.Children.Add(whiteMoveLabel);
 
+                // Add empty black's move (will be filled later)
                 TextBlock blackMoveLabel = new TextBlock
                 {
                     Text = "",
                     Style = (Style)notationGrid.FindResource("NotationTextBlockStyle"),
                     Width = 78
                 };
-                Grid.SetRow(blackMoveLabel, currentRow + 1);
+                Grid.SetRow(blackMoveLabel, rowIndex);
                 Grid.SetColumn(blackMoveLabel, 2);
                 notationGrid.Children.Add(blackMoveLabel);
             }
-            else
+            else // Black's move - update existing row
             {
+                int rowIndex = currentRow + 1;
                 var blackMoveLabel = notationGrid.Children
-                  .OfType<TextBlock>()
-                  .FirstOrDefault(tb => Grid.GetRow(tb) == currentRow + 1 && Grid.GetColumn(tb) == 2);
+                    .OfType<TextBlock>()
+                    .FirstOrDefault(tb => Grid.GetRow(tb) == rowIndex && Grid.GetColumn(tb) == 2);
 
                 if (blackMoveLabel != null)
                 {
-                    blackMoveLabel.Text = moveNotation;
+                    blackMoveLabel.Text = useLongNotation ? longNotation : sanNotation;
                 }
 
                 currentRow++;
@@ -146,54 +158,57 @@ namespace Chess.Objects
             {
                 notationGrid.RowDefinitions.RemoveAt(1);
             }
-
             currentRow = 0;
+            moveHistory.Clear();
         }
-        public void SetNotationType(bool useLong, Chessboard board)
+        public void SetNotationType(bool useLong)
         {
-            useLongNotation = useLong;
-            UpdateNotations(board);
-        }
-        private void UpdateNotations(Chessboard Board)
-        {
-            int row = 1;
-            for (int i = 0; i < moveHistory.Count; i += 2)
+            if (useLongNotation != useLong)
             {
-                string whiteNotation = useLongNotation ? GetLongNotation(moveHistory[i].move, Board) : moveHistory[i].sanNotation;
-                var whiteMoveLabel = notationGrid.Children
-                    .OfType<TextBlock>()
-                    .FirstOrDefault(tb => Grid.GetRow(tb) == row && Grid.GetColumn(tb) == 1);
-                if (whiteMoveLabel != null)
-                {
-                    whiteMoveLabel.Text = whiteNotation;
-                }
-
-                string blackNotation = (i + 1 < moveHistory.Count) ?
-                    (useLongNotation ? GetLongNotation(moveHistory[i + 1].move, Board) : moveHistory[i + 1].sanNotation) : "";
-                var blackMoveLabel = notationGrid.Children
-                    .OfType<TextBlock>()
-                    .FirstOrDefault(tb => Grid.GetRow(tb) == row && Grid.GetColumn(tb) == 2);
-                if (blackMoveLabel != null)
-                {
-                    blackMoveLabel.Text = blackNotation;
-                }
-
-                row++;
+                useLongNotation = useLong;
+                RefreshNotationDisplay();
             }
         }
-        public string GetLongNotation(MoveData move, Chessboard board)
+
+        private void RefreshNotationDisplay()
+        {
+            // Clear UI
+            var elementsToRemove = notationGrid.Children
+                .Cast<UIElement>()
+                .Where(el => Grid.GetRow(el) > 0)
+                .ToList();
+
+            foreach (var element in elementsToRemove)
+            {
+                notationGrid.Children.Remove(element);
+            }
+
+            while (notationGrid.RowDefinitions.Count > 1)
+            {
+                notationGrid.RowDefinitions.RemoveAt(1);
+            }
+
+            // Rebuild UI with current notation style
+            currentRow = 0;
+            bool isWhiteTurn = true;
+
+            foreach (var move in moveHistory)
+            {
+                AddRowToTable(move.move, isWhiteTurn);
+                isWhiteTurn = !isWhiteTurn;
+            }
+        }
+
+        public string GetLongNotation(MoveData move)
         {
             int start = move.move.From;
             int end = move.move.To;
             int pieceValue = move.piece;
-            int pieceType = pieceValue & 7; 
+            int pieceType = pieceValue & 7;
             string pieceNotation = pieceType == Pieces.Pawn ? "" : Pieces.PieceValueToString(pieceValue);
 
             string startSquare = Move.SquareToString(start);
             string endSquare = Move.SquareToString(end);
-            char columnStart = startSquare[0];
-            char columnEnd = endSquare[0];
-            char rowEnd = endSquare[1];
 
             string notation = pieceNotation + startSquare;
 
@@ -207,3 +222,4 @@ namespace Chess.Objects
         }
     }
 }
+

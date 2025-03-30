@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chess.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,23 +18,38 @@ namespace Chess.View
 {
     public partial class GameSidePanelPlayingView : UserControl
     {
+        private NotationPanelManager notationManager;
+        private BoardWindow boardWindow;
+
         public GameSidePanelPlayingView()
         {
             InitializeComponent();
+            notationManager = new NotationPanelManager(NotationGrid);
         }
+
+        public GameSidePanelPlayingView(BoardWindow window) : this()
+        {
+            SetBoardWindow(window);
+        }
+
+        public void SetBoardWindow(BoardWindow window)
+        {
+            boardWindow = window;
+        }
+
         private void notationType_Checked(object sender, RoutedEventArgs e)
         {
-            if (notationType.IsChecked == true)
+            if (notationManager != null)
             {
-                // notationPanelManager.SetNotationType(true, board);
+                notationManager.SetNotationType(true);
             }
         }
 
         private void notationType_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (notationType.IsChecked == false)
+            if (notationManager != null)
             {
-                // notationPanelManager.SetNotationType(false, board);
+                notationManager.SetNotationType(false);
             }
         }
     }

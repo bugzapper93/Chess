@@ -86,5 +86,6 @@
         <Button  x:Name="Credits" FontWeight="Bold" FontSize="25" Foreground="White" Background="#49c3d8" Command="{Binding NavigateToCreditsViewCommand}" Content="Credits" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="474,281,0,0" VerticalAlignment="Top" Height="72" Width="167"/>
         <Button  x:Name="Settings" FontWeight="Bold" FontSize="25" Foreground="White" Background="#444" Command="{Binding NavigateToSettingsViewCommand}" Content="🛠" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="650,281,0,0" VerticalAlignment="Top" Height="72" Width="85"/>
         <Button  x:Name="Exit" FontWeight="Bold" FontSize="23" Foreground="White" Background="#444" Content="Exit" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="474,362,0,0" VerticalAlignment="Top" Height="53" Width="261"/>
+        <Image Source="/View/logo.png" Margin="-21,1,335,5"></Image>
     </Grid>
 </UserControl>

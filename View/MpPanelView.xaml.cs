@@ -149,7 +149,6 @@ namespace Chess.View
             {
                 if (mainWindow != null)
                 {
-                    mainWindow.ShowOnlineModeClick(sender, e); 
                     var boardView = mainWindow.GetBoardView();
                     if (boardView != null)
                     {
