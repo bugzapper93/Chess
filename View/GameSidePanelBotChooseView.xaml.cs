@@ -26,9 +26,10 @@ namespace Chess.View
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (slider != null && lblSlider != null)
+            if(slider != null && lblSlider != null)
             {
-                lblSlider.Content = ((int)slider.Value).ToString();
+                int newValue = (int)slider.Value;
+                lblSlider.Content = newValue.ToString();
             }
         }
         public TimeSpan GetSelectedTime()
@@ -49,6 +50,17 @@ namespace Chess.View
             if (FiveMinutesRadioButton.IsChecked == true)
             {
                 minutes = 5;
+            }
+        }
+        public int SelectedDepth
+        {
+            get
+            {
+                if (slider != null)
+                {
+                    return (int)slider.Value;
+                }
+                return 5; 
             }
         }
     }

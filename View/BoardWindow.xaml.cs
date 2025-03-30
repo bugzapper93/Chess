@@ -374,7 +374,6 @@ namespace Chess.View
                 Squares[row, column].Fill = (((row + column) % 2) == 0) ? Constants.Primary : Constants.Secondary;
             }
         }
-      
     }
 }
 

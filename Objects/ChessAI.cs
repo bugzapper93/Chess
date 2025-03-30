@@ -124,57 +124,65 @@ namespace Chess.Objects
             const int BishopValue = 330;
             const int RookValue = 500;
             const int QueenValue = 900;
-            const int KingValue = 10000;
-            const int CheckMateValue = 100000;
+            const int KingValue = 20000;
+            const int CheckMateValue = 100000; // Added constant
             const int StaleMateValue = 0;
 
-            int whitePawns = BitOperations.PopCount(board.WhitePawns);
-            int whiteKnights = BitOperations.PopCount(board.WhiteKnights);
-            int whiteBishops = BitOperations.PopCount(board.WhiteBishops);
-            int whiteRooks = BitOperations.PopCount(board.WhiteRooks);
-            int whiteQueens = BitOperations.PopCount(board.WhiteQueens);
-            int whiteKing = BitOperations.PopCount(board.WhiteKing);
+            const int CenterControlBonus = 15;
+            const int KingSafetyBonus = 20;
+            const int PawnStructureBonus = 10;
+            const int MobilityBonus = 5;
+            const int DevelopmentBonus = 10;
 
-            int blackPawns = BitOperations.PopCount(board.BlackPawns);
-            int blackKnights = BitOperations.PopCount(board.BlackKnights);
-            int blackBishops = BitOperations.PopCount(board.BlackBishops);
-            int blackRooks = BitOperations.PopCount(board.BlackRooks);
-            int blackQueens = BitOperations.PopCount(board.BlackQueens);
-            int blackKing = BitOperations.PopCount(board.BlackKing);
+            int whiteMaterial = 0;
+            int blackMaterial = 0;
 
-            evaluation += whitePawns * PawnValue;
-            evaluation += whiteKnights * KnightValue;
-            evaluation += whiteBishops * BishopValue;
-            evaluation += whiteRooks * RookValue;
-            evaluation += whiteQueens * QueenValue;
-            evaluation += whiteKing * KingValue;
+            whiteMaterial += BitOperations.PopCount(board.WhitePawns) * PawnValue;
+            whiteMaterial += BitOperations.PopCount(board.WhiteKnights) * KnightValue;
+            whiteMaterial += BitOperations.PopCount(board.WhiteBishops) * BishopValue;
+            whiteMaterial += BitOperations.PopCount(board.WhiteRooks) * RookValue;
+            whiteMaterial += BitOperations.PopCount(board.WhiteQueens) * QueenValue;
 
-            evaluation -= blackPawns * PawnValue;
-            evaluation -= blackKnights * KnightValue;
-            evaluation -= blackBishops * BishopValue;
-            evaluation -= blackRooks * RookValue;
-            evaluation -= blackQueens * QueenValue;
-            evaluation -= blackKing * KingValue;
+            blackMaterial += BitOperations.PopCount(board.BlackPawns) * PawnValue;
+            blackMaterial += BitOperations.PopCount(board.BlackKnights) * KnightValue;
+            blackMaterial += BitOperations.PopCount(board.BlackBishops) * BishopValue;
+            blackMaterial += BitOperations.PopCount(board.BlackRooks) * RookValue;
+            blackMaterial += BitOperations.PopCount(board.BlackQueens) * QueenValue;
+
+            evaluation += whiteMaterial - blackMaterial;
 
             evaluation += EvaluatePiecePositions(board.WhitePawns, Constants.WhitePawnTable);
             evaluation += EvaluatePiecePositions(board.WhiteKnights, Constants.WhiteKnightTable);
             evaluation += EvaluatePiecePositions(board.WhiteBishops, Constants.WhiteBishopTable);
             evaluation += EvaluatePiecePositions(board.WhiteRooks, Constants.WhiteRookTable);
             evaluation += EvaluatePiecePositions(board.WhiteQueens, Constants.WhiteQueenTable);
-            evaluation += EvaluatePiecePositions(board.WhiteKing, Constants.WhiteKingTable);
+            evaluation += EvaluatePiecePositions(board.WhiteKing, Constants.WhiteKingTable); 
 
             evaluation -= EvaluatePiecePositions(board.BlackPawns, Constants.BlackPawnTable);
             evaluation -= EvaluatePiecePositions(board.BlackKnights, Constants.BlackKnightTable);
             evaluation -= EvaluatePiecePositions(board.BlackBishops, Constants.BlackBishopTable);
             evaluation -= EvaluatePiecePositions(board.BlackRooks, Constants.BlackRookTable);
             evaluation -= EvaluatePiecePositions(board.BlackQueens, Constants.BlackQueenTable);
-            evaluation -= EvaluatePiecePositions(board.BlackKing, Constants.BlackKingTable);
+            evaluation -= EvaluatePiecePositions(board.BlackKing, Constants.BlackKingTable); 
+
+            evaluation += EvaluateCenterControl(board, aiColor) * CenterControlBonus;
+            evaluation += EvaluateKingSafety(board, aiColor) * KingSafetyBonus;
+
+            // Pawn structure evaluation
+            evaluation += EvaluatePawnStructure(board.WhitePawns) * PawnStructureBonus;
+            evaluation -= EvaluatePawnStructure(board.BlackPawns) * PawnStructureBonus;
+
+            evaluation += (board.LegalMoves.GetAllMoves().Count(m => Helpers.GetPiece(board, m.From) != Pieces.White) -
+                          board.LegalMoves.GetAllMoves().Count(m => Helpers.GetPiece(board, m.From) != Pieces.Black)) * MobilityBonus;
+
+            if (aiColor == Pieces.Black)
+                evaluation = -evaluation;
 
             if (Helpers.GetMoveCount(board) == 0)
             {
                 if (Helpers.isKingInCheck(board, board.isWhiteTurn))
                 {
-                    evaluation = (board.isWhiteTurn == (aiColor == Pieces.White))
+                    evaluation = board.isWhiteTurn == (aiColor == Pieces.White)
                         ? -CheckMateValue
                         : CheckMateValue;
                 }
@@ -183,6 +191,7 @@ namespace Chess.Objects
                     evaluation = StaleMateValue;
                 }
             }
+
             return evaluation;
         }
         private int MoveScore(Chessboard board, Move move)
@@ -216,6 +225,125 @@ namespace Chess.Objects
                 bitmask <<= 1;
             }
             return evaluation;
+        }
+        private int EvaluatePawnStructure(ulong pawns)
+        {
+            int score = 0;
+            int[] files = new int[8]; 
+
+            for (int i = 0; i < 64; i++)
+            {
+                if ((pawns & (1UL << i)) != 0)
+                {
+                    files[i % 8]++;
+                }
+            }
+
+            for (int file = 0; file < 8; file++)
+            {
+                if (files[file] == 0) continue;
+
+                if (files[file] > 1)
+                {
+                    score -= 10 * (files[file] - 1);
+                }
+
+                if (file > 0 && files[file - 1] > 0)
+                {
+                    score += 5;
+                }
+                if (file < 7 && files[file + 1] > 0)
+                {
+                    score += 5;
+                }
+            }
+
+            return score;
+        }
+        private int[] GetPawnShieldSquares(int kingSquare, bool isWhite)
+        {
+            int rank = kingSquare / 8;
+            int file = kingSquare % 8;
+
+            if (isWhite)
+            {
+                if (rank <= 1) return Array.Empty<int>(); 
+
+                List<int> squares = new List<int>();
+                if (file > 0) squares.Add((rank - 1) * 8 + (file - 1));
+                squares.Add((rank - 1) * 8 + file);
+                if (file < 7) squares.Add((rank - 1) * 8 + (file + 1));
+
+                return squares.ToArray();
+            }
+            else
+            {
+                if (rank >= 6) return Array.Empty<int>(); 
+
+                List<int> squares = new List<int>();
+                if (file > 0) squares.Add((rank + 1) * 8 + (file - 1));
+                squares.Add((rank + 1) * 8 + file);
+                if (file < 7) squares.Add((rank + 1) * 8 + (file + 1));
+
+                return squares.ToArray();
+            }
+        }
+        private int KingShield(Chessboard board, int kingSquare, bool isWhite)
+        {
+            int shield = 0;
+            int[] pawnShieldSquares = GetPawnShieldSquares(kingSquare, isWhite);
+
+            foreach (int square in pawnShieldSquares)
+            {
+                if (((isWhite ? board.WhitePawns : board.BlackPawns) & (1UL << square)) != 0)
+                {
+                    shield += 10; 
+                }
+            }
+
+            return shield;
+        }
+
+        private int EvaluateCenterControl(Chessboard board, int aiColor)
+        {
+            int[] centerSquares = { 27, 28, 35, 36 };
+            int control = 0;
+
+            foreach (int square in centerSquares)
+            {
+                if ((board.WhitePawns & (1UL << square)) != 0 ||
+                    (board.WhiteKnights & (1UL << square)) != 0 ||
+                    (board.WhiteBishops & (1UL << square)) != 0 ||
+                    (board.WhiteRooks & (1UL << square)) != 0 ||
+                    (board.WhiteQueens & (1UL << square)) != 0)
+                {
+                    control++;
+                }
+
+                if ((board.BlackPawns & (1UL << square)) != 0 ||
+                    (board.BlackKnights & (1UL << square)) != 0 ||
+                    (board.BlackBishops & (1UL << square)) != 0 ||
+                    (board.BlackRooks & (1UL << square)) != 0 ||
+                    (board.BlackQueens & (1UL << square)) != 0)
+                {
+                    control--;
+                }
+            }
+
+            return aiColor == Pieces.White ? control : -control;
+        }
+
+        private int EvaluateKingSafety(Chessboard board, int aiColor)
+        {
+            int safety = 0;
+
+            int whiteKingSquare = BitOperations.TrailingZeroCount(board.WhiteKing);
+            safety += KingShield(board, whiteKingSquare, true);
+
+            int blackKingSquare = BitOperations.TrailingZeroCount(board.BlackKing);
+            safety -= KingShield(board, blackKingSquare, false);
+
+            return aiColor == Pieces.White ? safety : -safety;
         }
     }
 }

@@ -146,6 +146,7 @@
     </UserControl.Resources>
     <Grid>
         <Button Style="{StaticResource GrayButtonStyle}" 
+    x:Name="Home"
     HorizontalAlignment="Left"
     Margin="14,14,0,0" 
     VerticalAlignment="Top" 

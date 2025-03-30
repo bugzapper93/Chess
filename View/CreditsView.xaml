@@ -78,7 +78,7 @@
         <Label Content=">" Foreground="#444" FontWeight="Bold"  FontSize="40" HorizontalAlignment="Left" Margin="767,307,0,0" VerticalAlignment="Top"/>
 
 
-        <Button Style="{StaticResource GrayButtonStyle}" 
+        <Button x:Name="Home" Style="{StaticResource GrayButtonStyle}" 
             HorizontalAlignment="Left"
             Margin="14,14,0,0" 
             VerticalAlignment="Top" 

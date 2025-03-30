@@ -44,8 +44,8 @@ namespace Chess.View
         }
         public void GameSidePanelBotChooseView()
         {
-            CC.Content = new GameSidePanelBotChooseView();
             botChooseView = new GameSidePanelBotChooseView();
+            CC.Content = botChooseView;
         }
 
         public void GameSidePanelPlayerChooseView()
@@ -68,8 +68,8 @@ namespace Chess.View
         {
             if (!canForfeit)
             {
-                Board.InitializeGame(Pieces.White, true, 5, true, "Alireza Firouzja");
-
+                int depth = botChooseView.SelectedDepth;
+                Board.InitializeGame(Pieces.White, true, depth, true, "Alireza Firouzja");
                 play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
                 play_forfeit.Content = "Forfeit";
                 GameSidePanelPlayingView();
@@ -156,6 +156,5 @@ namespace Chess.View
             elapsedBlack = TimeSpan.Zero;
             UpdateTimerDisplays();
         }
-
     }
 }

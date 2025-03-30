@@ -24,5 +24,10 @@
     <Grid Background="DimGray">
         <controls:GameView x:Name="GameView" Visibility="Hidden" />
         <controls:HomeView x:Name="HomeView" />
+        <controls:CreditsView x:Name="CreditsView" Visibility="Collapsed"/>
+        <controls:SettingsView x:Name="SettingsView" Visibility="Collapsed"/>
+        <controls:ExitView x:Name="ExitView" Visibility="Collapsed"/>
+        <controls:MultiPlayerView x:Name="MultiPlayerView" Visibility="Collapsed"/>
+        <controls:MpPanelView x:Name="MpPanelView" Visibility="Collapsed"/>
     </Grid>
 </Window>  
