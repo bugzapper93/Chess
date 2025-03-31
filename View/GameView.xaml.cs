@@ -130,28 +130,44 @@ namespace Chess.View
                     playGM = botChooseView.GMmodeEnabled.IsChecked.Value;
                     chosenGM = botChooseView.bots.SelectedItem.ToString();
                 }
+
+                if (AIGame)
+                    depth = botChooseView.SelectedDepth;
+
+                Board.cancellationTokenSource = _cts;
+                // Koniec rzeczy dla AI
+            }
+            if (pvpLocal || AIGame)
+            {
+                if (chosenColor == Pieces.Black)
+                    Board.FlipBoard();
+
+                Board.InitializeGame(
+                    chosenColor,
+                    AIGame,
+                    pvpLAN,
+                    pvpLocal,
+                    depth,
+                    playGM,
+                    chosenGM,
+                    notationManager
+                );
             }
             
-            if (AIGame)
-                depth = botChooseView.SelectedDepth;
+            if (pvpLAN)
+            {
+                chosenColor = Board.playerColor;
 
-            Board.cancellationTokenSource = _cts;
-            // Koniec rzeczy dla AI
+                if (chosenColor == Pieces.Black)
+                    Board.FlipBoard();
 
-
-            if (chosenColor == Pieces.Black)
-                Board.FlipBoard();
-
-            Board.InitializeGame(
-                chosenColor,
-                AIGame,
-                pvpLAN,
-                pvpLocal,
-                depth,
-                playGM,
-                chosenGM,
-                notationManager
-            );
+                Board.InitializeGame(
+                    chosenColor,
+                    false,
+                    true,
+                    false
+                );
+            }
 
             Board.whiteTime = maxTime;
             Board.blackTime = maxTime;

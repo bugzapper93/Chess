@@ -41,7 +41,7 @@ namespace Chess.View
         private bool isDragging = false;
         private UIElement? selectedPiece;
         int selectedSquare;
-        int playerColor;
+        public int playerColor;
 
         private bool enableAI;
         private bool pvpLAN;

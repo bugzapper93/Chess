@@ -12,7 +12,7 @@ namespace Chess.View
     public partial class MpPanelView : UserControl
     {
         private ChessOnline _chessOnline;
-        private int playerColor = Pieces.White;
+        public int playerColor = Pieces.White;
         private MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
         public MpPanelView()
         {
@@ -179,17 +179,15 @@ namespace Chess.View
                     if (boardView != null)
                     {
                         int hostColor = Pieces.White;
-                        int setColor;
+                            
                         if (_chessOnline._networkManager.IsHosting)
-                            setColor = hostColor;
+                            boardView.playerColor = hostColor;
                         else
-                            setColor = hostColor == Pieces.White ? Pieces.Black : Pieces.White;
+                            boardView.playerColor = hostColor == Pieces.White ? Pieces.Black : Pieces.White;
 
                         boardView.Visibility = Visibility.Visible;
                         this.Visibility = Visibility.Hidden;
                         boardView.SetChessOnline(_chessOnline); 
-                        boardView.InitializeBoardView();
-                        boardView.InitializeGame(setColor, false, true, false);
                     }
                 }
                 else
