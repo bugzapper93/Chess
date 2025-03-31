@@ -17,7 +17,7 @@ namespace Chess.View
             if (mainWindow != null)
             {
                 BoardWindow boardView = mainWindow.GetBoardView();
-                _chessOnline = new ChessOnline(this, boardView); 
+                _chessOnline = new ChessOnline(this); 
             }
         }
         private async void btnRefresh_Click(object sender, RoutedEventArgs e)
