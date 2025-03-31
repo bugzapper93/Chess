@@ -109,28 +109,35 @@ namespace Chess.View
         {
             _cts = new CancellationTokenSource();
             int depth = 0;
-            int chosenColor = botChooseView.chosenColor;
+            int chosenColor = Pieces.White; // To jest tymczasowe
             bool playGM = false;
             string chosenGM = "";
             int maxTime = 300;
-            if (botChooseView.FiveMinutesRadioButton.IsChecked.Value)
+            // Rzeczy dla AI
+            if (botChooseView is not null)
             {
-                maxTime = 300;
+                chosenColor = botChooseView.chosenColor;
+                if (botChooseView.FiveMinutesRadioButton.IsChecked.Value)
+                {
+                    maxTime = 300;
+                }
+                else
+                {
+                    maxTime = 600;
+                }
+                if (botChooseView.GMmodeEnabled != null && botChooseView.bots.SelectedItem != null)
+                {
+                    playGM = botChooseView.GMmodeEnabled.IsChecked.Value;
+                    chosenGM = botChooseView.bots.SelectedItem.ToString();
+                }
             }
-            else
-            {
-                maxTime = 600;
-            }
-            if (botChooseView.GMmodeEnabled != null && botChooseView.bots.SelectedItem != null)
-            {
-                playGM = botChooseView.GMmodeEnabled.IsChecked.Value;
-                chosenGM = botChooseView.bots.SelectedItem.ToString();
-            }
-
+            
             if (AIGame)
                 depth = botChooseView.SelectedDepth;
 
             Board.cancellationTokenSource = _cts;
+            // Koniec rzeczy dla AI
+
 
             if (chosenColor == Pieces.Black)
                 Board.FlipBoard();
