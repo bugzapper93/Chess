@@ -131,6 +131,7 @@ namespace Chess.Objects
             boardClone.ValidatingMove = true;
             boardClone.MakeMove(move);
             boardClone.ValidatingMove = false;
+
             return !Helpers.isKingInCheck(boardClone, isWhite);
         }
        
@@ -379,7 +380,7 @@ namespace Chess.Objects
 
         public static Move GetMoveFromNotation(string notation, Chessboard board)
         {
-            notation = notation.Replace("+", "").Replace("#", "");
+            notation = notation.Replace("+", "").Replace("#", "").Replace("x", "");
 
             char pieceChar = 'P';
             int pos = 0;

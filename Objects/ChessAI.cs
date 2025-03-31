@@ -24,7 +24,7 @@ namespace Chess.Objects
             if (GrandmasterMode)
                 GameRecords = Helpers.GetPlayerRecords(grandmasterName, playerColor);
         }
-        public async Task<Move> GetBestMove(Chessboard board, int aiColor)
+        public async Task<Move> GetBestMove(Chessboard board, int aiColor, CancellationToken token)
         {
             if (GrandmasterMode)
             {
@@ -49,13 +49,19 @@ namespace Chess.Objects
                 bestValue = int.MinValue;
                 bestMoves.Clear();
 
+                if (token.IsCancellationRequested)
+                {
+                    Trace.WriteLine("Cancellation requested. Exiting search.");
+                    return new Move();
+                }
+
                 var tasks = moveset.Select(async move =>
                 {
                     Chessboard clone = board.Clone();
                     clone.MakeMove(move);
 
                     int moveValue = await Task.Run(() =>
-                        Minimax(clone, depth - 1, int.MinValue, int.MaxValue, false, aiColor));
+                        Minimax(clone, depth - 1, int.MinValue, int.MaxValue, false, aiColor, token));
                     Trace.WriteLine("MOVEVALUE: " + moveValue);
                     lock (lockObj)
                     {
@@ -94,8 +100,11 @@ namespace Chess.Objects
             // 2. Jeśli nie ma bicia, zwracamy dowolny (np. pierwszy)
             return bestMoves[0].move;
         }
-        private int Minimax(Chessboard board, int depth, int alpha, int beta, bool maximizingPlayer, int aiColor)
+        private int Minimax(Chessboard board, int depth, int alpha, int beta, bool maximizingPlayer, int aiColor, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+                return 0;//token.ThrowIfCancellationRequested();
+
             board.UpdateMoves();
 
             if (depth == 0 || Helpers.GetMoveCount(board) == 0)
@@ -114,7 +123,7 @@ namespace Chess.Objects
                 foreach (var move in moves)
                 {
                     MoveData data = board.MakeMove(move);
-                    int eval = Minimax(board, depth - 1, alpha, beta, false, aiColor);
+                    int eval = Minimax(board, depth - 1, alpha, beta, false, aiColor, token);
                     board.UnmakeMove(data);
                     maxEval = Math.Max(maxEval, eval);
                     alpha = Math.Max(alpha, eval);
@@ -129,7 +138,7 @@ namespace Chess.Objects
                 foreach (var move in moves)
                 {
                     MoveData data = board.MakeMove(move);
-                    int eval = Minimax(board, depth - 1, alpha, beta, true, aiColor);
+                    int eval = Minimax(board, depth - 1, alpha, beta, true, aiColor, token);
                     board.UnmakeMove(data);
                     minEval = Math.Min(minEval, eval);
                     beta = Math.Min(beta, eval);

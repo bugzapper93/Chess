@@ -106,6 +106,10 @@ namespace Chess.Objects
 
         public Chessboard()
         {
+            InitializeBoard();
+        }
+        public void InitializeBoard()
+        {
             WhitePawns = Constants.DefaultWhitePawns;
             WhiteKnights = Constants.DefaultWhiteKnights;
             WhiteBishops = Constants.DefaultWhiteBishops;
