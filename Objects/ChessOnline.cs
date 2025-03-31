@@ -30,49 +30,32 @@ namespace Chess.Objects
         }
 
 
-        public async Task SendMoveAsync(Move move, int playerColor)
+        public async Task SendMoveAsync(Move move)
         {
             if (_networkManager.IsConnected || _networkManager.IsHosting)
             {
                 _nickname = _chessMainWindow.txtNick.Text.Trim();
                 string fromStr = move.From < 10 ? $"0{move.From}" : move.From.ToString();
                 string toStr = move.To < 10 ? $"0{move.To}" : move.To.ToString();
-                string moveMessage = $"MOVE|{fromStr}|{toStr}|{playerColor}";
+                string moveMessage = $"MOVE|{fromStr}|{toStr}";
                 await _networkManager.SendChatMessageAsync(_nickname, moveMessage);
             }
         }
-
         private void ReceiveMoveMessage(string senderNick, string message)
         {
             if (message.StartsWith("MOVE|"))
             {
                 var parts = message.Split('|');
-                if (parts.Length == 4) // MOVE|from|to|playerColor
+                if (parts.Length == 3)
                 {
+                    var startParts = parts[1].Split(',');
+                    var endParts = parts[2].Split(',');
                     int from = int.Parse(parts[1]);
                     int to = int.Parse(parts[2]);
-                    int playerColor = int.Parse(parts[3]);
                     Move move = new Move(from, to);
-
                     _chessMainWindow.Dispatcher.Invoke(() =>
                     {
-                        mainWindow.GetBoardView().MovePiece(move); // Przekazujemy playerColor
-                    });
-
-                    // Jeśli host, retransmituj ruch do wszystkich klientów
-                    if (_networkManager.IsHosting)
-                    {
-                        Task.Run(async () =>
-                        {
-                            await _networkManager.SendChatMessageAsync(senderNick, message);
-                        });
-                    }
-                }
-                else
-                {
-                    _chessMainWindow.Dispatcher.Invoke(() =>
-                    {
-                        _chessMainWindow.lstChatMessages.Items.Add($"Invalid MOVE message format: {message}");
+                        mainWindow.GetBoardView().MovePiece(move, false);
                     });
                 }
             }
@@ -80,11 +63,11 @@ namespace Chess.Objects
             {
                 _chessMainWindow.Dispatcher.Invoke(() =>
                 {
+                    //       _chessMainWindow.lstChatMessages.Items.Add($"{senderNick}: {message}");
                     _chessMainWindow.lstChatMessages.Items.Add($"{senderNick}: {message}");
                 });
             }
         }
-
         private void UpdateUI()
         {
             _chessMainWindow.Dispatcher.Invoke(() =>

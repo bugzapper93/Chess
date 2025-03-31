@@ -466,7 +466,7 @@ namespace Chess.View
                 }
                 else if (pvpLAN)
                 {
-                    await _chessOnline.SendMoveAsync(new Move(selectedSquare, targetSquare), playerColor);
+                    await _chessOnline.SendMoveAsync(new Move(selectedSquare, targetSquare));
                 }
                 else
                 {
