@@ -20,8 +20,10 @@ using static Chess.Objects.ChessOnline;
 namespace Chess.View
 {
     public partial class GameView : UserControl
-    {       
+    {
         //Timer - variables
+        private CancellationTokenSource _cts = new CancellationTokenSource();
+
         private bool isSlowGame;
         private bool isWhiteLast;
         private GameSidePanelBotChooseView botChooseView;
@@ -49,6 +51,7 @@ namespace Chess.View
         }
         public void Initialize()
         {
+            Board.InitializeBoardView();
             if (AIGame)
                 GameSidePanelBotChooseView();
             else if (pvpLocal)
@@ -95,6 +98,7 @@ namespace Chess.View
         {
             if (!canForfeit)
             {
+                _cts = new CancellationTokenSource();
                 int depth = 0;
                 if (AIGame)
                     depth = botChooseView.SelectedDepth;
@@ -114,10 +118,17 @@ namespace Chess.View
                 play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
                 play_forfeit.Content = "Forfeit";
                 NotationPanel.Visibility = Visibility.Visible;
+                Board.cancellationTokenSource = _cts;
             }
             else
             {
+                Board.cancellationTokenSource.Cancel();
                 ForfeitPanel.Visibility = Visibility.Visible;
+                NotationPanel.Visibility = Visibility.Hidden;
+                Board.board.InitializeBoard();
+                Board.InitializeBoardView();
+                play_forfeit.Style = (Style)FindResource("BlueButtonStyle");
+                play_forfeit.Content = "Play";
             }
         }
         private void UpdateTimerDisplays(int whiteTime, int blackTime)
@@ -131,7 +142,7 @@ namespace Chess.View
             if (mainWindow != null)
             {
                 mainWindow.ShowHomeClick(sender, e); 
-               // Board.ResetBoard(); 
+                Board.InitializeBoardView();
             }
             ForfeitPanel.Visibility = Visibility.Collapsed; 
             canForfeit = false; 

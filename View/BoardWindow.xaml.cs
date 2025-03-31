@@ -53,16 +53,23 @@ namespace Chess.View
         public bool started = false;
         public bool whiteTurn = true;
         private NotationPanelManager notationManager;
-
+        public CancellationTokenSource cancellationTokenSource;
         public BoardWindow()
         {
             InitializeComponent();
-            DrawChessboard();
-            PlacePieces();
+            InitializeBoardView();
             CheckmateBackToMenu.Click += BackToMenu_Click;
             StalemateBackToMenu.Click += BackToMenu_Click;
         }
-
+        public void InitializeBoardView()
+        {
+            board = new Chessboard();
+            bot = new ChessAI(0, 0);
+            whiteTime = 300;
+            blackTime = 300;
+            DrawChessboard();
+            PlacePieces();
+        }
         private ChessOnline _chessOnline; 
 
         public void SetChessOnline(ChessOnline chessOnline)
@@ -147,9 +154,16 @@ namespace Chess.View
         }
         private async void MakeAIMove()
         {
-            int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
-            Move move = await bot.GetBestMove(board.Clone(), botColor);
-            MovePiece(move, false);
+            try
+            {
+                int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
+                Move move = await bot.GetBestMove(board.Clone(), botColor, cancellationTokenSource.Token);
+                MovePiece(move, false);
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
         }
         private void DrawChessboard()
         {
@@ -221,8 +235,11 @@ namespace Chess.View
 
             if (!validMove)
             {
-                double tempPosLeft = selectedColumn * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
-                double tempPosBottom = selectedRow * Constants.SquareSize + (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
+                double tempPosLeft = (isBoardFlipped ? (7 - selectedColumn) : selectedColumn) * Constants.SquareSize +
+                 (Constants.SquareSize - ((Rectangle)selectedPiece).Width) / 2;
+
+                double tempPosBottom = (isBoardFlipped ? (7 - selectedRow) : selectedRow) * Constants.SquareSize +
+                                   (Constants.SquareSize - ((Rectangle)selectedPiece).Height) / 2;
 
                 Canvas.SetLeft(selectedPiece, tempPosLeft);
                 Canvas.SetBottom(selectedPiece, tempPosBottom);
