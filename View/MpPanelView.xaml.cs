@@ -152,6 +152,8 @@ namespace Chess.View
                     var boardView = mainWindow.GetBoardView();
                     if (boardView != null)
                     {
+                        boardView.Visibility = Visibility.Visible;
+                        this.Visibility = Visibility.Hidden;
                         boardView.SetChessOnline(_chessOnline); 
                     }
                 }
