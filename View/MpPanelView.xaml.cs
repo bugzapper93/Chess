@@ -1,8 +1,11 @@
 ﻿using Chess.Objects;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace Chess.View
 {
@@ -18,6 +21,29 @@ namespace Chess.View
             {
                 BoardWindow boardView = mainWindow.GetBoardView();
                 _chessOnline = new ChessOnline(this); 
+            }
+            string resource = Pieces.ResourceNames['K'];
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+
+                whiteImg.Source = bitmap;
+            }
+
+            resource = Pieces.ResourceNames['k'];
+            assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+
+                blackImg.Source = bitmap;
             }
         }
         private async void btnRefresh_Click(object sender, RoutedEventArgs e)
@@ -152,9 +178,18 @@ namespace Chess.View
                     var boardView = mainWindow.GetBoardView();
                     if (boardView != null)
                     {
+                        int hostColor = Pieces.White;
+                        int setColor;
+                        if (_chessOnline._networkManager.IsHosting)
+                            setColor = hostColor;
+                        else
+                            setColor = hostColor == Pieces.White ? Pieces.Black : Pieces.White;
+
                         boardView.Visibility = Visibility.Visible;
                         this.Visibility = Visibility.Hidden;
                         boardView.SetChessOnline(_chessOnline); 
+                        boardView.InitializeBoardView();
+                        boardView.InitializeGame(setColor, false, true, false);
                     }
                 }
                 else
