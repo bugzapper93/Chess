@@ -81,7 +81,7 @@ namespace Chess.View
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += TimerTick;
-            timer.Start();
+           
         }
         public event Action<int> GameTimeout;
         private void TimerTick(object sender, EventArgs e)
@@ -114,11 +114,14 @@ namespace Chess.View
         public event Action<int, int>? TimerUpdate;
         public void InitializeGame(int playerColor, bool AI, bool LAN, bool pvp, int depth = 0, bool grandmaster = false, string grandmasterName = "", NotationPanelManager notationManager = null)
         {
-            this.notationManager = notationManager; 
+            InitializeBoardView();
+            if (timer == null)
+                InitializeTimer();
 
+            timer.Start();
+            this.notationManager = notationManager; 
             timerStarted = true;
             board.UpdateMoves();
-            InitializeTimer();
 
             enableAI = AI;
             pvpLAN = LAN;

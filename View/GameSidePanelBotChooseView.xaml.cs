@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,24 +15,47 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Chess.Objects;
+using Chess.Tools;
 
 namespace Chess.View
 {
     public partial class GameSidePanelBotChooseView : UserControl
     {
         private int minutes;
+        public int chosenColor;
+        public string chosenName;
         public GameSidePanelBotChooseView()
         {
             InitializeComponent();
-            string folderPath = "Resources/Grandmasters"; 
-            if (Directory.Exists(folderPath))
-            {
-                var fileNames = Directory.GetFiles(folderPath)
-                                         .Select(System.IO.Path.GetFileNameWithoutExtension) 
-                                         .ToList();
 
-                bots.ItemsSource = fileNames; 
+            var GMs = Constants.Grandmasters.Keys.ToList();
+            bots.ItemsSource = GMs;
+
+            string resource = Pieces.ResourceNames['K'];
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+
+                whiteImg.Source = bitmap;
             }
+
+            resource = Pieces.ResourceNames['k'];
+            assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+
+                blackImg.Source = bitmap;
+            }
+
+            chosenColor = Pieces.White;
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -72,6 +96,18 @@ namespace Chess.View
                 }
                 return 5; 
             }
+        }
+
+        private void SwapColorBlack(object sender, RoutedEventArgs e)
+        {
+            if (chosenColor == Pieces.White)
+                chosenColor = Pieces.Black;
+        }
+
+        private void SwapColorWhite(object sender, RoutedEventArgs e)
+        {
+            if (chosenColor == Pieces.Black)
+                chosenColor = Pieces.White;
         }
     }
 }

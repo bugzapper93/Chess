@@ -24,8 +24,7 @@ namespace Chess.Objects
         private int currentRow = 0;
         private Grid notationGrid;
         private bool useLongNotation = false;
-        private List<(MoveData move, string sanNotation, string longNotation)> moveHistory =
-                new List<(MoveData, string, string)>();
+        private List<MoveData> moveHistory = new List<MoveData>();
         public NotationPanelManager(Grid grid)
         {
             notationGrid = grid;
@@ -35,7 +34,7 @@ namespace Chess.Objects
         {
             string sanNotation = GetAlgebraicNotation(moveData);
             string longNotation = GetLongNotation(moveData);
-            moveHistory.Add((moveData, sanNotation, longNotation));
+            moveHistory.Add(moveData);
 
             if (!isWhiteTurn) // White's move - new row
             {
@@ -170,33 +169,28 @@ namespace Chess.Objects
             }
         }
 
-        private void RefreshNotationDisplay()
+        public void RefreshNotationDisplay()
         {
-            // Clear UI
-            var elementsToRemove = notationGrid.Children
-                .Cast<UIElement>()
-                .Where(el => Grid.GetRow(el) > 0)
-                .ToList();
+            MessageBox.Show($"Refresh 1! {notationGrid.RowDefinitions.Count}");
 
-            foreach (var element in elementsToRemove)
-            {
-                notationGrid.Children.Remove(element);
-            }
+            // Clear existing children and row definitions.
+            notationGrid.Children.Clear();
+            notationGrid.RowDefinitions.Clear();
 
-            while (notationGrid.RowDefinitions.Count > 1)
-            {
-                notationGrid.RowDefinitions.RemoveAt(1);
-            }
-
-            // Rebuild UI with current notation style
+            // Optionally, add a header row if needed. For this example, we start with no header.
             currentRow = 0;
+            MessageBox.Show($"Refresh 2! {notationGrid.RowDefinitions.Count}");
+            // Rebuild the UI using the current move history.
             bool isWhiteTurn = true;
-
-            foreach (var move in moveHistory)
+            foreach (var moveEntry in moveHistory)
             {
-                AddRowToTable(move.move, isWhiteTurn);
+                AddRowToTable(moveEntry, isWhiteTurn);
                 isWhiteTurn = !isWhiteTurn;
             }
+
+            // Force layout update.
+            notationGrid.UpdateLayout();
+            MessageBox.Show($"Refresh 3! {notationGrid.RowDefinitions.Count}");
         }
 
         public string GetLongNotation(MoveData move)

@@ -98,38 +98,73 @@ namespace Chess.View
         {
             if (!canForfeit)
             {
-                _cts = new CancellationTokenSource();
-                int depth = 0;
-                if (AIGame)
-                    depth = botChooseView.SelectedDepth;
-                Board.InitializeGame(
-                            Pieces.White,   
-                            AIGame,         
-                            pvpLAN,         
-                            pvpLocal,      
-                            depth,         
-                            GMAI,           
-                            selectedGM,    
-                            notationManager 
-                        );
-
-                canForfeit = true;
-                GameSidePanelPlayingView();
-                play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
-                play_forfeit.Content = "Forfeit";
-                NotationPanel.Visibility = Visibility.Visible;
-                Board.cancellationTokenSource = _cts;
+                ResetGame();
             }
             else
             {
-                Board.cancellationTokenSource.Cancel();
-                ForfeitPanel.Visibility = Visibility.Visible;
-                NotationPanel.Visibility = Visibility.Hidden;
-                Board.board.InitializeBoard();
-                Board.InitializeBoardView();
-                play_forfeit.Style = (Style)FindResource("BlueButtonStyle");
-                play_forfeit.Content = "Play";
+                ForfeitGame();
             }
+        }
+        private void ResetGame()
+        {
+            _cts = new CancellationTokenSource();
+            int depth = 0;
+            int chosenColor = botChooseView.chosenColor;
+            bool playGM = false;
+            string chosenGM = "";
+            int maxTime = 300;
+            if (botChooseView.FiveMinutesRadioButton.IsChecked.Value)
+            {
+                maxTime = 300;
+            }
+            else
+            {
+                maxTime = 600;
+            }
+            if (botChooseView.GMmodeEnabled != null && botChooseView.bots.SelectedItem != null)
+            {
+                playGM = botChooseView.GMmodeEnabled.IsChecked.Value;
+                chosenGM = botChooseView.bots.SelectedItem.ToString();
+            }
+
+            if (AIGame)
+                depth = botChooseView.SelectedDepth;
+
+            Board.cancellationTokenSource = _cts;
+
+            if (chosenColor == Pieces.Black)
+                Board.FlipBoard();
+
+            Board.InitializeGame(
+                chosenColor,
+                AIGame,
+                pvpLAN,
+                pvpLocal,
+                depth,
+                playGM,
+                chosenGM,
+                notationManager
+            );
+
+            Board.whiteTime = maxTime;
+            Board.blackTime = maxTime;
+
+            canForfeit = true;
+            GameSidePanelPlayingView();
+            play_forfeit.Style = (Style)FindResource("GrayButtonStyle");
+            play_forfeit.Content = "Forfeit";
+            NotationPanel.Visibility = Visibility.Visible;
+        }
+        private void ForfeitGame()
+        {
+            Board.cancellationTokenSource.Cancel();
+            ForfeitPanel.Visibility = Visibility.Visible;
+            NotationPanel.Visibility = Visibility.Hidden;
+            Board.board.InitializeBoard();
+            Board.InitializeBoardView();
+            play_forfeit.Style = (Style)FindResource("BlueButtonStyle");
+            play_forfeit.Content = "Play";
+            Board.timerStarted = false;
         }
         private void UpdateTimerDisplays(int whiteTime, int blackTime)
         {
