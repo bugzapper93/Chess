@@ -15,9 +15,21 @@ namespace Chess.Objects
     {
         public Move move;
         public int piece;
+        public int capturedPiece;
         public bool isWhite;
         public bool capture;
         public bool enPassant;
+        public MoveData Clone()
+        {
+            MoveData copy = new MoveData();
+            copy.move = new Move(this.move.From, this.move.To);
+            copy.piece = this.piece;
+            copy.capturedPiece = this.capturedPiece;
+            copy.isWhite = this.isWhite;
+            copy.capture = this.capture;
+            copy.enPassant = this.enPassant;
+            return copy;
+        }
     }
     public class NotationPanelManager
     {

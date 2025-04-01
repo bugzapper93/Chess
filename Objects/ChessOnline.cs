@@ -29,7 +29,6 @@ namespace Chess.Objects
             _networkManager.OnError += ShowErrorMessage;
         }
 
-
         public async Task SendMoveAsync(Move move)
         {
             if (_networkManager.IsConnected || _networkManager.IsHosting)

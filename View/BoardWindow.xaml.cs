@@ -47,7 +47,11 @@ namespace Chess.View
         private bool pvpLAN;
         private bool pvpLocal;
         ChessAI bot;
-        
+
+        public List<string> PrevMoveCache = new List<string>();
+        public List<(int WhiteTime, int BlackTime)> TimeCache = new List<(int WhiteTime, int BlackTime)>(); 
+        public List<MoveData> movesMade = new List<MoveData>();
+
         List<int> possibleMoves = new List<int>();
 
         public bool started = false;
@@ -148,6 +152,53 @@ namespace Chess.View
 
             notationManager?.ClearNotations(); 
         }
+        public async void GetTip()
+        {
+            Move bestMove = new Move();
+            if (!enableAI)
+            {
+                ChessAI ai = new ChessAI(3, playerColor);
+                
+                bestMove = await ai.GetBestMove(board, playerColor, cancellationTokenSource.Token);
+            }
+            else
+            {
+                bestMove = await bot.GetBestMove(board, playerColor, cancellationTokenSource.Token);
+            }
+            HighlightBoard(bestMove.To);
+        }
+        public void ReverseMove()
+        {
+            if (board.CurrentMoves.Length > 0 && movesMade.Count > 0)
+            {
+                int lastMoveIndex = movesMade.Count - 1;
+
+                // Canceling the AI move
+                cancellationTokenSource.Cancel();
+                
+                
+                whiteTime = TimeCache[lastMoveIndex].WhiteTime;
+                blackTime = TimeCache[lastMoveIndex].BlackTime;
+                board.CurrentMoves = PrevMoveCache[lastMoveIndex];
+                board.UnmakeMove(movesMade[lastMoveIndex], true);
+                board.UpdateMoves();
+                whiteTurn = board.isWhiteTurn;
+
+                movesMade.RemoveAt(lastMoveIndex);
+                TimeCache.RemoveAt(lastMoveIndex);
+                PrevMoveCache.RemoveAt(lastMoveIndex);
+
+                // Redrawing the board
+                display.Children.Clear();
+                DrawChessboard();
+                PlacePieces();
+                cancellationTokenSource = new CancellationTokenSource();
+                if (enableAI)
+                {
+
+                }
+            }
+        }
         public void FlipBoard()
         {
             isBoardFlipped = !isBoardFlipped;
@@ -161,6 +212,8 @@ namespace Chess.View
             {
                 int botColor = playerColor == Pieces.White ? Pieces.Black : Pieces.White;
                 Move move = await bot.GetBestMove(board.Clone(), botColor, cancellationTokenSource.Token);
+                if (cancellationTokenSource.IsCancellationRequested)
+                    return;
                 MovePiece(move, false);
             }
             catch (OperationCanceledException)
@@ -275,10 +328,13 @@ namespace Chess.View
             int targetRow = square / 8;
             int targetColumn = square % 8;
 
+            if (PiecesDisplay[targetRow, targetColumn] == null)
+                return;
             UIElement targetPiece = PiecesDisplay[targetRow, targetColumn];
             var parentCanvas = VisualTreeHelper.GetParent(targetPiece) as Canvas;
             if (parentCanvas == null)
                 return;
+
             parentCanvas.Children.Remove(targetPiece);
             PiecesDisplay[targetRow, targetColumn] = null;
         }
@@ -339,13 +395,17 @@ namespace Chess.View
 
             RepositionPiece(move);
             MoveData moveData = board.MakeMove(move);
+
+            movesMade.Add(moveData.Clone());
+            TimeCache.Add((whiteTime, blackTime));
+
             whiteTurn = board.isWhiteTurn;
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
             board.CurrentMoves += board.CurrentMoves == "" ? $"{moveNotation}" : $",{moveNotation}";
-
+            PrevMoveCache.Add((string)board.CurrentMoves.Clone());
             if (notationManager != null)
             {
-                notationManager.AddRowToTable(moveData, board.isWhiteTurn); 
+                notationManager.AddRowToTable(moveData, whiteTurn);
             }
 
             // Pawn promotion
@@ -389,8 +449,16 @@ namespace Chess.View
             }
             return true;
         }
-        private void HighlightBoard()
+        private void HighlightBoard(int square = -1)
         {
+            if (square != -1)
+            {
+                int row = square / 8;
+                int column = square % 8;
+                Squares[row, column].Fill = Brushes.Gold;
+                return;
+            }
+
             possibleMoves = Helpers.GetPieceMoves(board, selectedSquare, board.isWhiteTurn);
             foreach (int possibleMove in possibleMoves)
             {

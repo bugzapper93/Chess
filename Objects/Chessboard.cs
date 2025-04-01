@@ -76,6 +76,8 @@ namespace Chess.Objects
     }
     public class Chessboard
     {
+        public Chessboard PreviousBoardState;
+
         public ulong WhitePawns;
         public ulong WhiteKnights;
         public ulong WhiteBishops;
@@ -190,6 +192,7 @@ namespace Chess.Objects
             {
                 move = move,
                 piece = 0,
+                capturedPiece = 0,
                 isWhite = isWhiteTurn,
                 capture = false,
                 enPassant = false
@@ -202,6 +205,7 @@ namespace Chess.Objects
 
             if (isWhiteTurn)
             {
+                int targetPiece = Helpers.GetPiece(this, move.To);
                 if ((WhitePawns & fromMask) != 0)
                 {
                     moveData.piece = Pieces.Pawn;
@@ -268,11 +272,14 @@ namespace Chess.Objects
                 {
                     moveData.capture = true;
                     moveData.enPassant = EnPassant;
+                    if (targetPiece != 0)
+                        moveData.capturedPiece = targetPiece;
                     CapturePiece(move.To, EnPassant);
                 }
             }
             else
             {
+                int targetPiece = Helpers.GetPiece(this, move.To);
                 if ((BlackPawns & fromMask) != 0)
                 {
                     moveData.piece = Pieces.Pawn;
@@ -339,6 +346,8 @@ namespace Chess.Objects
                 {
                     moveData.capture = true;
                     moveData.enPassant = EnPassant;
+                    if (targetPiece != 0)
+                        moveData.capturedPiece = targetPiece;
                     CapturePiece(move.To, EnPassant);
                 }
             }
@@ -418,11 +427,12 @@ namespace Chess.Objects
                 BlackKing &= ~mask;
             }
         }
-        public void UnmakeMove(MoveData moveData)
+        public void UnmakeMove(MoveData moveData, bool test = false)
         {
             ulong fromMask = 1UL << moveData.move.From;
             ulong toMask = 1UL << moveData.move.To;
-
+            if (test)
+                MessageBox.Show($"{moveData.move.From}, {moveData.move.To}");
             if (moveData.isWhite)
             {
                 switch (moveData.piece)
@@ -470,7 +480,7 @@ namespace Chess.Objects
                 }
                 if (moveData.capture)
                 {
-                    UncapturePiece(moveData.move.To, moveData.enPassant);
+                    UncapturePiece(moveData);
                 }
             }
             else
@@ -520,15 +530,19 @@ namespace Chess.Objects
                 }
                 if (moveData.capture)
                 {
-                    UncapturePiece(moveData.move.To, moveData.enPassant);
+                    UncapturePiece(moveData);//moveData.move.To, moveData.enPassant);
                 }
             }
             isWhiteTurn = !isWhiteTurn;
             EnPassantSquare = null;
         }
 
-        private void UncapturePiece(int square, bool enPassant = false)
+        private void UncapturePiece(MoveData moveData)//int square, bool enPassant = false)
         {
+            int square = moveData.move.To;
+            bool enPassant = moveData.enPassant;
+            int capturedType = moveData.capturedPiece;
+
             bool captureWhite = isWhiteTurn ? true : false;
             ulong mask = 1UL << square;
 
@@ -536,23 +550,53 @@ namespace Chess.Objects
             {
                 if (enPassant)
                     mask = 1UL << (square - 8);
-                WhitePawns |= mask;
-                WhiteKnights |= mask;
-                WhiteBishops |= mask;
-                WhiteRooks |= mask;
-                WhiteQueens |= mask;
-                WhiteKing |= mask;
+                switch (capturedType)
+                {
+                    case Pieces.Pawn:
+                        WhitePawns |= mask;
+                        break;
+                    case Pieces.Knight:
+                        WhiteKnights |= mask;
+                        break;
+                    case Pieces.Bishop:
+                        WhiteBishops |= mask;
+                        break;
+                    case Pieces.Rook:
+                        WhiteRooks |= mask;
+                        break;
+                    case Pieces.Queen:
+                        WhiteQueens |= mask;
+                        break;
+                    case Pieces.King:
+                        WhiteKing |= mask;
+                        break;
+                }
             }
             else
             {
                 if (enPassant)
                     mask = 1UL << (square + 8);
-                BlackPawns |= mask;
-                BlackKnights |= mask;
-                BlackBishops |= mask;
-                BlackRooks |= mask;
-                BlackQueens |= mask;
-                BlackKing |= mask;
+                switch (capturedType)
+                {
+                    case Pieces.Pawn:
+                        BlackPawns |= mask;
+                        break;
+                    case Pieces.Knight:
+                        BlackKnights |= mask;
+                        break;
+                    case Pieces.Bishop:
+                        BlackBishops |= mask;
+                        break;
+                    case Pieces.Rook:
+                        BlackRooks |= mask;
+                        break;
+                    case Pieces.Queen:
+                        BlackQueens |= mask;
+                        break;
+                    case Pieces.King:
+                        BlackKing |= mask;
+                        break;
+                }
             }
         }
         public bool isCheckMate(Chessboard board)

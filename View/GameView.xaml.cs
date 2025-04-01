@@ -61,12 +61,28 @@ namespace Chess.View
                 GameSidePanelPlayerChooseView();
             }
         }
+
+        public void TipClick(object sender, RoutedEventArgs e)
+        {
+            if (canForfeit)
+            {
+                Board.GetTip();
+            }
+        }
+        public void RevClick(object sender, RoutedEventArgs e)
+        {
+            if (canForfeit)
+            {
+                Board.ReverseMove();
+            }
+        }
+
         public void GameSidePanelBotChooseView()
         {
             botChooseView = new GameSidePanelBotChooseView();
             CC.Content = botChooseView;
         }
-
+        
         public void GameSidePanelPlayerChooseView()
         {
             CC.Content = new GameSidePanelPlayerChooseView();

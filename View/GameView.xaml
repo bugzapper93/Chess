@@ -76,7 +76,7 @@
         <ContentControl x:Name="CC" Margin="442,0,10,57"/>
         <controls:BoardWindow x:Name="Board" Margin="56,34,377,57"/>
         <Button x:Name="play_forfeit" FontWeight="Bold" FontSize="30" Foreground="White" Content="Play" 
-                Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="529,416,0,0" 
+                Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="564,435,0,0" 
                 VerticalAlignment="Top" Height="58" Width="218" Click="play_forfeit_Click"/>
         <Button x:Name="NerdViewButton" Content="Nerd View" Style="{StaticResource BlueButtonStyle}" 
                 FontSize="16" Height="28" Width="104" 
@@ -147,5 +147,7 @@
                 </Button>
             </StackPanel>
         </Border>
+        <Button x:Name="reverseBtn" Click="RevClick" Style="{StaticResource GrayButtonStyle}" Content="Rev" HorizontalAlignment="Left" Margin="502,435,0,0" VerticalAlignment="Top" Height="58" Width="58"/>
+        <Button x:Name="tipBtn" Click="TipClick" Style="{StaticResource BlueButtonStyle}" Content="Tip" HorizontalAlignment="Left" Margin="502,493,0,0" VerticalAlignment="Top" Height="58" Width="58"/>
     </Grid>
 </UserControl>

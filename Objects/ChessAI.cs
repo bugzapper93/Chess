@@ -51,7 +51,7 @@ namespace Chess.Objects
 
                 if (token.IsCancellationRequested)
                 {
-                    Trace.WriteLine("Cancellation requested. Exiting search.");
+                    //Trace.WriteLine("Cancellation requested. Exiting search.");
                     return new Move();
                 }
 
@@ -62,14 +62,14 @@ namespace Chess.Objects
 
                     int moveValue = await Task.Run(() =>
                         Minimax(clone, depth - 1, int.MinValue, int.MaxValue, false, aiColor, token));
-                    Trace.WriteLine("MOVEVALUE: " + moveValue);
+                    //Trace.WriteLine("MOVEVALUE: " + moveValue);
                     lock (lockObj)
                     {
                         int pieceValue = GetPieceValue(Helpers.GetPiece(board, move.From)); // Wartość figury wykonującej ruch
                         if (moveValue > bestValue)
                         {
                             bestValue = moveValue;
-                            Trace.WriteLine("moveValue > bestValue" + moveValue + " " + bestValue);
+                            //Trace.WriteLine("moveValue > bestValue" + moveValue + " " + bestValue);
                             bestMoves.Clear();
                             bestMoves.Add((move, pieceValue));
                         }
@@ -258,7 +258,7 @@ namespace Chess.Objects
                     case Pieces.Pawn: score += 100; break;
                 }
                 score += 2000; // Bonus za bicie
-                Trace.WriteLine("Score za bicie: " + score);
+                //Trace.WriteLine("Score za bicie: " + score);
             }
 
             // Priorytet 3: Obrona króla
@@ -271,14 +271,14 @@ namespace Chess.Objects
             if (safetyAfter > safetyBefore)
             {
                 score += 100; // Bonus za poprawę bezpieczeństwa króla (zgodny z KingSafetyBonus)
-                Trace.WriteLine("Score za obrone króla: " + score);
+                //Trace.WriteLine("Score za obrone króla: " + score);
             }
 
             // Priorytet 4: Roszada
             if (IsCastlingMove(board, move))
             {
                 score += 50; // Bonus za roszadę (zgodny z CastlingBonus)
-                Trace.WriteLine("Score za roszade: " + score);
+                //Trace.WriteLine("Score za roszade: " + score);
             }
 
             // Priorytet 5: Kontrola centrum
@@ -291,7 +291,7 @@ namespace Chess.Objects
                 if (centerControlAfter > centerControlBefore)
                 {
                     score += 15; // Bonus za kontrolę centrum (zgodny z CenterControlBonus)
-                    Trace.WriteLine("Score za centrum: " + score);
+                    //Trace.WriteLine("Score za centrum: " + score);
                 }
             }
 

@@ -8,34 +8,34 @@
              d:DesignHeight="450" d:DesignWidth="833">
     <UserControl.Resources>
         <Style x:Key="NotationCheckBoxStyle" TargetType="CheckBox">
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="HorizontalAlignment" Value="Left"/>
-        <Setter Property="Margin" Value="600,10,0,0"/>
-    </Style>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="600,10,0,0"/>
+        </Style>
 
-    <Style x:Key="NotationScrollViewerStyle" TargetType="ScrollViewer">
-        <Setter Property="Background" Value="#333"/>
-        <Setter Property="BorderBrush" Value="#49c3d8"/>
-        <Setter Property="BorderThickness" Value="2"/>
-        <Setter Property="Margin" Value="600,35,30,35"/>
-        <Setter Property="MaxHeight" Value="300"/>
-        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
-        <Setter Property="Padding" Value="5"/>
-    </Style>
+        <Style x:Key="NotationScrollViewerStyle" TargetType="ScrollViewer">
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="BorderBrush" Value="#49c3d8"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Margin" Value="600,35,30,35"/>
+            <Setter Property="MaxHeight" Value="300"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
 
-    <Style x:Key="NotationHeaderTextBlockStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Margin" Value="5"/>
-        <Setter Property="Padding" Value="5,2"/>
-        <Setter Property="Background" Value="#444"/>
-        <Setter Property="HorizontalAlignment" Value="Center"/>
-    </Style>
+        <Style x:Key="NotationHeaderTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5,2"/>
+            <Setter Property="Background" Value="#444"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <CheckBox x:Name="notationType" Content="Long notation" 
