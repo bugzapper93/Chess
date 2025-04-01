@@ -17,6 +17,7 @@ namespace Chess.View
         Style styleBlue;
         Style styleGray;
         Style styleGreen;
+        Style styleOrange;
         public MpPanelView()
         {
             InitializeComponent();
@@ -27,6 +28,7 @@ namespace Chess.View
                 styleBlue = this.FindResource("BlueButtonStyle") as Style;
                 styleGray = this.FindResource("GrayButtonStyle") as Style; 
                 styleGreen = this.FindResource("GreenButtonStyle") as Style;
+                styleOrange = this.FindResource("OrangeButtonStyle") as Style;
             }
 
         }
@@ -86,6 +88,8 @@ namespace Chess.View
             {
                 btnHost.IsEnabled = false;
                 btnHost.Style = styleGray;
+                btnJoin.Style = styleGray;
+                btnRefresh.Style = styleGray;
                 await _chessOnline._networkManager.StartHostingAsync(nickname);
                 MessageBox.Show("Hosting started successfully!");
                 playerColor = Pieces.White;
@@ -96,6 +100,8 @@ namespace Chess.View
                 await _chessOnline._networkManager.LeaveAsync(nickname);
                 btnHost.IsEnabled = true;
                 btnHost.Style = styleBlue;
+                btnJoin.Style = styleGreen;
+                btnRefresh.Style = styleOrange;
             }
         }
 
@@ -124,6 +130,9 @@ namespace Chess.View
                 await _chessOnline._networkManager.JoinLobbyAsync(nickname, ip, hostNickname);
                 MessageBox.Show($"Joined {ip}! Press 'Leave' to exit.");
                 playerColor = Pieces.Black;
+                btnHost.Style = styleGray;
+                btnJoin.Style = styleGray;
+                btnRefresh.Style = styleGray;
             }
             catch (Exception ex)
             {
@@ -139,6 +148,9 @@ namespace Chess.View
                 lstGracze.Items.Clear();
                 playersGroupBox.Header = "Players (0)";
                 MessageBox.Show("Left the lobby.");
+                btnHost.Style = styleBlue;
+                btnJoin.Style = styleGreen;
+                btnRefresh.Style = styleOrange;
             }
             catch (Exception ex)
             {

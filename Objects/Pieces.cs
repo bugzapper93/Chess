@@ -14,6 +14,9 @@ namespace Chess.Objects
     }
     class Pieces
     {
+        /// <summary>
+        /// Słownik zawierający notacje figur
+        /// </summary>
         public static Dictionary<char, int> PieceNotation = new Dictionary<char, int>
         {
             { 'k', King | Black },
@@ -44,17 +47,16 @@ namespace Chess.Objects
             { 'R', "Chess.Resources.Images.rook_white.png" },
             { 'Q', "Chess.Resources.Images.queen_white.png" }
         };
+
+        // Przypisane figurom i kolorom liczby
         public const int King = 1;
         public const int Pawn = 2;
         public const int Knight = 3;
         public const int Bishop = 4;
         public const int Rook = 5;
         public const int Queen = 6;
-
         public const int White = 8;
         public const int Black = 16;
-
-        public const string DefaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
         public static char GetPieceNotation(int piece, bool isWhite)
         {
@@ -66,6 +68,11 @@ namespace Chess.Objects
             }
             return default;
         }
+        /// <summary>
+        /// Funkcja służąca znajdowaniu notacji figury na podstawie jej przypisanej liczby
+        /// </summary>
+        /// <param name="value">Liczba przypisana figurze</param>
+        /// <returns>Notację figury</returns>
         public static string PieceValueToString(int value)
         {
             foreach (var entry in PieceNotation)

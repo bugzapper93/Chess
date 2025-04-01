@@ -10,6 +10,9 @@ using System.Windows.Documents;
 
 namespace Chess.Objects
 {
+    /// <summary>
+    /// Klasa reprezentująca zbiór wszystkich możliwych ruchów dla planszy
+    /// </summary>
     public class LegalMoves
     {
         public List<Move> WhitePawnMoves = new List<Move>();
@@ -25,6 +28,10 @@ namespace Chess.Objects
         public List<Move> BlackRookMoves = new List<Move>();
         public List<Move> BlackQueenMoves = new List<Move>();
         public List<Move> BlackKingMoves = new List<Move>();
+        /// <summary>
+        /// Metoda służąca klonowaniu klasy
+        /// </summary>
+        /// <returns>'Deep copy' klasy</returns>
         public LegalMoves Clone()
         {
             LegalMoves clone = new LegalMoves
@@ -45,6 +52,10 @@ namespace Chess.Objects
             };
             return clone;
         }
+        /// <summary>
+        /// Metoda służąca przekształcaniu klasy w listę ruchów bez podziału na figury
+        /// </summary>
+        /// <returns>Listę wszystkich możliwych ruchów</returns>
         public List<Move> GetAllMoves()
         {
             List<Move> allMoves = new List<Move>();
@@ -64,6 +75,11 @@ namespace Chess.Objects
 
             return allMoves;
         }
+        /// <summary>
+        /// Metoda grupująca wszystkie ruchy które skutkują zbiciem figury
+        /// </summary>
+        /// <param name="board">Szachownica dla której testowane są ruchy</param>
+        /// <returns>Wszystkie ruchy, które skutkują zbiciem figury</returns>
         public List<Move> GetAllCaptureMoves(Chessboard board)
         {
             List<Move> allMoves = GetAllMoves();
@@ -74,6 +90,9 @@ namespace Chess.Objects
             return captureMoves;
         }
     }
+    /// <summary>
+    /// Klasa reprezentująca szachownicę
+    /// </summary>
     public class Chessboard
     {
         public Chessboard PreviousBoardState;
@@ -161,31 +180,19 @@ namespace Chess.Objects
                 CurrentMoves = (string)this.CurrentMoves.Clone()
             };
         }
-        public ulong ComputeHash()
-        {
-            ulong hash = 0;
-
-            hash ^= Helpers.ComputePieceHash(WhitePawns, 0);
-            hash ^= Helpers.ComputePieceHash(WhiteKnights, 1);
-            hash ^= Helpers.ComputePieceHash(WhiteBishops, 2);
-            hash ^= Helpers.ComputePieceHash(WhiteRooks, 3);
-            hash ^= Helpers.ComputePieceHash(WhiteQueens, 4);
-            hash ^= Helpers.ComputePieceHash(WhiteKing, 5);
-
-            hash ^= Helpers.ComputePieceHash(BlackPawns, 6);
-            hash ^= Helpers.ComputePieceHash(BlackKnights, 7);
-            hash ^= Helpers.ComputePieceHash(BlackBishops, 8);
-            hash ^= Helpers.ComputePieceHash(BlackRooks, 9);
-            hash ^= Helpers.ComputePieceHash(BlackQueens, 10);
-            hash ^= Helpers.ComputePieceHash(BlackKing, 11);
-
-            return hash;
-        }
+        /// <summary>
+        /// Metoda aktualizująca zbiór dozwolonych ruchów
+        /// </summary>
         public void UpdateMoves()
         {
             LegalMoves = Moves.GenerateLegalMoves(this);
         }
         
+        /// <summary>
+        /// Metoda wykonująca ruch i zmieniająca stan planszy
+        /// </summary>
+        /// <param name="move">Ruch do wykonania</param>
+        /// <returns>Informacje o wykonanym ruchu</returns>
         public MoveData MakeMove(Move move)
         {
             MoveData moveData = new MoveData
@@ -356,7 +363,13 @@ namespace Chess.Objects
                 UpdateMoves();
             return moveData;
         }
-        public void PromotePawn(int square, int pieceType = Pieces.Queen, bool isWhite = true) // Dodaj parametr isWhite
+        /// <summary>
+        /// Metoda promująca pionka
+        /// </summary>
+        /// <param name="square">Pole, na którym znajduje się pionek</param>
+        /// <param name="pieceType">Figura, w którą promowany jest pionek</param>
+        /// <param name="isWhite">Czy promowany jest biały pionek</param>
+        public void PromotePawn(int square, int pieceType = Pieces.Queen, bool isWhite = true)
         {
             int row = square / 8;
             int col = square % 8;
@@ -389,6 +402,11 @@ namespace Chess.Objects
 
             UpdateMoves();
         }
+        /// <summary>
+        /// Zbijanie figury
+        /// </summary>
+        /// <param name="square">Pole, na którym znajduje się zbijana figura</param>
+        /// <param name="enPassant">Czy ruch to en passant</param>
         public void CapturePiece(int square, bool enPassant = false)
         {
             bool captureWhite = isWhiteTurn ? false : true;
@@ -417,12 +435,14 @@ namespace Chess.Objects
                 BlackKing &= ~mask;
             }
         }
-        public void UnmakeMove(MoveData moveData, bool test = false)
+        /// <summary>
+        /// Metoda cofająca ruch
+        /// </summary>
+        /// <param name="moveData">Ruch, który należy cofnąć</param>
+        public void UnmakeMove(MoveData moveData)
         {
             ulong fromMask = 1UL << moveData.move.From;
             ulong toMask = 1UL << moveData.move.To;
-            if (test)
-                MessageBox.Show($"{moveData.move.From}, {moveData.move.To}");
             if (moveData.isWhite)
             {
                 switch (moveData.piece)
@@ -520,14 +540,17 @@ namespace Chess.Objects
                 }
                 if (moveData.capture)
                 {
-                    UncapturePiece(moveData);//moveData.move.To, moveData.enPassant);
+                    UncapturePiece(moveData);
                 }
             }
             isWhiteTurn = !isWhiteTurn;
             EnPassantSquare = null;
         }
-
-        private void UncapturePiece(MoveData moveData)//int square, bool enPassant = false)
+        /// <summary>
+        /// Metoda cofająca zbicie figury
+        /// </summary>
+        /// <param name="moveData">Ruch (zbicie), które jest cofane</param>
+        private void UncapturePiece(MoveData moveData)
         {
             int square = moveData.move.To;
             bool enPassant = moveData.enPassant;
@@ -589,6 +612,11 @@ namespace Chess.Objects
                 }
             }
         }
+        /// <summary>
+        /// Metoda sprawdzająca, czy doszło do matu
+        /// </summary>
+        /// <param name="board">Szachownica, dla której sprawdzany jest mat</param>
+        /// <returns>Czy nastąpił mat</returns>
         public bool isCheckMate(Chessboard board)
         {
             if (Helpers.GetMoveCount(board) == 0)
@@ -600,6 +628,11 @@ namespace Chess.Objects
             }
             return false;
         }
+        /// <summary>
+        /// Metoda sprawdzająca, czy doszło do patu (remisu)
+        /// </summary>
+        /// <param name="board">Szachownica, dla której sprawdzany jest pat</param>
+        /// <returns>Czy doszło do patu</returns>
         public bool isStaleMate(Chessboard board)
         {
             if (Helpers.GetMoveCount(board) == 0 && !Helpers.isKingInCheck(board, board.isWhiteTurn))

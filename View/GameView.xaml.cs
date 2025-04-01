@@ -180,8 +180,7 @@ namespace Chess.View
 
                 if (AIGame)
                     depth = botChooseView.SelectedDepth;
-
-                Board.cancellationTokenSource = _cts;
+                
                 // Koniec rzeczy dla AI
             }
             if (pvpLocal || AIGame)

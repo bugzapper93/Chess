@@ -21,6 +21,11 @@ namespace Chess.Tools
 {
     public static class Helpers
     {
+        /// <summary>
+        /// Funkcja skanująca po bitboardzie
+        /// </summary>
+        /// <param name="bitboard">Bitboard do przeskanowania</param>
+        /// <returns>Indeks, na którym bit jest niezerowy</returns>
         public static int BitScan(ulong bitboard)
         {
             for (int i = 0; i < 64; i++)
@@ -31,6 +36,12 @@ namespace Chess.Tools
             return -1;
         }
         #region Getting piece and move data
+        /// <summary>
+        /// Funkcja znajdująca typ figury na danym polu
+        /// </summary>
+        /// <param name="board">Szachownica, na której szukana jest figura</param>
+        /// <param name="square">Sprawdzane pola</param>
+        /// <returns>Typ figury, lub 0, jeśli żadnej nie znaleziono</returns>
         public static int GetPiece(Chessboard board, int square)
         {
             ulong mask = 1UL << square;
@@ -48,6 +59,12 @@ namespace Chess.Tools
                 return Pieces.King;
             return 0;
         }
+        /// <summary>
+        /// Funkcja znajdująca kolor figury na danym polu
+        /// </summary>
+        /// <param name="board">Szachownica, na której szukana jest figura</param>
+        /// <param name="square">Sprawdzane pola</param>
+        /// <returns>Kolor figury, lub 0 jeśli jej nie znaleziono</returns>
         public static int GetPieceColor(Chessboard board, int square)
         {
             ulong mask = 1UL << square;
@@ -57,6 +74,12 @@ namespace Chess.Tools
                 return Pieces.Black;
             return 0;
         }
+        /// <summary>
+        /// Funkcja służąca znalezieniu notacji figury
+        /// </summary>
+        /// <param name="square">Sprawdzane pole</param>
+        /// <param name="board">Przeszukiwana szachownica</param>
+        /// <returns>Notację figury</returns>
         public static char GetPieceAt(int square, Chessboard board)
         {
             ulong mask = 1UL << square;
@@ -80,6 +103,12 @@ namespace Chess.Tools
             }
             return ' ';
         }
+        /// <summary>
+        /// Funkcja sprawdzająca, czy ruch będzie skutkował zbiciem figury
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <param name="move">Wykonywany ruch</param>
+        /// <returns></returns>
         public static bool IsMoveCapture(Chessboard board, Move move)
         {
             ulong mask = 1UL << move.To;
@@ -87,6 +116,11 @@ namespace Chess.Tools
                 return true;
             return false;
         }
+        /// <summary>
+        /// Funkcja skanująca bitboard w poszukiwaniu ostatniego niezerowego indeksu
+        /// </summary>
+        /// <param name="bitboard">Skanowany bitboard</param>
+        /// <returns>Ostatni niezerowy indeks bitboardu</returns>
         private static int BitScanForward(ulong bitboard)
         {
             if (bitboard == 0) return -1;
@@ -98,20 +132,15 @@ namespace Chess.Tools
             }
             return index;
         }
-        public static ulong ComputePieceHash(ulong bitboard, int index)
-        {
-            ulong hash = 0;
-            ulong bitboardCopy = bitboard;
-            while (bitboardCopy != 0)
-            {
-                int square = BitScanForward(bitboardCopy);
-                hash ^= Constants.ZobristTable[index, square];
-                bitboardCopy &= bitboardCopy - 1;
-            }
-            return hash;
-        }
         #endregion
         #region Move validation
+        /// <summary>
+        /// Walidacja zbijania przez pionek
+        /// </summary>
+        /// <param name="fromSquare">Pole startowe</param>
+        /// <param name="toSquare">Zbijane pole</param>
+        /// <param name="enemyIsWhite">Czy figura przeciwnika jest biała</param>
+        /// <returns></returns>
         public static bool isPawnCaptureValid(int fromSquare, int toSquare, bool enemyIsWhite = false)
         {
             if (!isOnBoard(toSquare))
@@ -120,6 +149,12 @@ namespace Chess.Tools
             int toFile = toSquare % 8;
             return Math.Abs(fromFile - toFile) == 1;
         }
+        /// <summary>
+        /// Funkcja zapobiegająca 'zawijaniu' ruchu króla na planszy
+        /// </summary>
+        /// <param name="from">Pole startowe</param>
+        /// <param name="to">Pole docelowe</param>
+        /// <returns>Czy ruch króla jest prawidłowy</returns>
         public static bool IsKingMoveInBounds(int from, int to)
         {
             if (!isOnBoard(to))
@@ -131,6 +166,12 @@ namespace Chess.Tools
 
             return Math.Abs(fromRank - toRank) <= 1 && Math.Abs(fromFile - toFile) <= 1;
         }
+        /// <summary>
+        /// Funkcja zapobiegająca 'zawijaniu' ruchu skoczka na planszy 
+        /// </summary>
+        /// <param name="from">Pole startowe</param>
+        /// <param name="to">Pole docelowe</param>
+        /// <returns>Czy ruch skoczka jest prawidłowy</returns>
         public static bool isKnightMoveInBounds(int from, int to)
         {
             if (!isOnBoard(to))
@@ -145,6 +186,13 @@ namespace Chess.Tools
 
             return (rankDiff == 2 && fileDiff == 1) || (rankDiff == 1 && fileDiff == 2);
         }
+        /// <summary>
+        /// Funkcja zapobiegająca 'zawijaniu' ruchu figury przesuwającej się
+        /// </summary>
+        /// <param name="from">Pole startowe</param>
+        /// <param name="target">Pole docelowe</param>
+        /// <param name="dir">Kierunek ruchu</param>
+        /// <returns>Czy ruch przesuwający jest prawidłowy</returns>
         public static bool isSlidingMoveInBounds(int from, int target, int dir)
         {
             if (!isOnBoard(target))
@@ -162,15 +210,20 @@ namespace Chess.Tools
                 return true;
             return true;
         }
+        /// <summary>
+        /// Sprawdza, czy pole jest na szachownicy
+        /// </summary>
+        /// <param name="square">Pole</param>
+        /// <returns>Pole znajduje się na szachownicy</returns>
         public static bool isOnBoard(int square)
         {
             return square >= 0 && square < 64;
         }
         
         /// <summary>
-        /// Checks whether castling is valid.
+        /// Sprawdza, czy roszada jest prawidłowa, i dla których wież
         /// </summary>
-        /// <param name="board"></param>
+        /// <param name="board">Szachownica</param>
         /// <param name="isWhite"></param>
         /// <returns>A boolean pair, with index 0 being queenside castling, and 1 being kingside castling.</returns>
         public static bool[] isCastlingValid(Chessboard board)
@@ -253,6 +306,12 @@ namespace Chess.Tools
             }
             return valid;
         }
+        /// <summary>
+        /// Funkcja sprawdzająca, czy king jest w szachu przez skanowanie pobliskich pól
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <param name="isWhite">Czy sprawdzany jest szach dla białego króla</param>
+        /// <returns>Czy king jest w szachu</returns>
         public static bool isKingInCheck(Chessboard board, bool isWhite)
         {
             int kingSquare = BitScan(isWhite ? board.WhiteKing : board.BlackKing);
@@ -379,6 +438,13 @@ namespace Chess.Tools
             return false;
         }
         #endregion
+        /// <summary>
+        /// Funkcja znajdująca wszystkie pola docelowe ruchów figury
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <param name="startSquare">Pole figury</param>
+        /// <param name="isWhite">Czy figura jest biała</param>
+        /// <returns>Lista wszystkich pól końcowych ruchów figury</returns>
         public static List<int> GetPieceMoves(Chessboard board, int startSquare, bool isWhite)
         {
             List<int> targetSquares = new List<int>();
@@ -448,6 +514,11 @@ namespace Chess.Tools
             }
             return targetSquares;
         }
+        /// <summary>
+        /// Funkcja znajdująca liczbę możliwych ruchów, służy sprawdzaniu matu
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <returns>Liczbę prawidłowych ruchów</returns>
         public static int GetMoveCount(Chessboard board)
         {
             int moveCount = 0;
@@ -473,6 +544,11 @@ namespace Chess.Tools
             return moveCount;
         }
         #region Displaying the pieces
+        /// <summary>
+        /// Funkcja generująca tablicę z notacją figur odpowiadającą obecnemu stanowi szachownicy, np. ['R', 'N', 'B', ...]
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <returns>Tablica z notacją figur</returns>
         public static char[] GetPieceArray(Chessboard board)
         {
             char[] pieces = new char[64];
@@ -508,6 +584,11 @@ namespace Chess.Tools
             }
             return pieces;
         }
+        /// <summary>
+        /// Funkcja służąca generowaniu panelu figury do interfejsu
+        /// </summary>
+        /// <param name="pieceChar">Notacja figury</param>
+        /// <returns>Element interfejsu</returns>
         public static Rectangle GeneratePiece(char pieceChar)
         {
             string resource = Pieces.ResourceNames[pieceChar];
@@ -529,10 +610,11 @@ namespace Chess.Tools
         #endregion
         #region Grandmaster mode helpers
         /// <summary>
-        /// Function for getting all the game records of a chosen grandmaster
+        /// Funkcja wczytująca wszystkie gry arcymistrza z pliku
         /// </summary>
-        /// <param name="grandmasterName"></param>
-        /// <returns></returns>
+        /// <param name="grandmasterName">Imię arcymistrza</param>
+        /// <param name="playerColor">Kolor gracza</param>
+        /// <returns>Wszystkie gry arcymistrza, posortowane od zwycięskich do przegranych</returns>
         public static List<string> GetPlayerRecords(string grandmasterName, int playerColor)
         {
             string path = "Resources/Grandmasters/" + Constants.Grandmasters[grandmasterName];

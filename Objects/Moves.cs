@@ -15,6 +15,9 @@ using System.Windows.Input;
 
 namespace Chess.Objects
 {
+    /// <summary>
+    /// Struktura reprezentująca ruch
+    /// </summary>
     public struct Move
     {
         public int From;
@@ -38,6 +41,9 @@ namespace Chess.Objects
             return rank * 8 + file;
         }
     }
+    /// <summary>
+    /// Klasa reprezentująca pojedynczą grę rozegraną przez arcymistrza
+    /// </summary>
     public class GameRecord
     {
         public string white { get; set; }
@@ -49,8 +55,16 @@ namespace Chess.Objects
     {
         public List<List<Move>> moves;
     }
+    /// <summary>
+    /// Klasa zawierająca metody do generowania ruchów dla figur, oraz ich walidacji
+    /// </summary>
     public static class Moves
     {
+        /// <summary>
+        /// Funkcja generująca wszystkie prawidłowe ruchy
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane będą ruchy</param>
+        /// <returns>Zbiór wszystkich prawidłowych ruchów</returns>
         public static LegalMoves GenerateLegalMoves(Chessboard board)
         {
             LegalMoves legalMoves = new LegalMoves();
@@ -124,7 +138,13 @@ namespace Chess.Objects
             
             return legalMoves;
         }
-
+        /// <summary>
+        /// Weryfikuje ruch przez symulowanie planszy i sprawdzania, czy ma miejsce szach
+        /// </summary>
+        /// <param name="board">Szachownica na której wykonany będzie ruch</param>
+        /// <param name="move">Ruch do weryfikacji</param>
+        /// <param name="isWhite">Czy rusza się figura biała</param>
+        /// <returns>Poprawność ruchu</returns>
         public static bool ValidateMove(Chessboard board, Move move, bool isWhite)
         {
             Chessboard boardClone = board.Clone();
@@ -134,7 +154,13 @@ namespace Chess.Objects
 
             return !Helpers.isKingInCheck(boardClone, isWhite);
         }
-       
+        #region Move generation 
+        /// <summary>
+        /// Funkcja generująca wszystkie możliwe ruchy dla pionków
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane są ruchy</param>
+        /// <param name="isWhite">Czy poruszają się białe</param>
+        /// <returns>Listę możliwych ruchów</returns>
         private static List<Move> GeneratePawnMoves(Chessboard board, bool isWhite)
         {
             List<Move> moves = new List<Move>();
@@ -223,6 +249,12 @@ namespace Chess.Objects
             }
             return moves;
         }
+        /// <summary>
+        /// Funkcja generująca wszystkie możliwe ruchy dla króla
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane są ruchy</param>
+        /// <param name="isWhite">Czy poruszają się białe</param>
+        /// <returns>Listę możliwych ruchów</returns>
         private static List<Move> GenerateKingMoves(Chessboard board, bool isWhite)
         {
             List<Move> moves = new List<Move>();
@@ -254,6 +286,12 @@ namespace Chess.Objects
                 moves.Add(new Move(kingSquare, kingSquare + 2));
             return moves;
         }
+        /// <summary>
+        /// Funkcja generująca wszystkie możliwe ruchy dla skoczków
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane są ruchy</param>
+        /// <param name="isWhite">Czy poruszają się białe</param>
+        /// <returns>Listę możliwych ruchów</returns>
         private static List<Move> GenerateKnightMoves(Chessboard board, bool isWhite)
         {
             List<Move> moves = new List<Move>();
@@ -280,6 +318,12 @@ namespace Chess.Objects
             }
             return moves;
         }
+        /// <summary>
+        /// Funkcja generująca wszystkie możliwe ruchy dla gońców
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane są ruchy</param>
+        /// <param name="isWhite">Czy poruszają się białe</param>
+        /// <returns>Listę możliwych ruchów</returns>
         private static List<Move> GenerateBishopMoves(Chessboard board, bool isWhite)
         {
             List<Move> moves = new List<Move>();
@@ -293,6 +337,12 @@ namespace Chess.Objects
             }
             return moves;
         }
+        /// <summary>
+        /// Funkcja generująca wszystkie możliwe ruchy dla wieży
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane są ruchy</param>
+        /// <param name="isWhite">Czy poruszają się białe</param>
+        /// <returns>Listę możliwych ruchów</returns>
         private static List<Move> GenerateRookMoves(Chessboard board, bool isWhite)
         {
             List<Move> moves = new List<Move>();
@@ -306,6 +356,12 @@ namespace Chess.Objects
             }
             return moves;
         }
+        /// <summary>
+        /// Funkcja generująca wszystkie możliwe ruchy dla królowej
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane są ruchy</param>
+        /// <param name="isWhite">Czy poruszają się białe</param>
+        /// <returns>Listę możliwych ruchów</returns>
         private static List<Move> GenerateQueenMoves(Chessboard board, bool isWhite)
         {
             List<Move> moves = new List<Move>();
@@ -319,6 +375,14 @@ namespace Chess.Objects
             }
             return moves;
         }
+        /// <summary>
+        /// Funkcja generująca wszystkie ruchy dla figury 'przesuwających się' po szachownicy
+        /// </summary>
+        /// <param name="board">Szachownica dla której generowane są ruchy</param>
+        /// <param name="from">Punkt startowy</param>
+        /// <param name="directions">Tablica dozwolonych kierunków poruszania się figury</param>
+        /// <param name="isWhite">Czy poruszają się białe</param>
+        /// <returns>Listę możliwych ruchów</returns>
         private static List<Move> GenerateSlidingMoves(Chessboard board, int from, int[] directions, bool isWhite)
         {
             List<Move> moves = new List<Move>();
@@ -349,6 +413,14 @@ namespace Chess.Objects
             }
             return moves;
         }
+        #endregion
+        #region Grandmaster mode
+        /// <summary>
+        /// Funkcja znajdująca notację następnego ruchu na podstawie listy gier
+        /// </summary>
+        /// <param name="currentMoves">Wykonane dotychczas ruchy zapisane w notacji krótkiej oddzielone przecinkiem, np. e4,e5</param>
+        /// <param name="grandmasterMoves">Lista wszystkich wczytanych gier arcymistrza</param>
+        /// <returns>Notację następnego ruchu</returns>
         public static string GetNextMove(string currentMoves, List<string> grandmasterMoves)
         {
             int index = grandmasterMoves.FindIndex(move => move.StartsWith(currentMoves));
@@ -378,6 +450,13 @@ namespace Chess.Objects
             }
         }
 
+        /// <summary>
+        /// Funkcja znajdująca odpowiedni ruch na podstawie notacji
+        /// </summary>
+        /// <param name="notation">Notacja ruchu</param>
+        /// <param name="board">Szachownica na podstawie której znajdowany będzie ruch</param>
+        /// <returns>Ruch wynikający z notacji</returns>
+        /// <exception cref="Exception"></exception>
         public static Move GetMoveFromNotation(string notation, Chessboard board)
         {
             notation = notation.Replace("+", "").Replace("#", "").Replace("x", "");
@@ -426,5 +505,6 @@ namespace Chess.Objects
                 throw new Exception("Ambiguous move notation: " + notation);
             }
         }
+        #endregion
     }
 }

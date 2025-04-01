@@ -182,7 +182,7 @@ namespace Chess.View
                 whiteTime = TimeCache[lastMoveIndex].WhiteTime;
                 blackTime = TimeCache[lastMoveIndex].BlackTime;
                 board.CurrentMoves = PrevMoveCache[lastMoveIndex];
-                board.UnmakeMove(movesMade[lastMoveIndex], true);
+                board.UnmakeMove(movesMade[lastMoveIndex]);
                 board.UpdateMoves();
                 whiteTurn = board.isWhiteTurn;
 
@@ -195,10 +195,6 @@ namespace Chess.View
                 DrawChessboard();
                 PlacePieces();
                 cancellationTokenSource = new CancellationTokenSource();
-                if (enableAI)
-                {
-
-                }
             }
         }
         public void FlipBoard()
