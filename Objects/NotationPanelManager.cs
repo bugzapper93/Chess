@@ -37,23 +37,22 @@ namespace Chess.Objects
         private Grid notationGrid;
         private bool useLongNotation = false;
         private List<MoveData> moveHistory = new List<MoveData>();
-        public NotationPanelManager(Grid grid)
+        public NotationPanelManager(Grid grid, List<MoveData> movesMade)
         {
             notationGrid = grid;
+            moveHistory = movesMade;
         }
 
         public void AddRowToTable(MoveData moveData, bool isWhiteTurn)
         {
             string sanNotation = GetAlgebraicNotation(moveData);
             string longNotation = GetLongNotation(moveData);
-            moveHistory.Add(moveData);
 
-            if (!isWhiteTurn) // White's move - new row
+            if (!isWhiteTurn)
             {
                 notationGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 int rowIndex = currentRow + 1;
 
-                // Add move number
                 TextBlock indexLabel = new TextBlock
                 {
                     Text = (currentRow + 1).ToString() + ".",
@@ -64,7 +63,6 @@ namespace Chess.Objects
                 Grid.SetColumn(indexLabel, 0);
                 notationGrid.Children.Add(indexLabel);
 
-                // Add white's move
                 TextBlock whiteMoveLabel = new TextBlock
                 {
                     Text = useLongNotation ? longNotation : sanNotation,
@@ -75,7 +73,6 @@ namespace Chess.Objects
                 Grid.SetColumn(whiteMoveLabel, 1);
                 notationGrid.Children.Add(whiteMoveLabel);
 
-                // Add empty black's move (will be filled later)
                 TextBlock blackMoveLabel = new TextBlock
                 {
                     Text = "",
@@ -86,7 +83,7 @@ namespace Chess.Objects
                 Grid.SetColumn(blackMoveLabel, 2);
                 notationGrid.Children.Add(blackMoveLabel);
             }
-            else // Black's move - update existing row
+            else
             {
                 int rowIndex = currentRow + 1;
                 var blackMoveLabel = notationGrid.Children
@@ -101,7 +98,17 @@ namespace Chess.Objects
                 currentRow++;
             }
         }
+        private void UpdateTextBlock(int row, int column, string text)
+        {
+            var textBlock = notationGrid.Children
+                .OfType<TextBlock>()
+                .FirstOrDefault(tb => Grid.GetRow(tb) == row && Grid.GetColumn(tb) == column);
 
+            if (textBlock != null)
+            {
+                textBlock.Text = text;
+            }
+        }
         public static string GetAlgebraicNotation(MoveData move)
         {
             bool isPawnMove = move.piece == Pieces.Pawn;
@@ -183,28 +190,39 @@ namespace Chess.Objects
 
         public void RefreshNotationDisplay()
         {
-            MessageBox.Show($"Refresh 1! {notationGrid.RowDefinitions.Count}");
-
-            // Clear existing children and row definitions.
-            notationGrid.Children.Clear();
-            notationGrid.RowDefinitions.Clear();
-
-            // Optionally, add a header row if needed. For this example, we start with no header.
-            currentRow = 0;
-            MessageBox.Show($"Refresh 2! {notationGrid.RowDefinitions.Count}");
-            // Rebuild the UI using the current move history.
             bool isWhiteTurn = true;
-            foreach (var moveEntry in moveHistory)
+            int moveIndex = 0;
+            var moveHistoryCopy = moveHistory.ToList(); 
+
+            foreach (var moveEntry in moveHistoryCopy)
             {
-                AddRowToTable(moveEntry, isWhiteTurn);
+                string notation = useLongNotation ? GetLongNotation(moveEntry) : GetAlgebraicNotation(moveEntry);
+                int rowIndex = moveIndex / 2 + 1;
+
+                if (isWhiteTurn && moveIndex % 2 == 0)
+                {
+                    if (notationGrid.RowDefinitions.Count <= rowIndex)
+                    {
+                        notationGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                        AddRowToTable(moveEntry, isWhiteTurn);
+                    }
+                    else
+                    {
+                        UpdateTextBlock(rowIndex, 1, notation);
+                    }
+                }
+                else
+                {
+                    UpdateTextBlock(rowIndex, 2, notation);
+                    currentRow = rowIndex - 1;
+                }
+
                 isWhiteTurn = !isWhiteTurn;
+                moveIndex++;
             }
 
-            // Force layout update.
             notationGrid.UpdateLayout();
-            MessageBox.Show($"Refresh 3! {notationGrid.RowDefinitions.Count}");
         }
-
         public string GetLongNotation(MoveData move)
         {
             int start = move.move.From;
@@ -216,13 +234,22 @@ namespace Chess.Objects
             string startSquare = Move.SquareToString(start);
             string endSquare = Move.SquareToString(end);
 
-            string notation = pieceNotation + startSquare;
+            if (pieceType == Pieces.King && Math.Abs(end - start) == 2)
+            {
+                return end > start ? "O-O" : "O-O-O"; 
+            }
 
-            if (move.capture)
+            string notation = pieceNotation + startSquare;
+            if (move.capture || move.enPassant)
             {
                 notation += "x";
             }
             notation += endSquare;
+
+            if (move.enPassant)
+            {
+                notation += "(e.p.)";
+            }
 
             return notation;
         }

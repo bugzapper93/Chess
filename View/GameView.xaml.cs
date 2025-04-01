@@ -45,13 +45,18 @@ namespace Chess.View
             if (NotationPanel is GameSidePanelPlayingView notationPanel)
             {
                 notationPanel.SetBoardWindow(Board);
-                notationManager = new NotationPanelManager(notationPanel.NotationGrid);
+                notationManager = new NotationPanelManager(notationPanel.NotationGrid, Board.movesMade);
             }
             NotationPanel.Visibility = Visibility.Hidden;
         }
         public void Initialize()
         {
             Board.InitializeBoardView();
+            if (NotationPanel is GameSidePanelPlayingView notationPanel)
+            {
+                notationPanel.SetBoardWindow(Board);
+                notationManager = new NotationPanelManager(notationPanel.NotationGrid, Board.movesMade); 
+            }
             if (AIGame)
                 GameSidePanelBotChooseView();
             else if (pvpLocal)
@@ -90,7 +95,7 @@ namespace Chess.View
 
         public void GameSidePanelPlayingView()
         {
-            var playingView = new GameSidePanelPlayingView(Board);
+            var playingView = new GameSidePanelPlayingView();
             CC.Content = playingView;
         }
         private void NerdViewButton_Click(object sender, RoutedEventArgs e)
