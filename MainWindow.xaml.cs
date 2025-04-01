@@ -59,7 +59,7 @@ public partial class MainWindow : Window
         var botGameToHomeButton = (Button)gameView.FindName("Home");
         botGameToHomeButton.Click += ShowHomeClick;
 
-       // var botGameNerdButton = (Button)gameView.FindName();
+        var botGameNerdButton = (Button)gameView.FindName("NerdViewButton");
 
         var exitButton = (Button)homeView.FindName("Exit");
         exitButton.Click += ShowExitClick;
@@ -95,6 +95,7 @@ public partial class MainWindow : Window
         gameView.pvpLocal = false;
         gameView.pvpLAN = false;
         gameView.GMAI = true;
+        gameView.NerdViewButton.Visibility = Visibility.Visible;
         gameView.selectedGM = "Magnus Carlsen";
         gameView.Initialize();
     }
@@ -107,7 +108,8 @@ public partial class MainWindow : Window
         gameView.pvpLAN = true;
         gameView.GMAI = false;
         gameView.selectedGM = "";
-        gameView.NotationPanel.Visibility = Visibility.Collapsed;
+        gameView.NotationPanel.Visibility = Visibility.Visible;
+        gameView.NerdViewButton.Visibility = Visibility.Visible;
         gameView.Initialize();
     }
     private void ShowSettingsClick(object sender, RoutedEventArgs e)
@@ -138,6 +140,7 @@ public partial class MainWindow : Window
         exitView.Visibility = Visibility.Collapsed;
         mpPanelView.Visibility = Visibility.Collapsed;
         multiplayerView.Visibility = Visibility.Collapsed;
+        gameView.NerdViewButton.Visibility = Visibility.Collapsed;
         gameView.ResetGame();
         gameView.ForfeitGame(true);
         if (GetBoardView().GetNotationManager() != null)
