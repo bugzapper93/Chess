@@ -50,7 +50,8 @@ namespace Chess.View
                 notationManager = new NotationPanelManager(notationPanel.NotationGrid, Board.movesMade);
             }
             NotationPanel.Visibility = Visibility.Hidden;
-
+            Board.WhiteTimerText = WhiteTimerText;
+            Board.BlackTimerText = BlackTimerText;
             string resource = "Chess.Resources.Images.reverse.png";
             Assembly assembly = Assembly.GetExecutingAssembly();
             using (Stream stream = assembly.GetManifestResourceStream(resource))

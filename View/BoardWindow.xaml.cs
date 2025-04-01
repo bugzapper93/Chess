@@ -26,7 +26,8 @@ namespace Chess.View
     public partial class BoardWindow : UserControl
     {
         public DispatcherTimer timer;
-
+        public TextBlock WhiteTimerText { get; set; }
+        public TextBlock BlackTimerText { get; set; }
         public bool timerStarted = false;
         public int whiteTime = 300;
         public int blackTime = 300;
@@ -115,7 +116,23 @@ namespace Chess.View
                     return;
                 }
             }
-            TimerUpdate?.Invoke(whiteTime, blackTime);
+
+            // Aktualizuj timery z uwzględnieniem czy plansza jest obrócona
+            if (isBoardFlipped)
+            {
+                WhiteTimerText.Text = FormatTime(blackTime);
+                BlackTimerText.Text = FormatTime(whiteTime);
+            }
+            else
+            {
+                WhiteTimerText.Text = FormatTime(whiteTime);
+                BlackTimerText.Text = FormatTime(blackTime);
+            }
+
+        }
+        private string FormatTime(int seconds)
+        {
+            return TimeSpan.FromSeconds(seconds).ToString(@"mm\:ss");
         }
         public event Action<int, int>? TimerUpdate;
         public void InitializeGame(int playerColor, bool AI, bool LAN, bool pvp, int depth = 0, bool grandmaster = false, string grandmasterName = "", NotationPanelManager notationManager = null)
@@ -203,6 +220,13 @@ namespace Chess.View
             display.Children.Clear();
             DrawChessboard();
             PlacePieces();
+
+            if (WhiteTimerText != null && BlackTimerText != null)
+            {
+                var temp = WhiteTimerText.Text;
+                WhiteTimerText.Text = BlackTimerText.Text;
+                BlackTimerText.Text = temp;
+            }
         }
         private async void MakeAIMove()
         {
