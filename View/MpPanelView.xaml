@@ -362,7 +362,7 @@
                 </Style>
             </StatusBar.Resources>
 
-            <StatusBarItem>
+            <StatusBarItem FontSize="9">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="●" Foreground="#49c3d8" FontWeight="Bold" 
                    VerticalAlignment="Center" Padding="0,0,5,0"/>
@@ -376,7 +376,7 @@
                     <Label Content="●" Foreground="#dd8a1c" FontWeight="Bold" 
                    VerticalAlignment="Center" Padding="0,0,5,0"/>
                     <TextBlock x:Name="toolStripStatusLabelIP" Text="Local IP: " 
-                       VerticalAlignment="Center" FontWeight="SemiBold"/>
+                       VerticalAlignment="Center" FontWeight="SemiBold" FontSize="9"/>
                 </StackPanel>
             </StatusBarItem>
         </StatusBar>

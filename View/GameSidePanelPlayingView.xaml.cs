@@ -24,7 +24,6 @@ namespace Chess.View
         public GameSidePanelPlayingView()
         {
             InitializeComponent();
-            notationManager = new NotationPanelManager(NotationGrid);
         }
 
         public GameSidePanelPlayingView(BoardWindow window) : this()
@@ -35,6 +34,7 @@ namespace Chess.View
         public void SetBoardWindow(BoardWindow window)
         {
             boardWindow = window;
+            notationManager = new NotationPanelManager(NotationGrid, window.movesMade); // Move initialization here
         }
 
         private void notationType_Checked(object sender, RoutedEventArgs e)
