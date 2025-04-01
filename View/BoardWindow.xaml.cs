@@ -410,8 +410,7 @@ namespace Chess.View
             if (Helpers.GetPiece(board, endSquare) == Pieces.Pawn && (targetRow == 0 || targetRow == 7))
             {
                 promotionSquare = endSquare;
-                promotionIsWhite = wasWhiteTurn; // Ustaw kolor na podstawie tury przed ruchem
-                Debug.WriteLine($"MovePiece: promotionIsWhite set to {promotionIsWhite} at square {promotionSquare}");
+                promotionIsWhite = wasWhiteTurn;
                 ShowPromotionPanel(wasWhiteTurn);
                 return true;
             }
