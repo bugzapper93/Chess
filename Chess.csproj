@@ -48,6 +48,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resources\BGmusic.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Grandmasters\alireza-firouzja.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
