@@ -35,7 +35,7 @@ namespace Chess.View
         public bool AIGame = false;
         public bool GMAI = false;
         public string selectedGM = "Magnus Carlsen";
-        private bool canForfeit = false;
+        public bool canForfeit = false;
         private NotationPanelManager notationManager;
         public GameView()
         {
@@ -151,14 +151,15 @@ namespace Chess.View
                 ForfeitGame();
             }
         }
-        private void ResetGame()
+        public void ResetGame()
         {
             _cts = new CancellationTokenSource();
             int depth = 0;
-            int chosenColor = Pieces.White; // To jest tymczasowe
+            int chosenColor = Pieces.White; 
             bool playGM = false;
             string chosenGM = "";
             int maxTime = 300;
+            Board.cancellationTokenSource = _cts;
             // Rzeczy dla AI
             if (botChooseView is not null)
             {

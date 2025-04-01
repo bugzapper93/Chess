@@ -25,7 +25,7 @@ namespace Chess.View
 {
     public partial class BoardWindow : UserControl
     {
-        private DispatcherTimer timer;
+        public DispatcherTimer timer;
 
         public bool timerStarted = false;
         public int whiteTime = 300;
