@@ -137,11 +137,13 @@ public partial class MainWindow : Window
         mpPanelView.Visibility = Visibility.Collapsed;
         multiplayerView.Visibility = Visibility.Collapsed;
         gameView.ResetGame();
-        if(GetBoardView().GetNotationManager() != null)
+        gameView.ForfeitGame(true);
+        if (GetBoardView().GetNotationManager() != null)
         {
             GetBoardView().GetNotationManager().ClearNotations();
         }
         gameView.NotationPanel.Visibility = Visibility.Collapsed;
+        gameView.Board.cancellationTokenSource.Cancel();
         var board = GetBoardView();
         board.whiteTime = 300; 
         board.blackTime = 300;

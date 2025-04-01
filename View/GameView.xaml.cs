@@ -224,10 +224,11 @@ namespace Chess.View
             play_forfeit.Content = "Forfeit";
             NotationPanel.Visibility = Visibility.Visible;
         }
-        private void ForfeitGame()
+        public void ForfeitGame(bool external = false)
         {
             Board.cancellationTokenSource.Cancel();
-            ForfeitPanel.Visibility = Visibility.Visible;
+            if (!external)
+                ForfeitPanel.Visibility = Visibility.Visible;
             NotationPanel.Visibility = Visibility.Hidden;
             Board.board.InitializeBoard();
             Board.InitializeBoardView();
