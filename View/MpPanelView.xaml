@@ -349,13 +349,8 @@
         </Canvas>
 
         <Canvas Background="#1e1e1e " Margin="224,385,250,16">
-            <Button x:Name="btnStartGame" Style="{StaticResource BlueButtonStyle}" Command="{Binding NavigateToGameViewCommand}" Content="Start Game" FontSize="20  " HorizontalAlignment="Center" VerticalAlignment="Top" Height="54" Width="185" Canvas.Left="12" Click="btnStartGame_Click" Canvas.Top="-5"/>
-            <Button x:Name="white" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Width="55" Canvas.Left="216" Canvas.Top="-5">
-                <Image x:Name="whiteImg" Width="40" Height="40"/>
-            </Button>
-            <Button x:Name="black" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Top" Height="54" Width="55" Canvas.Left="284" Canvas.Top="-5">
-                <Image x:Name="blackImg" Width="40" Height="40"/>
-            </Button>
+            <Button x:Name="btnStartGame" Style="{StaticResource BlueButtonStyle}" Command="{Binding NavigateToGameViewCommand}" Content="Start Game" FontSize="20  " HorizontalAlignment="Left" VerticalAlignment="Center" Height="54" Width="337" Canvas.Left="12" Click="btnStartGame_Click" Canvas.Top="-5"/>
+
         </Canvas>
         <StatusBar Background="#252525" Foreground="White" 
            FontFamily="Consolas" FontSize="7" Padding="8,5" BorderThickness="0" Margin="1,435,-1,-425">

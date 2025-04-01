@@ -14,6 +14,9 @@ namespace Chess.View
         private ChessOnline _chessOnline;
         public int playerColor = Pieces.White;
         private MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
+        Style styleBlue;
+        Style styleGray;
+        Style styleGreen;
         public MpPanelView()
         {
             InitializeComponent();
@@ -21,30 +24,11 @@ namespace Chess.View
             {
                 BoardWindow boardView = mainWindow.GetBoardView();
                 _chessOnline = new ChessOnline(this); 
-            }
-            string resource = Pieces.ResourceNames['K'];
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(resource))
-            {
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.StreamSource = stream;
-                bitmap.EndInit();
-
-                whiteImg.Source = bitmap;
+                styleBlue = this.FindResource("BlueButtonStyle") as Style;
+                styleGray = this.FindResource("GrayButtonStyle") as Style; 
+                styleGreen = this.FindResource("GreenButtonStyle") as Style;
             }
 
-            resource = Pieces.ResourceNames['k'];
-            assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(resource))
-            {
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.StreamSource = stream;
-                bitmap.EndInit();
-
-                blackImg.Source = bitmap;
-            }
         }
         private async void btnRefresh_Click(object sender, RoutedEventArgs e)
         {
@@ -101,6 +85,7 @@ namespace Chess.View
             try
             {
                 btnHost.IsEnabled = false;
+                btnHost.Style = styleGray;
                 await _chessOnline._networkManager.StartHostingAsync(nickname);
                 MessageBox.Show("Hosting started successfully!");
                 playerColor = Pieces.White;
@@ -110,6 +95,7 @@ namespace Chess.View
                 MessageBox.Show("Error starting host: " + ex.Message);
                 await _chessOnline._networkManager.LeaveAsync(nickname);
                 btnHost.IsEnabled = true;
+                btnHost.Style = styleBlue;
             }
         }
 

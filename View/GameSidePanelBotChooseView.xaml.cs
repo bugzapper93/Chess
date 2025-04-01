@@ -102,12 +102,24 @@ namespace Chess.View
         {
             if (chosenColor == Pieces.White)
                 chosenColor = Pieces.Black;
+
+            Style styleBlue = this.FindResource("BlueButtonStyle") as Style;
+            Style styleGray = this.FindResource("GrayButtonStyle") as Style;
+
+            white.Style = styleGray;
+            black.Style = styleBlue;
         }
 
         private void SwapColorWhite(object sender, RoutedEventArgs e)
         {
             if (chosenColor == Pieces.Black)
                 chosenColor = Pieces.White;
+
+            Style styleBlue = this.FindResource("BlueButtonStyle") as Style;
+            Style styleGray = this.FindResource("GrayButtonStyle") as Style;
+
+            white.Style = styleBlue;
+            black.Style = styleGray;
         }
     }
 }

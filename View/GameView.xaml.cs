@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -48,6 +50,29 @@ namespace Chess.View
                 notationManager = new NotationPanelManager(notationPanel.NotationGrid);
             }
             NotationPanel.Visibility = Visibility.Hidden;
+
+            string resource = "Chess.Resources.Images.reverse.png";
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+
+                reverseImg.Source = bitmap;
+            }
+            resource = "Chess.Resources.Images.idea.png";
+            assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+
+                ideaImg.Source = bitmap;
+            }
         }
         public void Initialize()
         {

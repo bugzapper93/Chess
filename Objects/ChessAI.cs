@@ -103,7 +103,7 @@ namespace Chess.Objects
         private int Minimax(Chessboard board, int depth, int alpha, int beta, bool maximizingPlayer, int aiColor, CancellationToken token)
         {
             if (token.IsCancellationRequested)
-                return 0;//token.ThrowIfCancellationRequested();
+                return 0;
 
             board.UpdateMoves();
 

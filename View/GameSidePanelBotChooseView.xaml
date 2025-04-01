@@ -108,10 +108,10 @@
 
         <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="Choose" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="183,197,0,0" Width="176" />
         <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="20" Content="Color" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="254,197,0,0"/>
-        <Button x:Name="white" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="186,239,0,0" VerticalAlignment="Top" Height="54" Width="55" Click="SwapColorWhite">
+        <Button x:Name="white" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="186,239,0,0" VerticalAlignment="Top" Height="54" Width="55" Click="SwapColorWhite">
             <Image x:Name="whiteImg" Width="40" Height="40"/>
         </Button>
-        <Button x:Name="black" Style="{StaticResource BlueButtonStyle}" HorizontalAlignment="Left" Margin="254,239,0,0" VerticalAlignment="Top" Height="54" Width="55" Click="SwapColorBlack">
+        <Button x:Name="black" Style="{StaticResource GrayButtonStyle}" HorizontalAlignment="Left" Margin="254,239,0,0" VerticalAlignment="Top" Height="54" Width="55" Click="SwapColorBlack">
             <Image x:Name="blackImg" Width="40" Height="40"/>
         </Button>
         <CheckBox x:Name="GMmodeEnabled" Content="Play against a GM" FontWeight="Bold" Foreground="White" FontSize="16" HorizontalAlignment="Left" Margin="170,319,0,0" VerticalAlignment="Top"/>
