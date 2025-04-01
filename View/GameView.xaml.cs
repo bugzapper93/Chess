@@ -159,6 +159,7 @@ namespace Chess.View
             bool playGM = false;
             string chosenGM = "";
             int maxTime = 300;
+            Board.cancellationTokenSource = _cts;
             // Rzeczy dla AI
             if (botChooseView is not null)
             {
@@ -179,8 +180,7 @@ namespace Chess.View
 
                 if (AIGame)
                     depth = botChooseView.SelectedDepth;
-
-                Board.cancellationTokenSource = _cts;
+                
                 // Koniec rzeczy dla AI
             }
             if (pvpLocal || AIGame)

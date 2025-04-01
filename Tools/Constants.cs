@@ -11,15 +11,26 @@ namespace Chess.Tools
 {
     public static class Constants
     {
+        /// <summary>
+        /// Zbiór wszystkich pobranych arcymistrzów
+        /// </summary>
         public static readonly Dictionary<string, string> Grandmasters = new Dictionary<string, string>
         {
             { "Magnus Carlsen",  "magnus-carlsen.json"},
             { "Alireza Firouzja", "alireza-firouzja.json" },
             { "Andrew Tang", "andrew-tang.json"},
             { "Jan Krzysztof Duda","jan-krzysztof-duda.json" },
-            { "Wesley So", "wesley-so.json" }
+            { "Wesley So", "wesley-so.json" },
+            { "Nodirbek Abdusattorov", "nodirbek-abdusattorov.json" },
+            { "Arjun Erigaisi", "arjun-erigaisi.json " },
+            { "Fabiano Caruana", "fabiano-caruana.json" },
+            { "Gukesh Dommaraju", "gukesh-dommaraju.json" },
+            { "Hikaru Nakamura", "hikaru-nakamura.json" },
+            { "Praggnanandhaa Ramesgbabu", "praggnanandhaa-rameshbabu.json" },
+            { "Wei Yi", "wei-yi.json" }
         };
 
+        // Początkowe bitboardy figur
         public static readonly ulong DefaultWhitePawns      = 0x000000000000FF00;
         public static readonly ulong DefaultWhiteKnights    = 0x0000000000000042;
         public static readonly ulong DefaultWhiteBishops    = 0x0000000000000024;
@@ -34,6 +45,7 @@ namespace Chess.Tools
         public static readonly ulong DefaultBlackQueens     = 0x0800000000000000;
         public static readonly ulong DefaultBlackKing       = 0x1000000000000000;
 
+        // Dozwolone kierunki poruszania się figur
         public static readonly int[] KingOffsets             = { 8, -8, 1, -1, 9, 7, -7, -9 };
         public static readonly int[] KnightOffsets           = { 17, 15, 10, 6, -17, -15, -10, -6 };
         public static readonly int[] BishopDirections        = { 9, -9, 7, -7 };
@@ -118,19 +130,5 @@ namespace Chess.Tools
         public static readonly Brush Secondary = Brushes.CadetBlue;
 
         public static readonly ulong[,] ZobristTable;
-
-        static Constants()
-        {
-            ulong[,] table = new ulong[12, 64];
-            Random random = new Random(42);
-            for (int piece = 0; piece < 12; piece++)
-            {
-                for (int square = 0; square < 64; square++)
-                {
-                    table[piece, square] = (ulong)random.Next() << 32 | (ulong)random.Next();
-                }
-            }
-            ZobristTable = table;
-        }
     }
 }
