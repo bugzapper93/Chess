@@ -367,49 +367,40 @@ namespace Chess.Objects
         /// Metoda promująca pionka
         /// </summary>
         /// <param name="square">Pole, na którym znajduje się pionek</param>
-        /// <param name="pieceToPromoteTo">Figura, w którą promowany jest pionek</param>
-        public void PromotePawn(int square, int pieceToPromoteTo = Pieces.Queen)
+        /// <param name="pieceType">Figura, w którą promowany jest pionek</param>
+        /// <param name="isWhite">Czy promowany jest biały pionek</param>
+        public void PromotePawn(int square, int pieceType = Pieces.Queen, bool isWhite = true)
         {
-            ulong targetMask = 1UL << square;
-            
-            if (square / 8 == 7)
+            int row = square / 8;
+            int col = square % 8;
+
+            if (isWhite)
+                WhitePawns &= ~(1UL << square);
+            else
+                BlackPawns &= ~(1UL << square);
+
+            if (isWhite)
             {
-                WhitePawns &= ~targetMask;
-                switch (pieceToPromoteTo)
+                switch (pieceType)
                 {
-                    case Pieces.Queen:
-                        WhiteQueens |= targetMask;
-                        break;
-                    case Pieces.Bishop:
-                        WhiteBishops |= targetMask;
-                        break;
-                    case Pieces.Rook:
-                        WhiteRooks |= targetMask;
-                        break;
-                    case Pieces.Knight:
-                        WhiteKnights |= targetMask;
-                        break;
+                    case Pieces.Queen: WhiteQueens |= 1UL << square; break;
+                    case Pieces.Rook: WhiteRooks |= 1UL << square; break;
+                    case Pieces.Bishop: WhiteBishops |= 1UL << square; break;
+                    case Pieces.Knight: WhiteKnights |= 1UL << square; break;
                 }
             }
-            else if (square / 8 == 0)
+            else
             {
-                BlackPawns &= ~targetMask;
-                switch (pieceToPromoteTo)
+                switch (pieceType)
                 {
-                    case Pieces.Queen:
-                        BlackQueens |= targetMask;
-                        break;
-                    case Pieces.Bishop:
-                        BlackBishops |= targetMask;
-                        break;
-                    case Pieces.Rook:
-                        BlackRooks |= targetMask;
-                        break;
-                    case Pieces.Knight:
-                        BlackKnights |= targetMask;
-                        break;
+                    case Pieces.Queen: BlackQueens |= 1UL << square; break;
+                    case Pieces.Rook: BlackRooks |= 1UL << square; break;
+                    case Pieces.Bishop: BlackBishops |= 1UL << square; break;
+                    case Pieces.Knight: BlackKnights |= 1UL << square; break;
                 }
             }
+
+            UpdateMoves();
         }
         /// <summary>
         /// Zbijanie figury

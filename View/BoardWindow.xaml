@@ -94,6 +94,44 @@
                 </Button>
             </StackPanel>
         </Border>
+        <Border x:Name="PromotionPanel" Style="{StaticResource GameOverPanelStyle}" 
+        HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Height="250">
+            <StackPanel>
+                <Label Content="Choose type of figure" Foreground="White" FontSize="15" FontWeight="Bold" 
+               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                <Grid Width="140" Height="140">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="PromoteToQueenButton" Grid.Row="0" Grid.Column="0" 
+                    Width="50" Height="50" Margin="5" Click="PromoteToQueenButton_Click">
+                        <Image Source="/Resources/Images/queen_black.png" Stretch="Fill"/>
+                    </Button>
+
+                    <Button x:Name="PromoteToRookButton" Grid.Row="0" Grid.Column="1" 
+                    Width="50" Height="50" Margin="5" Click="PromoteToRookButton_Click">
+                        <Image Source="/Resources/Images/rook_white.png" Stretch="Fill"/>
+                    </Button>
+
+                    <Button x:Name="PromoteToBishopButton" Grid.Row="1" Grid.Column="0" 
+                    Width="50" Height="50" Margin="5" Click="PromoteToBishopButton_Click">
+                        <Image Source="/Resources/Images/bishop_black.png" Stretch="Fill"/>
+                    </Button>
+
+                    <Button x:Name="PromoteToKnightButton" Grid.Row="1" Grid.Column="1" 
+                    Width="50" Height="50" Margin="5" Click="PromoteToKnightButton_Click">
+                        <Image Source="/Resources/Images/knight_white.png" Stretch="Fill" Width="30" Height="30"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>
 

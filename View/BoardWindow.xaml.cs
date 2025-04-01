@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,9 +36,9 @@ namespace Chess.View
         // Board variables
         private Rectangle[,] PiecesDisplay = new Rectangle[8, 8];
         private Rectangle[,] Squares = new Rectangle[8, 8];
-
+        private bool promotionIsWhite;
         public Chessboard board = new Chessboard();
-
+        private int promotionSquare = -1;
         private Point originalMouseOffset;
         private bool isDragging = false;
         private UIElement? selectedPiece;
@@ -346,19 +348,16 @@ namespace Chess.View
             int endSquare = move.To;
 
             ulong toMask = 1UL << endSquare;
-            ulong fromMask = 1UL << startSquare;            
+            ulong fromMask = 1UL << startSquare;
 
             if (!possibleMoves.Contains(endSquare) && checkIfValid)
             {
                 RepositionPiece(new Move(startSquare, startSquare), false);
                 return false;
             }
-                
-            // Special cases
 
             if (board.isWhiteTurn)
             {
-                // En passant
                 if (board.EnPassantSquare != null && (board.WhitePawns & fromMask) != 0 && ((1UL << board.EnPassantSquare) & toMask) != 0)
                 {
                     RemovePiece(endSquare - 8);
@@ -372,7 +371,6 @@ namespace Chess.View
                 }
             }
 
-            // Castling
             ulong kingMask = board.isWhiteTurn ? board.WhiteKing : board.BlackKing;
             if ((kingMask & fromMask) != 0 && Math.Abs(move.From - move.To) == 2)
             {
@@ -390,12 +388,13 @@ namespace Chess.View
             }
 
             RepositionPiece(move);
+            bool wasWhiteTurn = board.isWhiteTurn; // Zapisz turę przed wykonaniem ruchu
             MoveData moveData = board.MakeMove(move);
 
             movesMade.Add(moveData.Clone());
             TimeCache.Add((whiteTime, blackTime));
 
-            whiteTurn = board.isWhiteTurn;
+            whiteTurn = board.isWhiteTurn; // Zaktualizuj turę po ruchu
             string moveNotation = NotationPanelManager.GetAlgebraicNotation(moveData);
             board.CurrentMoves += board.CurrentMoves == "" ? $"{moveNotation}" : $",{moveNotation}";
             PrevMoveCache.Add((string)board.CurrentMoves.Clone());
@@ -404,36 +403,12 @@ namespace Chess.View
                 notationManager.AddRowToTable(moveData, whiteTurn);
             }
 
-            // Pawn promotion
-            // No need for differentiating between black and white pawns, because pawns can't move backwards
-            if (Helpers.GetPiece(board, endSquare) == Pieces.Pawn)
+            if (Helpers.GetPiece(board, endSquare) == Pieces.Pawn && (targetRow == 0 || targetRow == 7))
             {
-                board.PromotePawn(endSquare);
-                RemovePiece(endSquare);
-
-                char pieceChar = Helpers.GetPieceArray(board)[endSquare];
-
-                Rectangle piece = Helpers.GeneratePiece(pieceChar);
-
-                int row = endSquare / 8;
-                int col = endSquare % 8;
-
-                int displayRow = isBoardFlipped ? 7 - row : row;
-                int displayCol = isBoardFlipped ? 7 - col : col;
-
-                double pieceLeft = displayCol * Constants.SquareSize + (Constants.SquareSize - piece.Width) / 2;
-                double pieceBottom = displayRow * Constants.SquareSize + (Constants.SquareSize - piece.Height) / 2;
-
-
-                Canvas.SetLeft(piece, pieceLeft);
-                Canvas.SetBottom(piece, pieceBottom);
-
-                piece.MouseDown += PieceMouseDown;
-                piece.MouseMove += PieceMouseMove;
-                piece.MouseUp += PieceMouseUp;
-
-                PiecesDisplay[row, col] = piece;
-                display.Children.Add(piece);
+                promotionSquare = endSquare;
+                promotionIsWhite = wasWhiteTurn;
+                ShowPromotionPanel(wasWhiteTurn);
+                return true;
             }
 
             if (Helpers.GetMoveCount(board) == 0)
@@ -599,6 +574,128 @@ namespace Chess.View
                    $"Host Nickname: {_chessOnline._networkManager._hostNickname}\n" +
                    $"Client Nickname: {_chessOnline._networkManager._clientNickname}";
         }
+        private void PromoteToQueenButton_Click(object sender, RoutedEventArgs e)
+        {
+            PromotePieceUI(Pieces.Queen);
+        }
+
+        private void PromoteToRookButton_Click(object sender, RoutedEventArgs e)
+        {
+            PromotePieceUI(Pieces.Rook);
+        }
+
+        private void PromoteToBishopButton_Click(object sender, RoutedEventArgs e)
+        {
+            PromotePieceUI(Pieces.Bishop);
+        }
+
+        private void PromoteToKnightButton_Click(object sender, RoutedEventArgs e)
+        {
+            PromotePieceUI(Pieces.Knight);
+        }
+        private void PromotePieceUI(int pieceType)
+        {
+            if (promotionSquare == -1) return;
+
+            bool isWhite = promotionIsWhite; 
+            board.PromotePawn(promotionSquare, pieceType, isWhite);
+
+            RemovePiece(promotionSquare);
+
+            char pieceChar = GetPieceChar(pieceType, isWhite);
+            Rectangle piece = Helpers.GeneratePiece(pieceChar);
+
+            int row = promotionSquare / 8;
+            int col = promotionSquare % 8;
+            int displayRow = isBoardFlipped ? 7 - row : row;
+            int displayCol = isBoardFlipped ? 7 - col : col;
+
+            double pieceLeft = displayCol * Constants.SquareSize + (Constants.SquareSize - piece.Width) / 2;
+            double pieceBottom = displayRow * Constants.SquareSize + (Constants.SquareSize - piece.Height) / 2;
+
+            Canvas.SetLeft(piece, pieceLeft);
+            Canvas.SetBottom(piece, pieceBottom);
+
+            piece.MouseDown += PieceMouseDown;
+            piece.MouseMove += PieceMouseMove;
+            piece.MouseUp += PieceMouseUp;
+
+            PiecesDisplay[row, col] = piece;
+            display.Children.Add(piece);
+
+            PromotionPanel.Visibility = Visibility.Collapsed;
+            promotionSquare = -1;
+            promotionIsWhite = false;
+
+            whiteTurn = board.isWhiteTurn;
+
+            if (Helpers.GetMoveCount(board) == 0)
+            {
+                if (Helpers.isKingInCheck(board, board.isWhiteTurn))
+                    ShowCheckmatePanel();
+                else
+                    ShowStalematePanel();
+            }
+
+            if (enableAI)
+            {
+                MakeAIMove();
+            }
+        }
+        private char GetPieceChar(int pieceType, bool isWhite)
+        {
+            switch (pieceType)
+            {
+                case Pieces.Queen: return isWhite ? 'Q' : 'q';
+                case Pieces.Rook: return isWhite ? 'R' : 'r';
+                case Pieces.Bishop: return isWhite ? 'B' : 'b';
+                case Pieces.Knight: return isWhite ? 'N' : 'n';
+                default: return isWhite ? 'Q' : 'q'; 
+            }
+        }
+        public void ShowPromotionPanel(bool isWhiteTurn)
+        {
+            bool isWhite = promotionIsWhite;
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            Image LoadImage(string resourceName)
+            {
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    if (stream == null)
+                    {
+                        Debug.WriteLine($"Resource not found: {resourceName}");
+                        return new Image { Source = null };
+                    }
+
+                    BitmapImage bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.StreamSource = stream;
+                    bitmap.EndInit();
+
+                    return new Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Fill
+                    };
+                }
+            }
+
+            PromoteToQueenButton.Content = LoadImage($"Chess.Resources.Images.queen_{(isWhite ? "white" : "black")}.png");
+            PromoteToRookButton.Content = LoadImage($"Chess.Resources.Images.rook_{(isWhite ? "white" : "black")}.png");
+            PromoteToBishopButton.Content = LoadImage($"Chess.Resources.Images.bishop_{(isWhite ? "white" : "black")}.png");
+            PromoteToKnightButton.Content = new Image
+            {
+                Source = ((Image)LoadImage($"Chess.Resources.Images.knight_{(isWhite ? "white" : "black")}.png")).Source,
+                Stretch = Stretch.Fill,
+                Width = 30,
+                Height = 30
+            };
+
+            PromotionPanel.Visibility = Visibility.Visible;
+        }
     }
 }
+
 
