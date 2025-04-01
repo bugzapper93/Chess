@@ -23,6 +23,17 @@ namespace Chess.View
         public SettingsView()
         {
             InitializeComponent();
+            VolumeSlider.ValueChanged += VolumeSlider_ValueChanged;
+        }
+
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            VolumeValueLabel.Content = ((int)VolumeSlider.Value).ToString();
+
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.SetBackgroundVolume(VolumeSlider.Value / 100.0);
+            }
         }
     }
 }

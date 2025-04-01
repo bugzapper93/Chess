@@ -48,7 +48,6 @@ namespace Chess.Objects
             { 'Q', "Chess.Resources.Images.queen_white.png" }
         };
 
-        // Przypisane figurom i kolorom liczby
         public const int King = 1;
         public const int Pawn = 2;
         public const int Knight = 3;

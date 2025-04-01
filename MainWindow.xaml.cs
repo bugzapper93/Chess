@@ -114,6 +114,8 @@ public partial class MainWindow : Window
     {
         homeView.Visibility = Visibility.Collapsed;
         settingsView.Visibility = Visibility.Visible;
+        settingsView.VolumeSlider.Value = backgroundMusicPlayer.Volume * 100;
+        settingsView.VolumeValueLabel.Content = ((int)(backgroundMusicPlayer.Volume * 100)).ToString();
     }
 
     private void ShowCreditsClick(object sender, RoutedEventArgs e)
@@ -197,23 +199,18 @@ public partial class MainWindow : Window
     }
     private void InitializeBackgroundMusic()
     {
-        // Ścieżka do pliku MP3 w katalogu wyjściowym
-        string musicPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BGmusic.mp3");
+        string musicPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "BGmusic.mp3");
         
-        // Otwórz plik MP3
         backgroundMusicPlayer.Open(new Uri(musicPath, UriKind.Absolute));
 
-        // Ustaw głośność (opcjonalne, wartość od 0.0 do 1.0)
-        backgroundMusicPlayer.Volume = 1;
+        backgroundMusicPlayer.Volume = 0.3f;
 
-        // Włącz zapętlanie przez obsługę zdarzenia MediaEnded
         backgroundMusicPlayer.MediaEnded += (sender, e) =>
         {
-            backgroundMusicPlayer.Position = TimeSpan.Zero; // Wróć na początek
-            backgroundMusicPlayer.Play(); // Odtwarzaj od nowa
+            backgroundMusicPlayer.Position = TimeSpan.Zero; 
+            backgroundMusicPlayer.Play(); 
         };
 
-        // Rozpocznij odtwarzanie
         backgroundMusicPlayer.Play();
     }
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -221,5 +218,11 @@ public partial class MainWindow : Window
         backgroundMusicPlayer.Stop();
         base.OnClosing(e);
     }
+    public void SetBackgroundVolume(double volume)
+    {
+        volume = Math.Clamp(volume, 0.0, 1.0);
+        backgroundMusicPlayer.Volume = volume;
+    }
+
     #endregion
 }

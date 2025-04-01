@@ -66,9 +66,9 @@
         </Button>
 
         <Label FontWeight="Bold" Foreground="White" FontSize="40" Content="Volume" HorizontalAlignment="Center" Margin="0,145,0,0" VerticalAlignment="Top"/>
-        <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="0" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,249,413,0" VerticalAlignment="Top"/>
+        <Label x:Name="VolumeValueLabel"  FontWeight="Bold" Foreground="White" FontSize="20" Content="0" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,249,413,0" VerticalAlignment="Top"/>
         <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="20" Content="%" HorizontalAlignment="Left" Margin="413,249,0,0" VerticalAlignment="Top"/>
-        <Slider   HorizontalAlignment="Center" Margin="0,225,0,0" VerticalAlignment="Top" Width="325" Height="48"/>
+        <Slider  x:Name="VolumeSlider" HorizontalAlignment="Center" Margin="0,225,0,0" VerticalAlignment="Top" Width="325" Height="48" Minimum="1" Maximum="100"/>
 
 
 
