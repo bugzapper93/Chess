@@ -87,7 +87,7 @@
         <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="time" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="73,10,0,0" Width="68" />
         <Label FontWeight="Bold" Foreground="#49c3d8" FontSize="20" Content="Game" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,10,0,0"/>
         <Slider x:Name="slider" HorizontalAlignment="Left" Value="5" Minimum="1" Maximum="10" Margin="163,54,0,0" VerticalAlignment="Top" Width="152" ValueChanged="Slider_ValueChanged"/>
-        <Label x:Name="lblSlider" FontWeight="Bold" Foreground="White" FontSize="15" Content="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="220,70,0,0"></Label>
+        <Label x:Name="lblSlider" FontWeight="Bold" Foreground="White" FontSize="15" Content="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="229,70,0,0"></Label>
         <RadioButton x:Name="FiveMinutesRadioButton" IsChecked="True" HorizontalAlignment="Left" Margin="6,70,0,0" VerticalAlignment="Top" Height="14" Checked="FiveMinutesRadioButton_Checked">
             <RadioButton.Content>
                 <Label Content="5" Foreground="#49c3d8" FontSize="15" Margin="5,-11,0,0"></Label>
@@ -101,9 +101,9 @@
         </RadioButton>
         <Label Content="minutes" Foreground="#444" FontSize="15" HorizontalAlignment="Left" Margin="45,57,0,0" VerticalAlignment="Top"/>
         <Label Content="minutes" Foreground="#444" FontSize="15" HorizontalAlignment="Left" Margin="45,92,0,0" VerticalAlignment="Top"/>
-        <ListBox Background="#252525" FontWeight="DemiBold" Foreground="White" x:Name="bots" Margin="10,234,219,76"/>
+        <ListBox Background="#252525" FontWeight="DemiBold" Foreground="White" x:Name="bots" Margin="10,199,219,111"/>
 
-        <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="Grandmasters" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,197,0,0" Width="144" RenderTransformOrigin="0.483,0.532" />
+        <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="Grandmasters" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="9,162,0,0" Width="144" RenderTransformOrigin="0.483,0.532" />
 
 
         <Label FontWeight="Bold" Foreground="White" FontSize="20" Content="Choose" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="183,197,0,0" Width="176" />

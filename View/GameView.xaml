@@ -147,7 +147,7 @@
                 </Button>
             </StackPanel>
         </Border>
-        <Button x:Name="reverseBtn" Click="RevClick" Style="{StaticResource GrayButtonStyle}" Content="Rev" HorizontalAlignment="Left" Margin="502,435,0,0" VerticalAlignment="Top" Height="58" Width="58"/>
-        <Button x:Name="tipBtn" Click="TipClick" Style="{StaticResource BlueButtonStyle}" Content="Tip" HorizontalAlignment="Left" Margin="502,493,0,0" VerticalAlignment="Top" Height="58" Width="58"/>
+        <Button x:Name="reverseBtn" Click="RevClick" Style="{StaticResource GrayButtonStyle}" Content="Rev" HorizontalAlignment="Left" Margin="501,377,0,0" VerticalAlignment="Top" Height="58" Width="58"/>
+        <Button x:Name="tipBtn" Click="TipClick" Style="{StaticResource BlueButtonStyle}" Content="Tip" HorizontalAlignment="Left" Margin="501,435,0,0" VerticalAlignment="Top" Height="58" Width="58"/>
     </Grid>
 </UserControl>

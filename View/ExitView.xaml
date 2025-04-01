@@ -86,7 +86,7 @@
         <Label Content="Do you want to exit?" Foreground="white" FontWeight="Bold"  FontSize="30" HorizontalAlignment="Center" Margin="0,128,0,0" VerticalAlignment="Top"/>
         <Button Content="No" 
                 x:Name="Home"
-                Style="{StaticResource BlueButtonStyle}"
+                Style="{StaticResource GrayButtonStyle}"
                 HorizontalAlignment="Left" 
                 Margin="464,225,0,0" 
                 VerticalAlignment="Top" 
@@ -95,7 +95,7 @@
 
         <Button Content="Yes" 
         x:Name="Exit"
-        Style="{StaticResource GrayButtonStyle}"
+        Style="{StaticResource BlueButtonStyle}"
         HorizontalAlignment="Left" 
         Margin="177,225,0,0" 
         VerticalAlignment="Top" 
