@@ -25,9 +25,11 @@ public partial class MainWindow : Window
     private ExitView exitView;
     private MultiPlayerView multiplayerView;
     private MpPanelView mpPanelView;
+    private MediaPlayer backgroundMusicPlayer = new MediaPlayer();
     public MainWindow()
     {
         InitializeComponent();
+        InitializeBackgroundMusic();
         homeView = (HomeView)FindName("HomeView");
         gameView = (GameView)FindName("GameView");
         creditsView = (CreditsView)FindName("CreditsView");
@@ -88,7 +90,7 @@ public partial class MainWindow : Window
     {
         homeView.Visibility = Visibility.Collapsed;
         gameView.Visibility = Visibility.Visible;
-
+        gameView.NotationPanel.Visibility = Visibility.Collapsed;
         gameView.AIGame = true;
         gameView.pvpLocal = false;
         gameView.pvpLAN = false;
@@ -105,7 +107,7 @@ public partial class MainWindow : Window
         gameView.pvpLAN = true;
         gameView.GMAI = false;
         gameView.selectedGM = "";
-
+        gameView.NotationPanel.Visibility = Visibility.Collapsed;
         gameView.Initialize();
     }
     private void ShowSettingsClick(object sender, RoutedEventArgs e)
@@ -123,6 +125,7 @@ public partial class MainWindow : Window
     {
         homeView.Visibility = Visibility.Collapsed;
         multiplayerView.Visibility = Visibility.Visible;
+        gameView.NotationPanel.Visibility = Visibility.Collapsed;
     }
     public void ShowHomeClick(object sender, RoutedEventArgs e)
     {
@@ -134,8 +137,11 @@ public partial class MainWindow : Window
         mpPanelView.Visibility = Visibility.Collapsed;
         multiplayerView.Visibility = Visibility.Collapsed;
         gameView.ResetGame();
-        GetBoardView().GetNotationManager().ClearNotations();
-
+        if(GetBoardView().GetNotationManager() != null)
+        {
+            GetBoardView().GetNotationManager().ClearNotations();
+        }
+        gameView.NotationPanel.Visibility = Visibility.Collapsed;
         var board = GetBoardView();
         board.whiteTime = 300; 
         board.blackTime = 300;
@@ -168,13 +174,14 @@ public partial class MainWindow : Window
         gameView.pvpLAN = false;
         gameView.GMAI = false;
         gameView.selectedGM = "";
-
+        gameView.NotationPanel.Visibility = Visibility.Collapsed;
         gameView.Initialize();
     }
     private void ShowPvPLanClick(object sender, RoutedEventArgs e)
     {
         multiplayerView.Visibility = Visibility.Collapsed;
         mpPanelView.Visibility = Visibility.Visible;
+        gameView.NotationPanel.Visibility = Visibility.Collapsed;
 
         gameView.Initialize();
     }
@@ -185,6 +192,32 @@ public partial class MainWindow : Window
     private void Exit(object sender, RoutedEventArgs e)
     {
         this.Close();
+    }
+    private void InitializeBackgroundMusic()
+    {
+        // Ścieżka do pliku MP3 w katalogu wyjściowym
+        string musicPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BGmusic.mp3");
+        
+        // Otwórz plik MP3
+        backgroundMusicPlayer.Open(new Uri(musicPath, UriKind.Absolute));
+
+        // Ustaw głośność (opcjonalne, wartość od 0.0 do 1.0)
+        backgroundMusicPlayer.Volume = 1;
+
+        // Włącz zapętlanie przez obsługę zdarzenia MediaEnded
+        backgroundMusicPlayer.MediaEnded += (sender, e) =>
+        {
+            backgroundMusicPlayer.Position = TimeSpan.Zero; // Wróć na początek
+            backgroundMusicPlayer.Play(); // Odtwarzaj od nowa
+        };
+
+        // Rozpocznij odtwarzanie
+        backgroundMusicPlayer.Play();
+    }
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        backgroundMusicPlayer.Stop();
+        base.OnClosing(e);
     }
     #endregion
 }
