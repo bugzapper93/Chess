@@ -133,6 +133,24 @@ public partial class MainWindow : Window
         exitView.Visibility = Visibility.Collapsed;
         mpPanelView.Visibility = Visibility.Collapsed;
         multiplayerView.Visibility = Visibility.Collapsed;
+        gameView.ResetGame();
+        GetBoardView().GetNotationManager().ClearNotations();
+
+        var board = GetBoardView();
+        board.whiteTime = 300; 
+        board.blackTime = 300;
+        board.timerStarted = false; 
+        if (board.timer != null)
+        {
+            board.timer.Stop(); 
+        }
+
+        if (gameView.play_forfeit != null)
+        {
+            gameView.play_forfeit.Content = "Play";
+            gameView.play_forfeit.Style = (Style)gameView.Resources["BlueButtonStyle"];
+            gameView.canForfeit = false;
+        }
     }
 
     private void ShowExitClick(object sender, RoutedEventArgs e)
@@ -144,7 +162,7 @@ public partial class MainWindow : Window
     {
         multiplayerView.Visibility = Visibility.Collapsed;
         gameView.Visibility = Visibility.Visible;
-
+        gameView.NerdViewButton.Visibility = Visibility.Collapsed;
         gameView.AIGame = false;
         gameView.pvpLocal = true;
         gameView.pvpLAN = false;
