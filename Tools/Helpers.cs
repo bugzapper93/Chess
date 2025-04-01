@@ -306,6 +306,12 @@ namespace Chess.Tools
             }
             return valid;
         }
+        /// <summary>
+        /// Funkcja sprawdzająca, czy king jest w szachu przez skanowanie pobliskich pól
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <param name="isWhite">Czy sprawdzany jest szach dla białego króla</param>
+        /// <returns>Czy king jest w szachu</returns>
         public static bool isKingInCheck(Chessboard board, bool isWhite)
         {
             int kingSquare = BitScan(isWhite ? board.WhiteKing : board.BlackKing);
@@ -432,6 +438,13 @@ namespace Chess.Tools
             return false;
         }
         #endregion
+        /// <summary>
+        /// Funkcja znajdująca wszystkie pola docelowe ruchów figury
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <param name="startSquare">Pole figury</param>
+        /// <param name="isWhite">Czy figura jest biała</param>
+        /// <returns>Lista wszystkich pól końcowych ruchów figury</returns>
         public static List<int> GetPieceMoves(Chessboard board, int startSquare, bool isWhite)
         {
             List<int> targetSquares = new List<int>();
@@ -501,6 +514,11 @@ namespace Chess.Tools
             }
             return targetSquares;
         }
+        /// <summary>
+        /// Funkcja znajdująca liczbę możliwych ruchów, służy sprawdzaniu matu
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <returns>Liczbę prawidłowych ruchów</returns>
         public static int GetMoveCount(Chessboard board)
         {
             int moveCount = 0;
@@ -526,6 +544,11 @@ namespace Chess.Tools
             return moveCount;
         }
         #region Displaying the pieces
+        /// <summary>
+        /// Funkcja generująca tablicę z notacją figur odpowiadającą obecnemu stanowi szachownicy, np. ['R', 'N', 'B', ...]
+        /// </summary>
+        /// <param name="board">Szachownica</param>
+        /// <returns>Tablica z notacją figur</returns>
         public static char[] GetPieceArray(Chessboard board)
         {
             char[] pieces = new char[64];
@@ -561,6 +584,11 @@ namespace Chess.Tools
             }
             return pieces;
         }
+        /// <summary>
+        /// Funkcja służąca generowaniu panelu figury do interfejsu
+        /// </summary>
+        /// <param name="pieceChar">Notacja figury</param>
+        /// <returns>Element interfejsu</returns>
         public static Rectangle GeneratePiece(char pieceChar)
         {
             string resource = Pieces.ResourceNames[pieceChar];
@@ -582,10 +610,11 @@ namespace Chess.Tools
         #endregion
         #region Grandmaster mode helpers
         /// <summary>
-        /// Function for getting all the game records of a chosen grandmaster
+        /// Funkcja wczytująca wszystkie gry arcymistrza z pliku
         /// </summary>
-        /// <param name="grandmasterName"></param>
-        /// <returns></returns>
+        /// <param name="grandmasterName">Imię arcymistrza</param>
+        /// <param name="playerColor">Kolor gracza</param>
+        /// <returns>Wszystkie gry arcymistrza, posortowane od zwycięskich do przegranych</returns>
         public static List<string> GetPlayerRecords(string grandmasterName, int playerColor)
         {
             string path = "Resources/Grandmasters/" + Constants.Grandmasters[grandmasterName];
